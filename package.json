@@ -39,5 +39,6 @@
     "ui",
     "components"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://kud.github.io/ink-ui"
 }

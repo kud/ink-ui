@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@kud/ink-ui — Design system for Ink CLIs</title>
+    <meta
+      name="description"
+      content="Opinionated design-system library for Ink CLIs — pre-styled components and design tokens for a consistent terminal UI."
+    />
+    <meta property="og:title" content="@kud/ink-ui" />
+    <meta
+      property="og:description"
+      content="Pre-styled components and design tokens for consistent terminal UIs built with Ink."
+    />
+    <meta property="og:url" content="https://kud.github.io/ink-ui" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- ─── Nav ─────────────────────────────────────────── -->
+    <nav id="nav">
+      <a class="nav-brand" href="#">
+        <span class="nav-brand-dot"></span>
+        @kud/ink-ui
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#quick-start">Quick Start</a></li>
+        <li><a href="#components">Components</a></li>
+        <li><a href="#tokens">Tokens</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a
+          class="btn btn-outline"
+          href="https://github.com/kud/ink-ui"
+          target="_blank"
+          rel="noopener"
+          >GitHub</a
+        >
+        <a
+          class="btn btn-primary"
+          href="https://www.npmjs.com/package/@kud/ink-ui"
+          target="_blank"
+          rel="noopener"
+          >npm</a
+        >
+      </div>
+    </nav>
+
+    <!-- ─── Hero ─────────────────────────────────────────── -->
+    <div class="hero">
+      <div class="hero-icon-placeholder">◆</div>
+
+      <div class="badge">v0.1.0 &mdash; MIT Licence</div>
+
+      <h1>Terminal UI that<br /><span>feels intentional</span></h1>
+
+      <p>
+        Opinionated design-system library for Ink CLIs &mdash; pre-styled
+        components and design tokens for a consistent terminal UI.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#quick-start">Get started</a>
+        <a
+          class="btn btn-outline"
+          href="https://github.com/kud/ink-ui"
+          target="_blank"
+          rel="noopener"
+          >View on GitHub</a
+        >
+      </div>
+
+      <div class="hero-command">
+        <span class="prompt">$</span>
+        <span>npm install @kud/ink-ui</span>
+        <button class="copy-btn" data-copy="npm install @kud/ink-ui">
+          Copy
+        </button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value">5</span>
+          <span class="hero-stat-label">Components</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">2</span>
+          <span class="hero-stat-label">Token sets</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">MIT</span>
+          <span class="hero-stat-label">Licence</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">ESM</span>
+          <span class="hero-stat-label">Only</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Features ─────────────────────────────────────── -->
+    <section id="features">
+      <p class="section-label">Why ink-ui</p>
+      <h2 class="section-title">Everything you need for polished CLIs</h2>
+      <p class="section-desc">
+        Stop reinventing spinners and badge colours. ink-ui gives you a complete
+        design system so every screen in your CLI looks and feels cohesive.
+      </p>
+
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F9F1;</div>
+          <h3>Five ready-made components</h3>
+          <p>
+            Banner, Header, Badge, Spinner, and Table — all pre-styled and
+            immediately usable. No configuration required.
+          </p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F3A8;</div>
+          <h3>Design tokens included</h3>
+          <p>
+            A shared colour palette and spacing scale to keep every screen in
+            your CLI consistent without guessing.
+          </p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x26A1;</div>
+          <h3>ESM only, zero config</h3>
+          <p>
+            Ships compiled TypeScript with full type definitions. Import and
+            render — that&apos;s it. No build plugins or transforms needed.
+          </p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F512;</div>
+          <h3>Peer-dep friendly</h3>
+          <p>
+            Works with any Ink &ge;&#8239;4 and React &ge;&#8239;18 setup. No
+            version lock-in. Drop it into an existing project without friction.
+          </p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F9E9;</div>
+          <h3>Composable by design</h3>
+          <p>
+            Every component accepts standard Ink primitives, so you can mix
+            ink-ui with your own layouts freely.
+          </p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F3F7;</div>
+          <h3>Typed throughout</h3>
+          <p>
+            Exported types — <code>BadgeVariant</code>, <code>Column</code>,
+            <code>Color</code>, <code>Spacing</code> — make props
+            self-documenting in any IDE.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- ─── Quick Start ───────────────────────────────────── -->
+    <section id="quick-start">
+      <p class="section-label">Quick Start</p>
+      <h2 class="section-title">Up and running in minutes</h2>
+      <p class="section-desc">
+        Install the package, import the components you need, and render them
+        inside your Ink app.
+      </p>
+
+      <div class="quick-start-grid">
+        <div class="reveal">
+          <p class="step-label">Step 1 — Install</p>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">sh</span>
+              <button
+                class="copy-btn"
+                data-copy="npm install @kud/ink-ui
+npm install ink react"
+              >
+                Copy
+              </button>
+            </div>
+            <pre><code>npm install @kud/ink-ui
+
+<span class="tok-comment"># peer deps if not already installed</span>
+npm install ink react</code></pre>
+          </div>
+        </div>
+
+        <div class="reveal">
+          <p class="step-label">Step 2 — Expected output</p>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">terminal</span>
+            </div>
+            <pre><code>◆ My CLI v1.0.0
+
+Dependencies
+Fetching packages…
+
+[installed] [outdated]
+
+⠋ Loading…
+
+Package              Version
+ink                  5.0.0
+react                18.3.1</code></pre>
+          </div>
+        </div>
+
+        <div class="reveal" style="grid-column: 1 / -1">
+          <p class="step-label">Step 3 — Import and render</p>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">tsx</span>
+              <button
+                class="copy-btn"
+                data-copy='import React from "react"
+import { render } from "ink"
+import { Banner, Header, Badge, Spinner, Table } from "@kud/ink-ui"
+
+const App = () => (
+  <>
+    <Banner title="My CLI" subtitle="v1.0.0" icon="◆" />
+    <Header subtitle="Fetching packages…">Dependencies</Header>
+    <Badge variant="success">installed</Badge>
+    <Badge variant="warning">outdated</Badge>
+    <Spinner label="Loading…" />
+    <Table
+      columns={[
+        { key: "name", header: "Package", width: 20 },
+        { key: "version", header: "Version", width: 10 },
+      ]}
+      data={[
+        { name: "ink", version: "5.0.0" },
+        { name: "react", version: "18.3.1" },
+      ]}
+    />
+  </>
+)
+
+render(<App />)'
+              >
+                Copy
+              </button>
+            </div>
+            <pre><code><span class="tok-import">import</span> React <span class="tok-import">from</span> <span class="tok-string">"react"</span>
+<span class="tok-import">import</span> { render } <span class="tok-import">from</span> <span class="tok-string">"ink"</span>
+<span class="tok-import">import</span> { <span class="tok-component">Banner</span>, <span class="tok-component">Header</span>, <span class="tok-component">Badge</span>, <span class="tok-component">Spinner</span>, <span class="tok-component">Table</span> } <span class="tok-import">from</span> <span class="tok-string">"@kud/ink-ui"</span>
+
+<span class="tok-keyword">const</span> <span class="tok-fn">App</span> = () <span class="tok-punct">=&gt;</span> (
+  <span class="tok-punct">&lt;&gt;</span>
+    <span class="tok-punct">&lt;</span><span class="tok-component">Banner</span> <span class="tok-prop">title</span>=<span class="tok-string">"My CLI"</span> <span class="tok-prop">subtitle</span>=<span class="tok-string">"v1.0.0"</span> <span class="tok-prop">icon</span>=<span class="tok-string">"◆"</span> <span class="tok-punct">/&gt;</span>
+
+    <span class="tok-punct">&lt;</span><span class="tok-component">Header</span> <span class="tok-prop">subtitle</span>=<span class="tok-string">"Fetching packages…"</span><span class="tok-punct">&gt;</span>Dependencies<span class="tok-punct">&lt;/</span><span class="tok-component">Header</span><span class="tok-punct">&gt;</span>
+
+    <span class="tok-punct">&lt;</span><span class="tok-component">Badge</span> <span class="tok-prop">variant</span>=<span class="tok-string">"success"</span><span class="tok-punct">&gt;</span>installed<span class="tok-punct">&lt;/</span><span class="tok-component">Badge</span><span class="tok-punct">&gt;</span>
+    <span class="tok-punct">&lt;</span><span class="tok-component">Badge</span> <span class="tok-prop">variant</span>=<span class="tok-string">"warning"</span><span class="tok-punct">&gt;</span>outdated<span class="tok-punct">&lt;/</span><span class="tok-component">Badge</span><span class="tok-punct">&gt;</span>
+
+    <span class="tok-punct">&lt;</span><span class="tok-component">Spinner</span> <span class="tok-prop">label</span>=<span class="tok-string">"Loading…"</span> <span class="tok-punct">/&gt;</span>
+
+    <span class="tok-punct">&lt;</span><span class="tok-component">Table</span>
+      <span class="tok-prop">columns</span>={[
+        { <span class="tok-prop">key</span>: <span class="tok-string">"name"</span>, <span class="tok-prop">header</span>: <span class="tok-string">"Package"</span>, <span class="tok-prop">width</span>: <span class="tok-string">20</span> },
+        { <span class="tok-prop">key</span>: <span class="tok-string">"version"</span>, <span class="tok-prop">header</span>: <span class="tok-string">"Version"</span>, <span class="tok-prop">width</span>: <span class="tok-string">10</span> },
+      ]}
+      <span class="tok-prop">data</span>={[
+        { <span class="tok-prop">name</span>: <span class="tok-string">"ink"</span>, <span class="tok-prop">version</span>: <span class="tok-string">"5.0.0"</span> },
+        { <span class="tok-prop">name</span>: <span class="tok-string">"react"</span>, <span class="tok-prop">version</span>: <span class="tok-string">"18.3.1"</span> },
+      ]}
+    <span class="tok-punct">/&gt;</span>
+  <span class="tok-punct">&lt;/&gt;</span>
+)
+
+<span class="tok-fn">render</span>(<span class="tok-punct">&lt;</span><span class="tok-component">App</span> <span class="tok-punct">/&gt;</span>)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- ─── Components ────────────────────────────────────── -->
+    <section id="components">
+      <p class="section-label">Component Reference</p>
+      <h2 class="section-title">Five components, ready to ship</h2>
+      <p class="section-desc">
+        Each component is pre-styled, fully typed, and composable with standard
+        Ink primitives.
+      </p>
+
+      <div class="cli-list">
+        <div class="cli-row reveal">
+          <span class="cli-name">&lt;Banner&gt;</span>
+          <span class="cli-desc"
+            >Full-width title block ideal as an app header. Accepts
+            <code>title</code>, <code>subtitle</code>, and
+            <code>icon</code> props. The icon renders in accent colour.</span
+          >
+          <span class="cli-badge">layout</span>
+        </div>
+        <div class="cli-row reveal">
+          <span class="cli-name">&lt;Header&gt;</span>
+          <span class="cli-desc"
+            >Bold, underlined section heading to separate logical groups within
+            a screen. Optional <code>subtitle</code> renders dimmed below the
+            heading.</span
+          >
+          <span class="cli-badge">layout</span>
+        </div>
+        <div class="cli-row reveal">
+          <span class="cli-name">&lt;Badge&gt;</span>
+          <span class="cli-desc"
+            >Inline <code>[label]</code> tag with semantic colour variants:
+            <code>success</code>, <code>error</code>, <code>warning</code>,
+            <code>info</code>. Defaults to <code>info</code>.</span
+          >
+          <span class="cli-badge">feedback</span>
+        </div>
+        <div class="cli-row reveal">
+          <span class="cli-name">&lt;Spinner&gt;</span>
+          <span class="cli-desc"
+            >Animated dots spinner rendered in accent colour. Pass a
+            <code>label</code> prop to show dimmed text beside the
+            spinner.</span
+          >
+          <span class="cli-badge">feedback</span>
+        </div>
+        <div class="cli-row reveal">
+          <span class="cli-name">&lt;Table&gt;</span>
+          <span class="cli-desc"
+            >Structured data grid with bold muted column headers. Pass
+            <code>columns</code> (key, header, width) and
+            <code>data</code> arrays. Truncates long values cleanly.</span
+          >
+          <span class="cli-badge">data</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- ─── Tokens ────────────────────────────────────────── -->
+    <section id="tokens">
+      <p class="section-label">Design Tokens</p>
+      <h2 class="section-title">Shared colour and spacing scale</h2>
+      <p class="section-desc">
+        Import <code>colors</code> and <code>spacing</code> to keep your own
+        components aligned with the design system.
+      </p>
+
+      <div class="code-block reveal" style="margin-bottom: 2rem">
+        <div class="code-block-header">
+          <span class="code-block-lang">ts</span>
+          <button
+            class="copy-btn"
+            data-copy='import { colors, spacing } from "@kud/ink-ui"'
+          >
+            Copy
+          </button>
+        </div>
+        <pre><code><span class="tok-import">import</span> { colors, spacing } <span class="tok-import">from</span> <span class="tok-string">"@kud/ink-ui"</span></code></pre>
+      </div>
+
+      <div class="tokens-grid">
+        <div class="token-group reveal">
+          <div class="token-group-title">colors</div>
+          <div class="token-row">
+            <span class="token-name">colors.accent</span>
+            <div class="token-value">
+              <span class="token-swatch" style="background: #ff8c00"></span>
+              <span class="token-value-text">#FF8C00</span>
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">colors.muted</span>
+            <div class="token-value">
+              <span class="token-swatch" style="background: gray"></span>
+              <span class="token-value-text">gray</span>
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">colors.success</span>
+            <div class="token-value">
+              <span class="token-swatch" style="background: #22c55e"></span>
+              <span class="token-value-text">green</span>
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">colors.error</span>
+            <div class="token-value">
+              <span class="token-swatch" style="background: #ef4444"></span>
+              <span class="token-value-text">red</span>
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">colors.warning</span>
+            <div class="token-value">
+              <span class="token-swatch" style="background: #eab308"></span>
+              <span class="token-value-text">yellow</span>
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">colors.info</span>
+            <div class="token-value">
+              <span class="token-swatch" style="background: #06b6d4"></span>
+              <span class="token-value-text">cyan</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="token-group reveal">
+          <div class="token-group-title">spacing</div>
+          <div class="token-row">
+            <span class="token-name">spacing.xs</span>
+            <div class="token-value">
+              <span class="token-value-text"
+                >1 — tight gap between inline elements</span
+              >
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">spacing.sm</span>
+            <div class="token-value">
+              <span class="token-value-text"
+                >2 — small margin between grouped items</span
+              >
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">spacing.md</span>
+            <div class="token-value">
+              <span class="token-value-text">3 — standard section margin</span>
+            </div>
+          </div>
+          <div class="token-row">
+            <span class="token-name">spacing.lg</span>
+            <div class="token-value">
+              <span class="token-value-text"
+                >4 — large gap between major sections</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Footer ───────────────────────────────────────── -->
+    <footer>
+      <div class="footer-brand">
+        <strong>@kud/ink-ui</strong> &mdash; MIT &copy; 2024
+        <a
+          href="https://github.com/kud"
+          target="_blank"
+          rel="noopener"
+          style="color: inherit"
+          >kud</a
+        >
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/kud/ink-ui" target="_blank" rel="noopener"
+          >GitHub</a
+        >
+        <a
+          href="https://www.npmjs.com/package/@kud/ink-ui"
+          target="_blank"
+          rel="noopener"
+          >npm</a
+        >
+        <a
+          href="https://github.com/kud/ink-ui/blob/main/CHANGELOG.md"
+          target="_blank"
+          rel="noopener"
+          >Changelog</a
+        >
+        <a
+          href="https://github.com/kud/ink-ui/blob/main/LICENSE"
+          target="_blank"
+          rel="noopener"
+          >Licence</a
+        >
+      </div>
+    </footer>
+
+    <script>
+      // Nav scroll effect
+      const nav = document.getElementById("nav")
+      window.addEventListener("scroll", () => {
+        nav.classList.toggle("scrolled", window.scrollY > 20)
+      })
+
+      // Copy buttons
+      document.querySelectorAll(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const text = btn.dataset.copy
+          navigator.clipboard.writeText(text).then(() => {
+            const orig = btn.textContent
+            btn.textContent = "Copied!"
+            setTimeout(() => (btn.textContent = orig), 1800)
+          })
+        })
+      })
+
+      // Scroll reveal
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("visible")
+              observer.unobserve(e.target)
+            }
+          })
+        },
+        { threshold: 0.1 },
+      )
+      document.querySelectorAll(".reveal").forEach((el) => observer.observe(el))
+    </script>
+  </body>
+</html>
