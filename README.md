@@ -7,11 +7,13 @@
 
 **Opinionated design-system library for Ink CLIs — pre-styled components and design tokens for a consistent terminal UI.**
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Components](#-components) • [Tokens](#-design-tokens) • [Development](#-development)
+<a href="https://kud.io/projects/ink-ui">Website</a> · <a href="https://kud.io/projects/ink-ui/docs">Documentation</a>
 
 </div>
 
 ---
+
+An opinionated design-system library for Ink CLIs — pre-styled components and design tokens for a consistent terminal UI.
 
 ## ✨ Features
 
@@ -23,234 +25,19 @@
 - 🧩 **Composable** — every component accepts standard Ink primitives so you can mix them with your own layouts freely
 - 🏷 **Typed throughout** — exported types (`BadgeVariant`, `Column`, `Color`, `Spacing`) make props self-documenting in any IDE
 
----
-
-## 🚀 Quick Start
-
-### Install
+## 🚀 Install
 
 ```sh
 npm install @kud/ink-ui
 ```
 
-`ink` and `react` are peer dependencies — add them if you haven't already:
+## 📖 Documentation
 
-```sh
-npm install ink react
-```
+Full usage, options, and examples live on the docs site:
 
-### Usage
-
-```tsx
-import React from "react"
-import { render } from "ink"
-import { Banner, Header, Badge, Spinner, Table } from "@kud/ink-ui"
-
-const App = () => (
-  <>
-    <Banner title="My CLI" subtitle="v1.0.0" icon="◆" />
-
-    <Header subtitle="Fetching packages…">Dependencies</Header>
-
-    <Badge variant="success">installed</Badge>
-    <Badge variant="warning">outdated</Badge>
-
-    <Spinner label="Loading…" />
-
-    <Table
-      columns={[
-        { key: "name", header: "Package", width: 20 },
-        { key: "version", header: "Version", width: 10 },
-      ]}
-      data={[
-        { name: "ink", version: "5.0.0" },
-        { name: "react", version: "18.3.1" },
-      ]}
-    />
-  </>
-)
-
-render(<App />)
-```
-
-Expected output (approximate terminal rendering):
-
-```
-◆ My CLI v1.0.0
-
-Dependencies
-Fetching packages…
-
-[installed] [outdated]
-
-⠋ Loading…
-
-Package              Version
-ink                  5.0.0
-react                18.3.1
-```
-
----
-
-## 🧩 Components
-
-### `<Banner>`
-
-Full-width title block — ideal as an app header at the top of a screen.
-
-| Prop       | Type     | Default | Description                              |
-| ---------- | -------- | ------- | ---------------------------------------- |
-| `title`    | `string` | —       | Bold title text                          |
-| `subtitle` | `string` | —       | Optional dimmed subtitle rendered inline |
-| `icon`     | `string` | `"◆"`   | Leading icon rendered in accent colour   |
-
-```tsx
-<Banner title="Deploy Tool" subtitle="production" icon="🚀" />
-```
-
----
-
-### `<Header>`
-
-Bold, underlined section heading. Use it to separate logical groups within a screen.
-
-| Prop       | Type     | Default | Description                                |
-| ---------- | -------- | ------- | ------------------------------------------ |
-| `children` | `string` | —       | The heading text                           |
-| `subtitle` | `string` | —       | Optional dimmed subtitle below the heading |
-
-```tsx
-<Header subtitle="3 items">Results</Header>
-```
-
----
-
-### `<Badge>`
-
-Inline `[label]` tag with semantic colour variants.
-
-| Prop       | Type           | Default  | Description                          |
-| ---------- | -------------- | -------- | ------------------------------------ |
-| `children` | `string`       | —        | Label text displayed inside brackets |
-| `variant`  | `BadgeVariant` | `"info"` | Colour variant (see table below)     |
-
-| Variant   | Colour |
-| --------- | ------ |
-| `success` | green  |
-| `error`   | red    |
-| `warning` | yellow |
-| `info`    | cyan   |
-
-```tsx
-<Badge variant="error">failed</Badge>
-```
-
----
-
-### `<Spinner>`
-
-Animated dots spinner in accent colour, with an optional dimmed label.
-
-| Prop    | Type     | Default | Description                               |
-| ------- | -------- | ------- | ----------------------------------------- |
-| `label` | `string` | —       | Optional text rendered beside the spinner |
-
-```tsx
-<Spinner label="Building…" />
-```
-
----
-
-### `<Table>`
-
-Structured data grid with bold muted column headers. Supports optional fixed column widths and truncates long values cleanly.
-
-| Prop      | Type          | Description                    |
-| --------- | ------------- | ------------------------------ |
-| `data`    | `T[]`         | Array of row objects           |
-| `columns` | `Column<T>[]` | Column definitions (see below) |
-
-**`Column<T>` shape:**
-
-| Field    | Type      | Description                        |
-| -------- | --------- | ---------------------------------- |
-| `key`    | `keyof T` | Object key to read for this column |
-| `header` | `string`  | Column heading text                |
-| `width`  | `number`  | Optional fixed character width     |
-
-```tsx
-<Table
-  columns={[
-    { key: "name", header: "Name", width: 16 },
-    { key: "status", header: "Status" },
-  ]}
-  data={[
-    { name: "api", status: "ok" },
-    { name: "db", status: "degraded" },
-  ]}
-/>
-```
-
----
-
-## 🎨 Design Tokens
-
-Import `colors` and `spacing` to keep your own components aligned with the design system.
-
-```ts
-import { colors, spacing } from "@kud/ink-ui"
-```
-
-### Colours
-
-| Token            | Value     | Semantic use                       |
-| ---------------- | --------- | ---------------------------------- |
-| `colors.accent`  | `#FF8C00` | Primary highlight, icons, spinners |
-| `colors.muted`   | `gray`    | Dimmed text, table headers         |
-| `colors.success` | `green`   | Positive states                    |
-| `colors.error`   | `red`     | Failures and errors                |
-| `colors.warning` | `yellow`  | Caution states                     |
-| `colors.info`    | `cyan`    | Neutral informational              |
-
-### Spacing
-
-| Token        | Value | Description                        |
-| ------------ | ----- | ---------------------------------- |
-| `spacing.xs` | `1`   | Tight gap between inline elements  |
-| `spacing.sm` | `2`   | Small margin between grouped items |
-| `spacing.md` | `3`   | Standard section margin            |
-| `spacing.lg` | `4`   | Large gap between major sections   |
-
----
+**→ [kud.io/projects/ink-ui/docs](https://kud.io/projects/ink-ui/docs)**
 
 ## 🔧 Development
-
-### Project structure
-
-```
-ink-ui/
-├── src/
-│   ├── components/
-│   │   ├── Badge.tsx
-│   │   ├── Banner.tsx
-│   │   ├── Header.tsx
-│   │   ├── Spinner.tsx
-│   │   └── Table.tsx
-│   ├── index.ts        # public API
-│   └── tokens.ts       # colours + spacing
-├── dist/               # compiled output (git-ignored)
-├── tsconfig.json
-└── package.json
-```
-
-### Scripts
-
-| Script  | Command       | Description                          |
-| ------- | ------------- | ------------------------------------ |
-| `build` | `tsc`         | Compile TypeScript to `dist/`        |
-| `dev`   | `tsc --watch` | Watch mode — recompile on every save |
-
-### Local setup
 
 ```sh
 git clone https://github.com/kud/ink-ui.git
@@ -259,26 +46,6 @@ npm install
 npm run build
 ```
 
-To develop against a local project, link the package:
-
-```sh
-npm link
-cd ../your-project
-npm link @kud/ink-ui
-```
-
----
-
-## 🏗 Tech Stack
-
-| Technology                                                 | Purpose                                |
-| ---------------------------------------------------------- | -------------------------------------- |
-| [TypeScript](https://www.typescriptlang.org/)              | Strict typing, declaration file output |
-| [Ink](https://github.com/vadimdemedes/ink)                 | React renderer for the terminal        |
-| [React](https://react.dev/)                                | Component model and JSX                |
-| [ink-spinner](https://github.com/vadimdemedes/ink-spinner) | Animated spinner primitive             |
-| ESM                                                        | Modern module format, no CommonJS      |
-
----
+## License
 
 MIT © [kud](https://github.com/kud) — Made with ❤️
