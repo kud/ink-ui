@@ -1,0 +1,30 @@
+---
+title: Banner
+description: Full-width title block — ideal as an app header at the top of a screen.
+---
+
+`<Banner>` renders a full-width title block with a leading accent-coloured icon, a bold title, and an optional dimmed subtitle rendered inline. Use it as the app header at the top of a screen.
+
+```tsx
+import { Banner } from "@kud/ink-ui";
+```
+
+## Props
+
+| Prop       | Type     | Default | Description                              |
+| ---------- | -------- | ------- | ---------------------------------------- |
+| `title`    | `string` | —       | Bold title text                          |
+| `subtitle` | `string` | —       | Optional dimmed subtitle rendered inline |
+| `icon`     | `string` | `"◆"`   | Leading icon rendered in accent colour   |
+
+The icon is coloured with `colors.accent` (`#FF8C00`), and the component adds a bottom margin of one row so it spaces away from the content below.
+
+## Examples
+
+```tsx
+<Banner title="Deploy Tool" subtitle="production" icon="🚀" />
+```
+
+```tsx
+<Banner title="My CLI" subtitle="v1.0.0" />
+```

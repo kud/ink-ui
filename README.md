@@ -13,17 +13,11 @@
 
 ---
 
-An opinionated design-system library for Ink CLIs — pre-styled components and design tokens for a consistent terminal UI.
-
 ## ✨ Features
 
-- 🧱 **Five ready-made components** — Banner, Header, Badge, Spinner, and Table, all pre-styled and immediately usable
+- 🧱 **Five ready-made components** — Banner, Header, Badge, Spinner, and Table, pre-styled and immediately usable
 - 🎨 **Design tokens included** — a shared colour palette and spacing scale to keep every screen consistent
-- 🟠 **Accent-driven style** — a warm `#FF8C00` accent colour gives your CLI a distinctive, coherent identity
 - ⚡ **ESM only, zero config** — ships compiled TypeScript with full type definitions; just import and render
-- 🔒 **Peer-dep friendly** — works with any Ink ≥ 4 and React ≥ 18 setup, no version lock-in
-- 🧩 **Composable** — every component accepts standard Ink primitives so you can mix them with your own layouts freely
-- 🏷 **Typed throughout** — exported types (`BadgeVariant`, `Column`, `Color`, `Spacing`) make props self-documenting in any IDE
 
 ## 🚀 Install
 
@@ -31,11 +25,7 @@ An opinionated design-system library for Ink CLIs — pre-styled components and 
 npm install @kud/ink-ui
 ```
 
-## 📖 Documentation
-
-Full usage, options, and examples live on the docs site:
-
-**→ [kud.io/projects/ink-ui/docs](https://kud.io/projects/ink-ui/docs)**
+`ink` and `react` are peer dependencies (Ink ≥ 4, React ≥ 18).
 
 ## 🔧 Development
 
@@ -49,3 +39,7 @@ npm run build
 ## License
 
 MIT © [kud](https://github.com/kud) — Made with ❤️
+
+---
+
+📚 **Full documentation → https://kud.io/projects/ink-ui/docs**

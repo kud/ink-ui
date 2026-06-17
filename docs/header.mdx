@@ -1,0 +1,29 @@
+---
+title: Header
+description: Bold, underlined section heading for separating logical groups within a screen.
+---
+
+`<Header>` renders a bold, underlined section heading with an optional dimmed subtitle below it. Use it to separate logical groups within a screen.
+
+```tsx
+import { Header } from "@kud/ink-ui";
+```
+
+## Props
+
+| Prop       | Type     | Default | Description                                |
+| ---------- | -------- | ------- | ------------------------------------------ |
+| `children` | `string` | —       | The heading text                           |
+| `subtitle` | `string` | —       | Optional dimmed subtitle below the heading |
+
+The component lays out as a column with a bottom margin of one row.
+
+## Examples
+
+```tsx
+<Header subtitle="3 items">Results</Header>
+```
+
+```tsx
+<Header>Configuration</Header>
+```

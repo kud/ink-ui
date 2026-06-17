@@ -1,0 +1,45 @@
+---
+title: Table
+description: Structured data grid with bold muted column headers and truncating values.
+---
+
+`<Table>` renders a structured data grid with bold, muted column headers. It supports optional fixed column widths and truncates long values cleanly with an ellipsis.
+
+```tsx
+import { Table } from "@kud/ink-ui";
+import type { Column } from "@kud/ink-ui";
+```
+
+## Props
+
+| Prop      | Type          | Description                    |
+| --------- | ------------- | ------------------------------ |
+| `data`    | `T[]`         | Array of row objects           |
+| `columns` | `Column<T>[]` | Column definitions (see below) |
+
+The table is generic over the row type `T`, so column `key`s are checked against your data shape.
+
+### `Column<T>` shape
+
+| Field    | Type               | Description                        |
+| -------- | ------------------ | ---------------------------------- |
+| `key`    | `keyof T & string` | Object key to read for this column |
+| `header` | `string`           | Column heading text                |
+| `width`  | `number`           | Optional fixed character width     |
+
+Missing or nullish cell values render as an empty string. Columns without a `width` size to their content; columns with a `width` are fixed and truncate overflow.
+
+## Examples
+
+```tsx
+<Table
+  columns={[
+    { key: "name", header: "Name", width: 16 },
+    { key: "status", header: "Status" },
+  ]}
+  data={[
+    { name: "api", status: "ok" },
+    { name: "db", status: "degraded" },
+  ]}
+/>
+```
