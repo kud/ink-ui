@@ -1,0 +1,49 @@
+---
+title: Design Tokens
+description: The shared colour palette and spacing scale that keep every screen consistent.
+---
+
+Every component is built on the same set of design tokens. Import `colors` and `spacing` to keep your own components aligned with the design system.
+
+```ts
+import { colors, spacing } from "@kud/ink-ui";
+import type { Color, Spacing } from "@kud/ink-ui";
+```
+
+## Colours
+
+| Token            | Value     | Semantic use                       |
+| ---------------- | --------- | ---------------------------------- |
+| `colors.accent`  | `#FF8C00` | Primary highlight, icons, spinners |
+| `colors.muted`   | `gray`    | Dimmed text, table headers         |
+| `colors.success` | `green`   | Positive states                    |
+| `colors.error`   | `red`     | Failures and errors                |
+| `colors.warning` | `yellow`  | Caution states                     |
+| `colors.info`    | `cyan`    | Neutral informational              |
+
+`Color` is the union of these token values, so you can type props that accept a palette colour.
+
+```tsx
+import { Text } from "ink";
+import { colors } from "@kud/ink-ui";
+
+<Text color={colors.accent}>Highlighted</Text>;
+```
+
+## Spacing
+
+| Token        | Value | Description                        |
+| ------------ | ----- | ---------------------------------- |
+| `spacing.xs` | `1`   | Tight gap between inline elements  |
+| `spacing.sm` | `2`   | Small margin between grouped items |
+| `spacing.md` | `3`   | Standard section margin            |
+| `spacing.lg` | `4`   | Large gap between major sections   |
+
+`Spacing` is the union of these values, suitable for Ink's `margin`, `padding`, and `gap` props.
+
+```tsx
+import { Box } from "ink";
+import { spacing } from "@kud/ink-ui";
+
+<Box marginBottom={spacing.md}>…</Box>;
+```

@@ -1,0 +1,12 @@
+{
+  "title": "ink-ui",
+  "pages": [
+    "index",
+    "banner",
+    "header",
+    "badge",
+    "spinner",
+    "table",
+    "design-tokens"
+  ]
+}

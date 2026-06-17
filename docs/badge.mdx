@@ -1,0 +1,38 @@
+---
+title: Badge
+description: Inline [label] tag with semantic colour variants.
+---
+
+`<Badge>` renders an inline `[label]` tag coloured by a semantic variant. It composes naturally alongside other inline elements, so you can place several badges side by side.
+
+```tsx
+import { Badge } from "@kud/ink-ui";
+import type { BadgeVariant } from "@kud/ink-ui";
+```
+
+## Props
+
+| Prop       | Type           | Default  | Description                          |
+| ---------- | -------------- | -------- | ------------------------------------ |
+| `children` | `string`       | —        | Label text displayed inside brackets |
+| `variant`  | `BadgeVariant` | `"info"` | Colour variant (see table below)     |
+
+## Variants
+
+`BadgeVariant` is one of:
+
+| Variant   | Colour | Token            |
+| --------- | ------ | ---------------- |
+| `success` | green  | `colors.success` |
+| `error`   | red    | `colors.error`   |
+| `warning` | yellow | `colors.warning` |
+| `info`    | cyan   | `colors.info`    |
+
+## Examples
+
+```tsx
+<Badge variant="success">installed</Badge>
+<Badge variant="warning">outdated</Badge>
+<Badge variant="error">failed</Badge>
+<Badge>queued</Badge>
+```
