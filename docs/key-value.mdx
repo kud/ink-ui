@@ -1,0 +1,24 @@
+---
+title: 🧾 KeyValue
+description: Aligned label/value row for detail panels and status summaries.
+---
+
+`<KeyValue>` renders a dimmed label and aligned value for detail panels, status summaries, and diagnostics.
+
+```tsx
+import { KeyValue } from "@kud/ink-ui";
+```
+
+## 🔧 Props
+
+| Prop         | Type              | Default | Description                  |
+| ------------ | ----------------- | ------- | ---------------------------- |
+| `label`      | `string`          | —       | Dimmed row label             |
+| `value`      | `React.ReactNode` | —       | Row value                    |
+| `labelWidth` | `number`          | `12`    | Fixed label column character |
+
+## 💡 Examples
+
+```tsx
+<KeyValue label="Interface" value="utun4 · MTU 1400" />
+```

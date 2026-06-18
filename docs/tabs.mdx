@@ -1,0 +1,38 @@
+---
+title: 🗂️ Tabs
+description: Inline tab strip for grouped interactive screens.
+---
+
+`<Tabs>` renders an inline tab strip. Active tabs are bold and highlighted; inactive tabs are dimmed. Optional counts render beside labels.
+
+```tsx
+import { Tabs } from "@kud/ink-ui";
+import type { TabItem } from "@kud/ink-ui";
+```
+
+## 🔧 Props
+
+| Prop     | Type           | Description      |
+| -------- | -------------- | ---------------- |
+| `active` | `T`            | Active tab value |
+| `items`  | `TabItem<T>[]` | Tabs to render   |
+
+### `TabItem<T>` shape
+
+| Field   | Type     | Description                     |
+| ------- | -------- | ------------------------------- |
+| `value` | `T`      | Stable tab identifier           |
+| `label` | `string` | Visible tab label               |
+| `count` | `number` | Optional count rendered in tabs |
+
+## 💡 Examples
+
+```tsx
+<Tabs
+  active="open"
+  items={[
+    { value: "open", label: "Open", count: 3 },
+    { value: "done", label: "Done", count: 7 },
+  ]}
+/>
+```

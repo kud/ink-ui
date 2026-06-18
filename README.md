@@ -15,7 +15,7 @@
 
 ## ✨ Features
 
-- 🧱 **Five ready-made components** — Banner, Header, Badge, Spinner, and Table, pre-styled and immediately usable
+- 🧱 **Ten ready-made components** — Banner, Header, Badge, Spinner, Table, Tabs, FooterHints, LoadingScreen, KeyValue, and SelectableRow, pre-styled and immediately usable
 - 🎨 **Design tokens included** — a shared colour palette and spacing scale to keep every screen consistent
 - ⚡ **ESM only, zero config** — ships compiled TypeScript with full type definitions; just import and render
 
