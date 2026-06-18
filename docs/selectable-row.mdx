@@ -1,0 +1,24 @@
+---
+title: 👉 SelectableRow
+description: Cursor-aware row primitive for interactive lists.
+---
+
+`<SelectableRow>` renders a row with an active cursor marker. It is intentionally stateless: keep cursor state in your own `useInput` handler and pass `active` to the selected row.
+
+```tsx
+import { SelectableRow } from "@kud/ink-ui";
+```
+
+## 🔧 Props
+
+| Prop       | Type              | Default | Description                  |
+| ---------- | ----------------- | ------- | ---------------------------- |
+| `children` | `React.ReactNode` | —       | Row content                  |
+| `active`   | `boolean`         | `false` | Whether the row is selected  |
+| `marker`   | `string`          | `"❯"`   | Cursor marker for active row |
+
+## 💡 Examples
+
+```tsx
+<SelectableRow active>Review PR #42</SelectableRow>
+```

@@ -5,11 +5,11 @@ description: An opinionated design-system library for Ink CLIs — pre-styled co
 
 **ink-ui** is an opinionated design-system library for [Ink](https://github.com/vadimdemedes/ink) CLIs. Instead of styling every `<Text>` and `<Box>` by hand, you get pre-styled components and a shared set of design tokens — so every screen in your CLI looks coherent out of the box.
 
-A warm `#FF8C00` accent colour gives your CLI a distinctive, consistent identity, and exported types (`BadgeVariant`, `Column`, `Color`, `Spacing`) keep props self-documenting in any IDE.
+A warm `#FF8C00` accent colour gives your CLI a distinctive, consistent identity, and exported types (`BadgeVariant`, `Column`, `Hint`, `TabItem`, `Color`, `Spacing`) keep props self-documenting in any IDE.
 
 ## ✨ Features
 
-- **Five ready-made components** — [Banner](/projects/ink-ui/docs/banner), [Header](/projects/ink-ui/docs/header), [Badge](/projects/ink-ui/docs/badge), [Spinner](/projects/ink-ui/docs/spinner), and [Table](/projects/ink-ui/docs/table), pre-styled and immediately usable.
+- **Ten ready-made components** — [Banner](/projects/ink-ui/docs/banner), [Header](/projects/ink-ui/docs/header), [Badge](/projects/ink-ui/docs/badge), [Spinner](/projects/ink-ui/docs/spinner), [Table](/projects/ink-ui/docs/table), [Tabs](/projects/ink-ui/docs/tabs), [FooterHints](/projects/ink-ui/docs/footer-hints), [LoadingScreen](/projects/ink-ui/docs/loading-screen), [KeyValue](/projects/ink-ui/docs/key-value), and [SelectableRow](/projects/ink-ui/docs/selectable-row), pre-styled and immediately usable.
 - **Design tokens included** — a shared colour palette and spacing scale to keep every screen consistent.
 - **ESM only, zero config** — ships compiled TypeScript with full type definitions; just import and render.
 
@@ -30,7 +30,15 @@ npm install ink react
 ```tsx
 import React from "react";
 import { render } from "ink";
-import { Banner, Header, Badge, Spinner, Table } from "@kud/ink-ui";
+import {
+  Banner,
+  Header,
+  Badge,
+  Spinner,
+  Table,
+  Tabs,
+  FooterHints,
+} from "@kud/ink-ui";
 
 const App = () => (
   <>
@@ -43,6 +51,14 @@ const App = () => (
 
     <Spinner label="Loading…" />
 
+    <Tabs
+      active="open"
+      items={[
+        { value: "open", label: "Open", count: 3 },
+        { value: "done", label: "Done", count: 7 },
+      ]}
+    />
+
     <Table
       columns={[
         { key: "name", header: "Package", width: 20 },
@@ -51,6 +67,13 @@ const App = () => (
       data={[
         { name: "ink", version: "5.0.0" },
         { name: "react", version: "18.3.1" },
+      ]}
+    />
+
+    <FooterHints
+      hints={[
+        ["↑↓", "navigate"],
+        ["q", "quit"],
       ]}
     />
   </>
@@ -74,9 +97,11 @@ Fetching packages…
 Package              Version
 ink                  5.0.0
 react                18.3.1
+
+↑↓ navigate  q quit
 ```
 
 ## 🚀 Next steps
 
-- Browse the components: [Banner](/projects/ink-ui/docs/banner), [Header](/projects/ink-ui/docs/header), [Badge](/projects/ink-ui/docs/badge), [Spinner](/projects/ink-ui/docs/spinner), [Table](/projects/ink-ui/docs/table).
+- Browse the components: [Banner](/projects/ink-ui/docs/banner), [Header](/projects/ink-ui/docs/header), [Badge](/projects/ink-ui/docs/badge), [Spinner](/projects/ink-ui/docs/spinner), [Table](/projects/ink-ui/docs/table), [Tabs](/projects/ink-ui/docs/tabs), [FooterHints](/projects/ink-ui/docs/footer-hints), [LoadingScreen](/projects/ink-ui/docs/loading-screen), [KeyValue](/projects/ink-ui/docs/key-value), [SelectableRow](/projects/ink-ui/docs/selectable-row).
 - Align your own components with the shared palette and spacing scale in [Design Tokens](/projects/ink-ui/docs/design-tokens).
