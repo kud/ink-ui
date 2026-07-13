@@ -30,12 +30,16 @@ type ScrollViewProps = {
   // Initial scroll offset — e.g. a log that resolves and wants to open on its
   // first error rather than the top.
   initialStart?: number
+  // Whether the scroll keys are live. Set false to render the view inert while
+  // another element owns input (e.g. a gallery previewing it unfocused).
+  isActive?: boolean
 }
 
 export const ScrollView = ({
   lines,
   showIndicator = true,
   initialStart = 0,
+  isActive = true,
 }: ScrollViewProps) => {
   const ref = useRef<DOMElement | null>(null)
   const [height, setHeight] = useState(1)
@@ -57,16 +61,19 @@ export const ScrollView = ({
   const maxStart = Math.max(0, lines.length - height)
   const clamped = Math.min(start, maxStart)
 
-  useInput((input, key) => {
-    if (key.downArrow || input === "j")
-      setStart((s) => Math.min(maxStart, s + 1))
-    if (key.upArrow || input === "k") setStart((s) => Math.max(0, s - 1))
-    if (input === " " || key.pageDown || input === "f")
-      setStart((s) => Math.min(maxStart, s + height))
-    if (key.pageUp || input === "b") setStart((s) => Math.max(0, s - height))
-    if (input === "g") setStart(0)
-    if (input === "G") setStart(maxStart)
-  })
+  useInput(
+    (input, key) => {
+      if (key.downArrow || input === "j")
+        setStart((s) => Math.min(maxStart, s + 1))
+      if (key.upArrow || input === "k") setStart((s) => Math.max(0, s - 1))
+      if (input === " " || key.pageDown || input === "f")
+        setStart((s) => Math.min(maxStart, s + height))
+      if (key.pageUp || input === "b") setStart((s) => Math.max(0, s - height))
+      if (input === "g") setStart(0)
+      if (input === "G") setStart(maxStart)
+    },
+    { isActive },
+  )
 
   const visible = lines.slice(clamped, clamped + height)
   const hasMore = lines.length > height
