@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect } from "react"
+import React, { useState, useRef, useLayoutEffect, useEffect } from "react"
 import { Box, Text, useInput, measureElement, type DOMElement } from "ink"
 
 // An inline run within a line — lets a single line mix styles (e.g. bold words,
@@ -27,15 +27,23 @@ type ScrollViewProps = {
   lines: StyledLine[]
   // Show the "N–M / total" position indicator when content overflows.
   showIndicator?: boolean
+  // Initial scroll offset — e.g. a log that resolves and wants to open on its
+  // first error rather than the top.
+  initialStart?: number
 }
 
 export const ScrollView = ({
   lines,
   showIndicator = true,
+  initialStart = 0,
 }: ScrollViewProps) => {
   const ref = useRef<DOMElement | null>(null)
   const [height, setHeight] = useState(1)
-  const [start, setStart] = useState(0)
+  const [start, setStart] = useState(initialStart)
+
+  // Honour a changed initial position after mount — useState ignores prop
+  // changes once initialised.
+  useEffect(() => setStart(initialStart), [initialStart])
 
   // Measure the space the viewport actually gets from its flex parent rather
   // than guessing chrome with a constant — this is what stops content from
