@@ -2,7 +2,7 @@
 // and adapted to @kud/ink-ui tokens and conventions.
 import React from "react"
 import { Box, Text } from "ink"
-import { STATUS_VARIANTS, type StatusVariant } from "./status-variants.js"
+import { statusVariant, type StatusVariant } from "./status-variants.js"
 
 type AlertProps = {
   variant?: StatusVariant
@@ -11,7 +11,7 @@ type AlertProps = {
 }
 
 export const Alert = ({ variant = "info", title, children }: AlertProps) => {
-  const { icon, color } = STATUS_VARIANTS[variant]
+  const { icon, color } = statusVariant(variant)
   return (
     <Box
       borderStyle="round"

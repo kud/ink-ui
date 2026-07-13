@@ -2,7 +2,7 @@
 // and adapted to @kud/ink-ui tokens and conventions.
 import React from "react"
 import { Box, Text } from "ink"
-import { STATUS_VARIANTS, type StatusVariant } from "./status-variants.js"
+import { statusVariant, type StatusVariant } from "./status-variants.js"
 
 type StatusMessageProps = {
   variant?: StatusVariant
@@ -13,7 +13,7 @@ export const StatusMessage = ({
   variant = "info",
   children,
 }: StatusMessageProps) => {
-  const { icon, color } = STATUS_VARIANTS[variant]
+  const { icon, color } = statusVariant(variant)
   return (
     <Box gap={1}>
       <Text color={color}>{icon}</Text>
