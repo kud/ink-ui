@@ -22,9 +22,9 @@ const windowStart = (cursor: number, total: number, count: number): number => {
   return Math.max(0, Math.min(cursor - Math.floor(count / 2), total - count))
 }
 
-// Selection is shown by a filled/empty glyph (◉ / ○), not colour alone — so the
-// on/off state reads for colourblind users and in greyscale. The cursor is the
-// ❯ marker from SelectableRow.
+// Selection is shown by a trailing ✓ (a shape cue, not colour alone) so it reads
+// for colourblind users and in greyscale; the cursor is the ❯ marker from
+// SelectableRow.
 export const MultiSelect = <T extends string>({
   options,
   onChange,
@@ -65,12 +65,10 @@ export const MultiSelect = <T extends string>({
         const on = selected.has(option.value)
         return (
           <SelectableRow key={option.value} active={active}>
-            <Text color={on ? colors.success : undefined}>
-              {on ? "◉" : "○"}
+            <Text bold={active} color={active ? colors.info : undefined}>
+              {option.label}
             </Text>
-            <Text bold={active} color={active ? colors.accent : undefined}>
-              {" " + option.label}
-            </Text>
+            {on ? <Text color={colors.success}>{" ✓"}</Text> : null}
           </SelectableRow>
         )
       })}

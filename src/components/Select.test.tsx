@@ -18,6 +18,7 @@ describe("Select", () => {
     expect(frame).toContain("First")
     expect(frame).toContain("Third")
     expect(frame).toContain("❯ First")
+    expect(frame).toContain("✓") // the cursor row carries a trailing tick
   })
 
   it("moves the cursor with arrow keys and fires onChange", async () => {
