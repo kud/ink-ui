@@ -12,18 +12,17 @@ const options = [
 const delay = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms))
 
 describe("MultiSelect", () => {
-  it("renders every option unselected (○) by default", () => {
+  it("renders every option unselected (no tick) by default", () => {
     const { lastFrame } = render(<MultiSelect options={options} />)
     const frame = lastFrame() ?? ""
-    expect(frame).toContain("○")
-    expect(frame).not.toContain("◉")
+    expect(frame).not.toContain("✓")
   })
 
-  it("reflects defaultValue as selected (◉)", () => {
+  it("reflects defaultValue as selected (✓)", () => {
     const { lastFrame } = render(
       <MultiSelect options={options} defaultValue={["second"]} />,
     )
-    expect(lastFrame()).toContain("◉")
+    expect(lastFrame()).toContain("✓")
   })
 
   it("toggles selection with space and fires onChange", async () => {
@@ -33,7 +32,7 @@ describe("MultiSelect", () => {
     )
     stdin.write(" ") // toggle First on
     await delay()
-    expect(lastFrame()).toContain("◉")
+    expect(lastFrame()).toContain("✓")
     expect(onChange).toHaveBeenCalledWith(["first"])
   })
 

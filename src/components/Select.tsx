@@ -64,9 +64,10 @@ export const Select = <T extends string>({
         const active = start + i === cursor
         return (
           <SelectableRow key={option.value} active={active}>
-            <Text bold={active} color={active ? colors.accent : undefined}>
+            <Text bold={active} color={active ? colors.info : undefined}>
               {option.label}
             </Text>
+            {active ? <Text color={colors.success}>{" ✓"}</Text> : null}
           </SelectableRow>
         )
       })}
