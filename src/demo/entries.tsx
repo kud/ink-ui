@@ -8,6 +8,7 @@ import {
   Alert,
   Badge,
   Banner,
+  Columns,
   ConfirmInput,
   EmailInput,
   FooterHints,
@@ -16,6 +17,7 @@ import {
   LoadingScreen,
   MultiSelect,
   OrderedList,
+  Panel,
   PasswordInput,
   ProgressBar,
   ScrollView,
@@ -427,6 +429,33 @@ export const entries: DemoEntry[] = [
     category: "Layout",
     interactive: false,
     render: () => <Header subtitle="3 files changed">Status</Header>,
+  },
+  {
+    name: "Panel",
+    category: "Layout",
+    interactive: false,
+    render: () => (
+      <Panel title="Jobs" color="cyan" focused>
+        <Text>#42 main · passing</Text>
+        <Text dimColor>#41 main · passing</Text>
+      </Panel>
+    ),
+  },
+  {
+    name: "Columns",
+    category: "Layout",
+    interactive: false,
+    render: () => (
+      <Columns>
+        <Panel title="Jobs" flexGrow={1}>
+          <Text>build</Text>
+          <Text>test</Text>
+        </Panel>
+        <Panel title="Logs" flexGrow={2}>
+          <Text dimColor>› npm run build</Text>
+        </Panel>
+      </Columns>
+    ),
   },
   {
     name: "FooterHints",
