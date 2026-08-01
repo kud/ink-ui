@@ -31,6 +31,7 @@ import {
   TextInput,
   Toast,
   Toggle,
+  ToggleSwitch,
   UnorderedList,
   type SwitchValue,
 } from "../index.js"
@@ -220,6 +221,22 @@ const ToggleDemo = ({ focused }: { focused: boolean }) => {
   )
 }
 
+const ToggleSwitchDemo = ({ focused }: { focused: boolean }) => {
+  const [on, setOn] = useState(true)
+  useInput(
+    (input) => {
+      if (input === " ") setOn((o) => !o)
+    },
+    { isActive: focused },
+  )
+  return (
+    <Box flexDirection="column">
+      <ToggleSwitch on={on} label={on ? "on" : "off"} />
+      <Text dimColor>space to toggle</Text>
+    </Box>
+  )
+}
+
 // ── registry ──────────────────────────────────────────────────────────
 
 export const entries: DemoEntry[] = [
@@ -339,6 +356,12 @@ export const entries: DemoEntry[] = [
     category: "Selection",
     interactive: true,
     render: (f) => <ToggleDemo focused={f} />,
+  },
+  {
+    name: "ToggleSwitch",
+    category: "Selection",
+    interactive: true,
+    render: (f) => <ToggleSwitchDemo focused={f} />,
   },
   {
     name: "SelectableRow",
