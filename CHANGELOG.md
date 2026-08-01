@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.11.0 — 2026-08-01
+
+### Highlights
+
+- **New `ToggleSwitch`** — a physical on/off switch: a rounded coloured track with the knob at one end. Sits alongside `Toggle` (a dot) and `Switch` (a two-label slider) rather than replacing either, so nothing already using those changes appearance. The knob position carries the state, so it reads without colour; the rounded caps use powerline half-circles and degrade to a square pill in fonts that lack them.
+
+---
+
 ## [0.8.0] — 2026-07-14
 
 ### Highlights
