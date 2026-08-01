@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.12.0 — 2026-08-01
+
+### Highlights
+
+- **`ProgressBar` is flat and its colours are configurable.** The unfilled remainder was drawn with a shade character (`░`), which dithers into a visibly textured, faintly three-dimensional strip next to flat blocks. Both halves are now solid `█`, told apart by new `color` and `trackColor` props.
+
+  Note this changes how `ProgressBar` looks everywhere it is used, and trades a *shape* difference for a *lightness* one — a genuinely monochrome terminal now sees an undifferentiated bar. Lightness still separates for colourblind readers, which is the case that actually occurs.
+
+---
+
 ## 0.11.0 — 2026-08-01
 
 ### Highlights
