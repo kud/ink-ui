@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.13.1 — 2026-08-02
+
+### Fixes
+
+- **`UpdateBanner` leads with the package name** rather than the words "Update available". When several CLIs might be offering an upgrade, which one is asking is what you need first; "update available" is identical on every banner and so carries no information.
+
+---
+
 ## 0.13.0 — 2026-08-02
 
 ### Highlights
