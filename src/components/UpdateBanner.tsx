@@ -45,11 +45,15 @@ export const UpdateBanner = ({
       paddingY={1}
       rowGap={1}
     >
+      {/* The package name leads: when several CLIs might offer an upgrade,
+          which one is asking is the thing you need first. "update available"
+          is the same on every banner, so it carries no information. */}
       <Box columnGap={1}>
         <Text bold color={colors.accent}>
-          Update available
+          {name}
         </Text>
-        <Text dimColor>{name}</Text>
+        <Text dimColor>·</Text>
+        <Text dimColor>update available</Text>
       </Box>
 
       <Box columnGap={1}>
