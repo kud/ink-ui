@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.13.0 — 2026-08-02
+
+### Highlights
+
+- **New `UpdateBanner`** — the shared "an update is available, upgrade now?" offer, so every @kud CLI shows the same thing. Takes plain props rather than importing any update-checking package: it knows how to draw the offer, not where the information came from.
+
+---
+
 ## 0.12.0 — 2026-08-01
 
 ### Highlights
