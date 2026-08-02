@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.13.2 — 2026-08-02
+
+### Fixes
+
+- **`SelectableRow` no longer loses a column of indentation on long rows.** Its marker gutter sat in a flexible child, so any row whose content overflowed its container had that gutter compressed by one character — shifting the whole row a place left and breaking alignment with its neighbours. Only overflowing rows were affected, which is why it survived every short test fixture and showed up instead as the occasional crooked line in a real list. Every consumer's lists are affected, not just new ones.
+
+---
+
 ## 0.13.1 — 2026-08-02
 
 ### Fixes
@@ -26,7 +34,7 @@ All notable changes to this project are documented here.
 
 - **`ProgressBar` is flat and its colours are configurable.** The unfilled remainder was drawn with a shade character (`░`), which dithers into a visibly textured, faintly three-dimensional strip next to flat blocks. Both halves are now solid `█`, told apart by new `color` and `trackColor` props.
 
-  Note this changes how `ProgressBar` looks everywhere it is used, and trades a *shape* difference for a *lightness* one — a genuinely monochrome terminal now sees an undifferentiated bar. Lightness still separates for colourblind readers, which is the case that actually occurs.
+  Note this changes how `ProgressBar` looks everywhere it is used, and trades a _shape_ difference for a _lightness_ one — a genuinely monochrome terminal now sees an undifferentiated bar. Lightness still separates for colourblind readers, which is the case that actually occurs.
 
 ---
 
