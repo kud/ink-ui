@@ -17,7 +17,14 @@ export const SelectableRow = ({
   children,
 }: SelectableRowProps) => (
   <Box>
-    <Text color={colors.info}>{active ? `  ${marker} ` : "    "}</Text>
+    {/* The gutter must never shrink. A row whose content overflows its
+        container compresses every flexible child, and this one is four
+        characters wide — losing a single column to that shifts the whole row
+        left and breaks alignment with its neighbours, but only for rows long
+        enough to overflow, which is why it survives short test fixtures. */}
+    <Box flexShrink={0}>
+      <Text color={colors.info}>{active ? `  ${marker} ` : "    "}</Text>
+    </Box>
     {isTextValue(children) ? <Text bold={active}>{children}</Text> : children}
   </Box>
 )
