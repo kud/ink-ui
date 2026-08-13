@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
+    setupFiles: ["./src/test-setup.ts"],
     // Every test here renders a real Ink tree, so a fork is far heavier than a
     // typical unit test. Left at the default (~cpus-1 workers) on a 12-core Mac,
     // 11 of 24 files failed to start with "Timeout waiting for worker to
