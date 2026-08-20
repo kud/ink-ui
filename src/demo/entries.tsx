@@ -314,14 +314,22 @@ export const entries: DemoEntry[] = [
     render: () => (
       <Table
         data={[
-          { name: "TextInput", tests: "4", status: "green" },
-          { name: "MultiSelect", tests: "3", status: "green" },
-          { name: "ScrollView", tests: "2", status: "green" },
+          {
+            name: "TextInput",
+            notes: "cursor, masking and submit on enter",
+            tests: "4",
+          },
+          {
+            name: "MultiSelect",
+            notes: "space toggles, enter confirms",
+            tests: "3",
+          },
+          { name: "ScrollView", notes: "windowed list", tests: "2" },
         ]}
         columns={[
           { key: "name", header: "Component", width: 14 },
-          { key: "tests", header: "Tests", width: 6 },
-          { key: "status", header: "Status" },
+          { key: "notes", header: "Notes", width: 22, overflow: "wrap" },
+          { key: "tests", header: "Tests", width: 6, align: "right" },
         ]}
       />
     ),

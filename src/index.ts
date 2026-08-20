@@ -4,7 +4,11 @@ export type { BadgeVariant } from "./components/Badge.js"
 export { Header } from "./components/Header.js"
 export { Spinner } from "./components/Spinner.js"
 export { Table } from "./components/Table.js"
-export type { Column } from "./components/Table.js"
+export type {
+  Column,
+  ColumnAlign,
+  ColumnOverflow,
+} from "./components/Table.js"
 export { FooterHints } from "./components/FooterHints.js"
 export type { Hint } from "./components/FooterHints.js"
 export { KeyValue } from "./components/KeyValue.js"

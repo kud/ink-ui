@@ -4,6 +4,45 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.15.0 — 2026-08-20
+
+### Highlights
+
+- **`Table` measures its own columns.** A column without a `width` now takes the widest of its header and its cells, counted in display columns so wide glyphs and CJK are not undercounted, and a cell holding newlines is measured by its widest line. Previously every column either carried a hand-counted `width` or was left to flexbox, which meant a table only lined up if you had already measured it yourself.
+- **A table too wide for the terminal shrinks to fit.** The widest column gives up characters first, one at a time, until the table fits or every measured column reaches its `minWidth` — so the columns that were already tight stay readable. Columns given an explicit `width` are never touched: an over-wide table you asked for stays over-wide rather than quietly disagreeing with you.
+- **Cells can wrap instead of truncating.** `overflow: "wrap"` on a column wraps its content inside the column and grows the row to suit, with neighbouring cells staying top-aligned beside it. The default stays `"truncate"`, which keeps every row one line tall and ends a clipped cell with `…`.
+- **Per-column alignment.** `align: "left" | "center" | "right"` positions header and cells together.
+- **`gap`, `maxWidth` and `headerColor` are now props.** `maxWidth` defaults to the terminal width, so a table sizes itself without being told where it is.
+
+This closes [#3](https://github.com/kud/ink-ui/issues/3) — the gap that kept `cli-table3` installed alongside the kit.
+
+### Notes
+
+- `string-width` is a new dependency, and the only way to measure a terminal cell honestly.
+- Existing tables keep working unchanged: every new field is optional and the defaults reproduce the old behaviour.
+
+---
+
+## 0.14.1 — 2026-08-02
+
+### Documentation
+
+- README now covers the `useTabs` and `useListCursor` hooks that shipped in 0.14.0 undocumented.
+
+---
+
+## 0.14.0 — 2026-08-02
+
+### Highlights
+
+- **New `useTabs` and `useListCursor` hooks** — the tab-switching and list-cursor keyboard logic that every consumer had been rewriting, extracted so `Tabs` and a scrolling list behave the same everywhere.
+
+### Fixes
+
+- **`Toast` unmounts its timer in tests**, so a component holding a countdown can no longer reach into whatever test runs next.
+
+---
+
 ## 0.13.2 — 2026-08-02
 
 ### Fixes
