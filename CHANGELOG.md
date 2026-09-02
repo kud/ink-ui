@@ -9,7 +9,7 @@ All notable changes to this project are documented here.
 ### Highlights
 
 - **The package now ships `AGENTS.md`, a brief for AI coding agents building a CLI with ink-ui.** It lands in consumers' `node_modules/@kud/ink-ui/AGENTS.md` and carries what the type definitions can't: which components own their own Ink `useInput` versus which are purely presentational, a task-keyed table for picking the right component, the design-token and colourblind-safety house rules, and known traps. The README's new "Building with an AI agent" section points at it.
-- **A CI guard keeps the brief honest.** `npm run check:agents` fails the build if `AGENTS.md` cites a component that `src/index.ts` no longer exports, so a rename or removal can't leave the guide silently pointing at something that no longer exists. ([82b28f1](https://github.com/kud/ink-ui/commit/82b28f12d96d43c6d341cc6b02077f5b325950a4))
+- **A CI guard keeps the brief honest.** `npm run check:agents` fails the build if `AGENTS.md` cites a component that `src/index.ts` no longer exports, so a rename or removal can't leave the guide silently pointing at something that no longer exists. ([82b28f1](https://github.com/kud/ink-ui/commit/553d378df1448ee8c229b5225932c839b50f4fdc))
 
 ---
 
