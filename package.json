@@ -12,7 +12,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "AGENTS.md"
   ],
   "engines": {
     "node": ">=20"
@@ -22,6 +23,7 @@
     "dev": "tsup --watch",
     "demo": "tsx src/demo/index.tsx",
     "typecheck": "tsc --noEmit",
+    "check:agents": "node scripts/check-agents-md.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
