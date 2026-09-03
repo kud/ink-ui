@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.20.1 — 2026-09-03
+
+### Highlights
+
+- **The tab underline slides instead of jumping.** 0.20.0 made the rule travel, but it read as a jump followed by a bubble, and two things were causing that. Its twelve steps were six, spaced 25ms apart — faster than the terminal repaints, so several coalesced and you saw three positions where the maths had computed six. And it eased OUT only, which starts at full speed: right for something entering the screen, wrong for something crossing it, because a rule already on screen that leaps on its first frame reads as having been redrawn elsewhere rather than as having travelled. It now eases in and out — slow at both ends, quick through the middle, the shape a physical thing makes crossing a gap — over twelve steps at 28ms, roughly one step per repaint and about a third of a second end to end. Still short enough that holding an arrow key across four tabs stays one gesture rather than four animations queueing.
+
+---
+
 ## 0.20.0 — 2026-09-03
 
 ### Highlights

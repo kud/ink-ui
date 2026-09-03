@@ -149,13 +149,23 @@ describe("Tabs rule travel", () => {
     expect(mid.width).toBeLessThan(to.width)
   })
 
-  // Eased, so it leaves quickly and settles gently. A linear crawl over six
-  // frames reads as a redraw; the point of the movement is that the eye follows
-  // it without being asked to.
-  it("covers more ground early than late", () => {
-    const firstHalf = between(from, to, 0.5).start - from.start
-    const secondHalf = to.start - between(from, to, 0.5).start
-    expect(firstHalf).toBeGreaterThan(secondHalf)
+  /*
+   * Slow at both ends, quick through the middle.
+   *
+   * It used to ease OUT only, which starts at full speed — right for something
+   * entering the screen, wrong for something crossing it. A rule already on
+   * screen that leaps on its first frame reads as having been redrawn somewhere
+   * else rather than as having travelled, which is how it looked: a jump and
+   * then a settle.
+   *
+   * Asserted as accelerate-then-decelerate rather than against this curve's
+   * numbers, so swapping cubic for another ease of the same SHAPE does not fail
+   * it. The shape is the requirement; the polynomial is an implementation of it.
+   */
+  it("accelerates out of the old tab and decelerates into the new", () => {
+    const at = (t: number) => between(from, to, t).start
+    expect(at(0.5) - at(0.25)).toBeGreaterThan(at(0.25) - at(0))
+    expect(at(0.75) - at(0.5)).toBeGreaterThan(at(1) - at(0.75))
   })
 
   it("never collapses to nothing mid-flight", () => {
@@ -170,7 +180,9 @@ describe("Tabs rule travel", () => {
     ]
     const { rerender, lastFrame } = render(<Tabs active="a" items={tabs} />)
     rerender(<Tabs active="b" items={tabs} />)
-    await new Promise((r) => setTimeout(r, 400))
+    // Comfortably past SLIDE_STEPS x SLIDE_MS, so this asserts where the rule
+    // SETTLES rather than racing the animation it is waiting out.
+    await new Promise((r) => setTimeout(r, 700))
     const frame = lastFrame() ?? ""
     const [labels, rules] = frame.split("\n")
     expect(rules!.indexOf("─")).toBe(labels!.indexOf("A much longer"))

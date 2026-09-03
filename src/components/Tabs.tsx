@@ -37,14 +37,20 @@ const GAP = 2
 /**
  * How long the rule takes to travel, and in how many steps.
  *
- * Short on purpose. The rule is not the news — it is confirmation of a key you
- * just pressed, and a confirmation that outlasts your certainty about having
- * pressed it has stopped confirming anything. Six steps over ~150ms is enough to
- * read as movement rather than as a jump, and short enough that holding ← or →
- * to cross four tabs feels like one gesture instead of four animations queueing.
+ * Six steps at 25ms was the first attempt and it read as a jump rather than a
+ * slide, for two reasons that both had to go. At 25ms the steps land faster than
+ * the terminal repaints, so several coalesce and you see three positions where
+ * the maths computed six. And an ease-OUT spends most of its travel in the first
+ * of those, so the opening frame arrived nearly there and everything after it was
+ * a settle: jump, then bubble.
+ *
+ * Twelve steps at 28ms is roughly one step per repaint, and about a third of a
+ * second end to end — long enough to read as a thing moving rather than as a
+ * redraw, short enough that holding an arrow across four tabs stays one gesture
+ * instead of four animations queueing.
  */
-const SLIDE_STEPS = 6
-const SLIDE_MS = 25
+const SLIDE_STEPS = 12
+const SLIDE_MS = 28
 
 type Rule = { start: number; width: number }
 
@@ -56,9 +62,16 @@ type Rule = { start: number; width: number }
  * it read as one object moving instead of a bar being retyped: crossing to a
  * wider tab, the far edge arrives first and the near edge catches up, so the rule
  * stretches and settles the way a physical thing would.
+ *
+ * Eased in AND out, not merely out. An ease-out starts at full speed, which is
+ * right for something entering the screen and wrong for something crossing it: a
+ * rule already on screen that leaps on its first frame reads as having been
+ * redrawn elsewhere rather than as having travelled. Slow at both ends and quick
+ * through the middle is how a physical thing crosses a gap, and it is the shape
+ * an eye can follow.
  */
 export const between = (from: Rule, to: Rule, t: number): Rule => {
-  const ease = 1 - Math.pow(1 - t, 3)
+  const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
   const lerp = (a: number, b: number) => Math.round(a + (b - a) * ease)
   const left = lerp(from.start, to.start)
   const right = lerp(from.start + from.width, to.start + to.width)
