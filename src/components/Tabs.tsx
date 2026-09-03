@@ -73,9 +73,39 @@ type Rule = { start: number; width: number }
 export const between = (from: Rule, to: Rule, t: number): Rule => {
   const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
   const lerp = (a: number, b: number) => Math.round(a + (b - a) * ease)
-  const left = lerp(from.start, to.start)
-  const right = lerp(from.start + from.width, to.start + to.width)
-  return { start: left, width: Math.max(1, right - left) }
+  // Start and WIDTH, never the two edges independently.
+  //
+  // Interpolating left and right separately is the same maths before rounding —
+  // lerp is linear, so lerp(start) + lerp(width) IS lerp(right) — but the two
+  // Math.rounds land independently, and mid-travel they disagree: the rule
+  // twitches a column wider and back on alternate frames while it moves. It
+  // reads as a jump in something that is otherwise sliding smoothly, and it was
+  // invisible until the positions were dumped frame by frame. Rounding the width
+  // once makes it step from one length to the other exactly once.
+  return {
+    start: lerp(from.start, to.start),
+    width: Math.max(1, lerp(from.width, to.width)),
+  }
+}
+
+/**
+ * Which tab the rule is currently closest to, by centre.
+ *
+ * Exported for its own test and nothing else. Whether a label is drawn bold is
+ * unobservable through a rendered frame here — the runner is not a TTY, so the
+ * escape codes are stripped — so the choice has to be asserted as a function or
+ * not at all.
+ */
+export const nearestTo = (rules: Rule[], rule: Rule, fallback: number): number => {
+  const centre = (r: Rule) => r.start + r.width / 2
+  if (rules.length === 0) return fallback
+  return rules.reduce(
+    (best, r, i) =>
+      Math.abs(centre(r) - centre(rule)) < Math.abs(centre(rules[best]!) - centre(rule))
+        ? i
+        : best,
+    Math.min(fallback, rules.length - 1),
+  )
 }
 
 const useSlide = (rules: Rule[], active: number): Rule | null => {
@@ -158,18 +188,35 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
   const activeIndex = cells.findIndex((c) => c.isActive)
   const rule = useSlide(rules, activeIndex) ?? { start: 0, width: 0 }
 
+  /*
+   * Which label is LIT follows the rule, not the prop.
+   *
+   * Switching the label the instant `active` changes leaves the two signals
+   * disagreeing for the length of the slide: the new tab is already bold and
+   * orange while the rule is still crossing the bar towards it. One says "you are
+   * here", the other says "on my way", and the eye reads the mismatch as a jump
+   * in something that is otherwise moving smoothly.
+   *
+   * Nearest BY CENTRE rather than "does the rule overlap this label", because the
+   * rule spends part of its journey in the gap between two tabs — an overlap test
+   * lights nothing at all for those frames, which is a flicker rather than a fix.
+   * Nearest always names exactly one, and hands the highlight over as the rule
+   * passes the midpoint between them.
+   */
+  const litIndex = nearestTo(rules, rule, Math.max(0, activeIndex))
+
   return (
     <Box flexDirection="column">
       <Box gap={GAP}>
-        {cells.map((cell) => (
+        {cells.map((cell, i) => (
           <Box key={cell.key}>
             {cell.marker ? (
               <Text color={cell.markerColor}>{cell.marker}</Text>
             ) : null}
             <Text
-              bold={cell.isActive}
-              color={cell.isActive ? colors.accent : undefined}
-              dimColor={!cell.isActive}
+              bold={i === litIndex}
+              color={i === litIndex ? colors.accent : undefined}
+              dimColor={i !== litIndex}
             >
               {cell.text}
             </Text>

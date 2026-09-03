@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.20.2 — 2026-09-03
+
+### Highlights
+
+- **Two jumps out of the sliding tab rule, and neither was in the travel itself.** The rule's LENGTH flickered a column wider and back on alternate frames as it moved: its left and right edges were interpolated and rounded independently, and mid-journey the two `Math.round`s disagree. Interpolating start and width instead is the same maths before rounding — lerp is linear, so `lerp(start) + lerp(width)` is `lerp(right)` — but it rounds once, so the rule steps from one length to the other exactly once. It was invisible until the frames were dumped one at a time.
+- **The lit label now follows the rule rather than the `active` prop.** Switching the label the instant `active` changed left the two signals disagreeing for the length of the slide: the destination tab was already bold and orange while the rule was still crossing the bar towards it — one saying "you are here", the other "on my way", and the mismatch reading as a jump in something otherwise moving smoothly. The highlight is now handed to whichever tab the rule is nearest, so it travels with it. Nearest by CENTRE rather than by overlap, because the rule spends part of its journey in the gap between two tabs, where an overlap test lights nothing at all and flickers instead. `nearestTo` is exported for its own test: boldness is an escape code, the runner is not a TTY, and the codes are stripped before a spec can read them, so the choice is assertable as a function or not at all.
+
+---
 ## 0.20.1 — 2026-09-03
 
 ### Highlights
