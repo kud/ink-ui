@@ -4,11 +4,19 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.19.0 — 2026-09-03
+
+### Highlights
+
+- **`TabItem` can carry a `marker` and `markerColor`** — a glyph drawn in its own colour immediately before the label, so a caller can flag one tab without disturbing the bar. Prepending a character to `label` was the obvious alternative and the wrong one: the marked tab grows and every tab after it slides sideways, so a bar that shifts when news arrives is one the reader has to re-find. The fix is a reserved cell — give every tab a marker of the same width, or none, and a blank of that width says "not this one" without moving anything. It renders in its own `Text` rather than folding into the label, because the label's colour already answers "is this tab active" and a marker usually answers a different question — folding them together would make the marker borrow the wrong answer. The reserved width is also counted into the active-tab underline, so the rule stays flush instead of falling short and reading as a rendering fault. The motivating case is a cockpit tab that pulses while it holds unread news: since the cell is already reserved, cycling the glyph or colour per frame costs no layout, replacing a per-row marker that used to reflow the row it sat on. Fully backwards compatible — a `TabItem` with no marker renders and underlines exactly as before, pinned by a new `describe("Tabs markers")` test block. ([d7717dc](https://github.com/kud/ink-ui/commit/d7717dc558ca59793cb908bfddcd46dab98c6b60))
+
+---
+
 ## 0.18.0 — 2026-09-03
 
 ### Highlights
 
-- **`Pill` takes an explicit `color`**, for a surface mirroring an external system whose colours *are* its vocabulary — GitHub's merged purple, a CI provider's result colours. It overrides `variant`, and the pill picks its own foreground for whatever fill it is handed, by WCAG relative luminance and a contrast ratio against each candidate rather than a brightness threshold: GitHub's green `#3FB950` falls under the conventional 128 while black is three times the more legible ink on it, which is the whole argument for measuring the pair instead of the fill. A named ANSI colour has no luminance to measure — the value is the user's terminal theme — so it takes the ink that reads against a dark terminal, as does anything that is not a six-digit hex. `AGENTS.md` scopes the exception to the token-only colour rule: the hue has to be a fact about the thing being labelled, and a colour picked because it looks right is still a token job. First consumer is the cockpit's row markers — `NEW`, `GONE`, `UPDATED`, `MERGED` — which as plain coloured text read as one more column of trailing metadata beside the dim age and author cells. ([574521c](https://github.com/kud/ink-ui/commit/574521c))
+- **`Pill` takes an explicit `color`**, for a surface mirroring an external system whose colours _are_ its vocabulary — GitHub's merged purple, a CI provider's result colours. It overrides `variant`, and the pill picks its own foreground for whatever fill it is handed, by WCAG relative luminance and a contrast ratio against each candidate rather than a brightness threshold: GitHub's green `#3FB950` falls under the conventional 128 while black is three times the more legible ink on it, which is the whole argument for measuring the pair instead of the fill. A named ANSI colour has no luminance to measure — the value is the user's terminal theme — so it takes the ink that reads against a dark terminal, as does anything that is not a six-digit hex. `AGENTS.md` scopes the exception to the token-only colour rule: the hue has to be a fact about the thing being labelled, and a colour picked because it looks right is still a token job. First consumer is the cockpit's row markers — `NEW`, `GONE`, `UPDATED`, `MERGED` — which as plain coloured text read as one more column of trailing metadata beside the dim age and author cells. ([574521c](https://github.com/kud/ink-ui/commit/574521c))
 
 ---
 
