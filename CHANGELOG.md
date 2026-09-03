@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.17.0 — 2026-09-03
+
+### Highlights
+
+- **New `Pill` component** — a filled, rounded category label, built from the same powerline half-circle caps as `ToggleSwitch` and matched to shui's own pill fill/ink pairs so the two read alike side by side. Six variants (the four status colours plus `accent` and `muted`, defaulting to `muted`) come straight from the `colors` tokens. It isn't gated behind `getIconMode()` — a missing powerline cap just degrades to a square pill rather than to garbage — but under `NO_COLOR` it falls back to `[label]` brackets, since a fill with no colour behind it would just be an outline around nothing. `pillWidth(text)` is exported alongside it so a caller laying out a fixed-width row can price the pill, caps included, before rendering it. First consumer is the cockpit's `epic` marker on Jira epic rows. `AGENTS.md` now spells out the distinction from `Badge`: reach for `Pill` when the word itself is the information — a category the thing belongs to, like `epic`, `draft`, or `blocked` — and keep `Badge`'s bracket form for anything the reader is meant to follow, like a ticket key or a repo, where a fill would give it more weight than it's earned. ([227487b](https://github.com/kud/ink-ui/commit/227487b8252af8db82ebbbaddff4d7169da6aeb8))
+
+---
+
 ## 0.16.0 — 2026-09-02
 
 ### Highlights
