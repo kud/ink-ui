@@ -47,12 +47,21 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
     isActive: item.value === active,
   }))
 
-  // The marker counts toward the rule beneath the tab. Measured from both parts
-  // rather than the label alone — an underline short by the marker's width reads
-  // as a rendering fault rather than as a marker, and it is the one thing on this
-  // component that says which tab you are on.
-  const widthOf = (cell: (typeof cells)[number]) =>
-    [...cell.marker].length + [...cell.text].length
+  // The rule goes under the LABEL, and the marker sits in a gutter outside it.
+  //
+  // It used to span both, on the reasoning that a short underline reads as a
+  // rendering fault. Seen on a real bar that is exactly backwards: the rule
+  // reaches two columns past the word on the left and stops flush on the right,
+  // which reads as lopsided rather than as generous. And the two answer different
+  // questions — the rule says which tab you are ON, the marker says which tab has
+  // news — so a rule that swallows the marker is claiming the marker as part of
+  // the answer to its own question.
+  //
+  // The gutter is still measured, and spent as leading blanks on the rule row, so
+  // both rows stay the same width and the runs line up under their labels
+  // whatever the markers are doing.
+  const gutterOf = (cell: (typeof cells)[number]) => [...cell.marker].length
+  const labelOf = (cell: (typeof cells)[number]) => [...cell.text].length
 
   return (
     <Box flexDirection="column">
@@ -75,7 +84,8 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
       <Box gap={2}>
         {cells.map((cell) => (
           <Text key={cell.key} color={colors.accent}>
-            {(cell.isActive ? "─" : " ").repeat(widthOf(cell))}
+            {" ".repeat(gutterOf(cell)) +
+              (cell.isActive ? "─" : " ").repeat(labelOf(cell))}
           </Text>
         ))}
       </Box>

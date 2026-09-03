@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.19.1 — 2026-09-03
+
+### Highlights
+
+- **The active tab's underline now spans the label only** — the marker added in 0.19.0 sits in a gutter outside the rule, rather than under it. 0.19.0 counted the marker into the underline on the reasoning that a rule short by the marker's width would read as a rendering fault; a real tab bar showed the opposite: the rule ran two columns past the word on the left and stopped flush on the right, which reads as lopsided rather than generous. The deeper issue is that the rule and the marker answer different questions — the rule says which tab you're on, the marker says which tab has news — so a rule that swallows the marker is claiming the marker as part of the answer to its own question. The gutter is still measured and spent as leading blanks on the rule row, so both rows stay the same width and every tab stays aligned under its own label whatever the markers are doing. Purely visual, no API change — a `TabItem` with no marker is unaffected.
+
+---
+
 ## 0.19.0 — 2026-09-03
 
 ### Highlights

@@ -61,13 +61,26 @@ describe("Tabs markers", () => {
     expect(frame).toContain("● Open (3)")
   })
 
-  // The rule under the active tab spans marker AND label. Short by the marker's
-  // width it reads as a rendering fault rather than as a marker — and it is the
-  // one thing here that says which tab you are on.
-  it("counts the marker into the underline", () => {
+  // The rule goes under the LABEL, and the marker sits in a gutter outside it.
+  // A rule spanning both reaches past the word on the left and stops flush on the
+  // right, which reads as lopsided rather than as generous — and the two answer
+  // different questions, so a rule that swallows the marker claims the marker as
+  // part of its own answer.
+  it("underlines the label and not the marker", () => {
     const frame =
       render(<Tabs active="open" items={marked} />).lastFrame() ?? ""
-    expect(frame).toContain("─".repeat("● Open (3)".length))
+    expect(frame).toContain("─".repeat("Open (3)".length))
+    expect(frame).not.toContain("─".repeat("● Open (3)".length))
+  })
+
+  // The gutter is still measured — spent as blanks on the rule row — so both rows
+  // stay the same width and each run sits under its own label however the markers
+  // change.
+  it("keeps the rule aligned under its label", () => {
+    const frame =
+      render(<Tabs active="open" items={marked} />).lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    expect(labels!.indexOf("Open")).toBe(rules!.indexOf("─"))
   })
 
   it("leaves the underline alone on a tab with no marker", () => {
