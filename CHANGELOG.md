@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.20.0 — 2026-09-03
+
+### Highlights
+
+- **The active tab's underline now travels between tabs instead of blinking from one to the next.** Switching tabs slides the rule across, because the rule row is now one positioned string rather than a run per cell — a per-cell run could only be present or absent, so it could only ever appear in the new place and vanish from the old, where a string positioned along the row can sit between two tabs for a few frames on the way across. Both ends of the rule are interpolated, not just the left edge, so crossing to a wider tab stretches and settles rather than reading as the bar being retyped.
+- **The slide is eased (cubic ease-out) — six steps over roughly 150ms** — quick to leave and gentle to settle, deliberately short: the rule is confirmation of a key you just pressed, and a confirmation that outlasts your certainty about having pressed it stops confirming anything. It also means holding an arrow key across four tabs reads as one gesture rather than four animations queuing up behind each other. Interrupting a slide half-way carries on from wherever the rule actually is, rather than snapping back to the old tab's resting place and starting over.
+- **`between(from, to, t)` is exported** so the interpolation maths can be asserted directly, separately from the component. A spec that renders, waits 40ms and reads the frame is racing Ink's render loop against a wall clock — racy on a loaded machine, and it proves nothing about the animation either way. The component owes that it arrives at the right tab; the maths owes that it passes through the middle on the way. Pinning them separately covers both without either test being racy.
+- No API change for callers — a `Tabs` that never changes `active` renders exactly as before.
+
+---
+
 ## 0.19.1 — 2026-09-03
 
 ### Highlights

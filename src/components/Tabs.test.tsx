@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Tabs } from "./Tabs.js"
+import { Tabs, between } from "./Tabs.js"
 
 const items = [
   { value: "open", label: "Open", count: 3 },
@@ -108,5 +108,74 @@ describe("Tabs markers", () => {
       ).lastFrame() ?? "",
     )
     expect(asMarked.indexOf("Done")).toBe(asUnmarked.indexOf("Done"))
+  })
+})
+
+/*
+ * The rule TRAVELS between tabs rather than blinking from one to the next.
+ *
+ * It is drawn as one positioned string rather than a run per cell, which is what
+ * makes that possible at all: a per-cell run can only be present or absent, so it
+ * could only ever appear in the new place and vanish from the old. Positioned, it
+ * can sit between two tabs for a few frames on the way across.
+ *
+ * The interpolation is asserted DIRECTLY rather than by catching the component
+ * mid-flight. A spec that renders, waits 40ms and reads the frame is racing Ink's
+ * render loop against a wall clock — the same flakiness the hold specs in gh-ink
+ * own their clock to avoid — and a racy animation spec fails on a loaded machine
+ * while saying nothing about the animation. What the component owes is that it
+ * ARRIVES; what the maths owes is that it passes through the middle.
+ */
+describe("Tabs rule travel", () => {
+  const from = { start: 0, width: 5 }
+  const to = { start: 20, width: 23 }
+
+  it("starts where it was and ends where it is going", () => {
+    expect(between(from, to, 0)).toEqual(from)
+    expect(between(from, to, 1)).toEqual(to)
+  })
+
+  it("passes through the middle rather than jumping", () => {
+    const mid = between(from, to, 0.5)
+    expect(mid.start).toBeGreaterThan(from.start)
+    expect(mid.start).toBeLessThan(to.start)
+  })
+
+  // Both ends move, so the rule stretches on its way to a wider tab instead of
+  // sliding at its old length and snapping longer on arrival.
+  it("stretches as well as travels", () => {
+    const mid = between(from, to, 0.5)
+    expect(mid.width).toBeGreaterThan(from.width)
+    expect(mid.width).toBeLessThan(to.width)
+  })
+
+  // Eased, so it leaves quickly and settles gently. A linear crawl over six
+  // frames reads as a redraw; the point of the movement is that the eye follows
+  // it without being asked to.
+  it("covers more ground early than late", () => {
+    const firstHalf = between(from, to, 0.5).start - from.start
+    const secondHalf = to.start - between(from, to, 0.5).start
+    expect(firstHalf).toBeGreaterThan(secondHalf)
+  })
+
+  it("never collapses to nothing mid-flight", () => {
+    for (const t of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1])
+      expect(between(to, from, t).width).toBeGreaterThan(0)
+  })
+
+  it("lands under the new tab once it has arrived", async () => {
+    const tabs = [
+      { value: "a", label: "Alpha" },
+      { value: "b", label: "A much longer second tab" },
+    ]
+    const { rerender, lastFrame } = render(<Tabs active="a" items={tabs} />)
+    rerender(<Tabs active="b" items={tabs} />)
+    await new Promise((r) => setTimeout(r, 400))
+    const frame = lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    expect(rules!.indexOf("─")).toBe(labels!.indexOf("A much longer"))
+    expect((rules!.match(/─/g) ?? []).length).toBe(
+      "A much longer second tab".length,
+    )
   })
 })
