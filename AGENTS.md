@@ -13,7 +13,7 @@ because it tells you a component is missing when it is not.
 
 **Before writing any component, check it isn't already here.** Bordered panes,
 scrolling viewports, selectable rows, tables, tab bars, spinners, progress
-bars, key/value pairs, badges and footer key hints are all provided. A
+bars, key/value pairs, badges, pills and footer key hints are all provided. A
 hand-rolled version of one of these is the single most common mistake in a
 consuming repo.
 
@@ -56,6 +56,7 @@ differently on every screen.
 | Pick one / pick many from a list | `Select` / `MultiSelect` — these own their keyboard, unlike `SelectableRow` |
 | A persistent key-hints footer | `FooterHints` with `Hint` tuples: `[["↑↓", "move"], ["q", "quit"]]` |
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |
+| A category label — `epic`, `draft` — that should read as one object | `Pill`, filled and rounded; `Badge` for the bracket form. Never for a reference the reader follows |
 | Transient feedback | `StatusMessage` (inline) · `Alert` (boxed, with title) · `Toast` (self-dismissing) |
 | App chrome | `Banner` at the top, `Header` per section, `LoadingScreen` while booting |
 

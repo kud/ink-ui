@@ -1,6 +1,8 @@
 export { Banner } from "./components/Banner.js"
 export { Badge } from "./components/Badge.js"
 export type { BadgeVariant } from "./components/Badge.js"
+export { Pill, pillWidth } from "./components/Pill.js"
+export type { PillVariant } from "./components/Pill.js"
 export { Header } from "./components/Header.js"
 export { Spinner } from "./components/Spinner.js"
 export { Table } from "./components/Table.js"

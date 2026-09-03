@@ -7,6 +7,7 @@ import { Box, Text, useInput } from "ink"
 import {
   Alert,
   Badge,
+  Pill,
   Banner,
   Columns,
   ConfirmInput,
@@ -437,6 +438,19 @@ export const entries: DemoEntry[] = [
         <Badge variant="warning">flaky</Badge>
         <Badge variant="error">failing</Badge>
         <Badge variant="info">draft</Badge>
+      </Box>
+    ),
+  },
+  {
+    name: "Pill",
+    category: "Status",
+    interactive: false,
+    render: () => (
+      <Box gap={1}>
+        <Pill>epic</Pill>
+        <Pill variant="accent">blocked</Pill>
+        <Pill variant="success">shipped</Pill>
+        <Pill variant="info">draft</Pill>
       </Box>
     ),
   },
