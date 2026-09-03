@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Tabs, between, nearestTo } from "./Tabs.js"
+import { Tabs, between } from "./Tabs.js"
 
 const items = [
   { value: "open", label: "Open", count: 3 },
@@ -192,55 +192,61 @@ describe("Tabs rule travel", () => {
   })
 })
 
+
 /*
- * The lit label follows the RULE, not the `active` prop.
+ * The rule leads; the text follows on arrival.
  *
- * Switching the label the instant `active` changes leaves the two signals
- * disagreeing for the length of the slide: the destination tab is already bold
- * and orange while the rule is still crossing the bar towards it. One says "you
- * are here", the other "on my way", and the mismatch reads as a jump in
- * something otherwise moving smoothly.
+ * Three attempts at this, and the first two were both "one more thing moving".
+ * Switching the label the instant `active` changed left the destination bold
+ * while the rule was still crossing towards it. Handing the highlight over
+ * mid-flight was better and still wrong: a highlight that moves while nothing
+ * has arrived anywhere competes with the rule for the eye, when the whole point
+ * of the animation is that exactly ONE thing moves and you can follow it.
  *
- * Asserted as a function because it cannot be asserted through a frame: boldness
- * is an escape code, the runner is not a TTY, and the codes are stripped before
- * anything here can read them.
+ * So the tab you came FROM keeps its highlight for the whole slide, and the
+ * destination takes it at the moment the rule lands.
+ *
+ * Asserted through the rendered frame rather than a pure function, because that
+ * is where the timing lives — but only on the two RESTING states, never by
+ * catching a specific mid-flight frame, which would race Ink's render loop
+ * against a wall clock and fail on a loaded machine.
  */
-describe("Tabs highlight handover", () => {
-  // Three tabs laid out as the cockpit lays them out.
-  const bar = [
-    { start: 2, width: 15 },
-    { start: 21, width: 10 },
-    { start: 35, width: 14 },
+describe("Tabs highlight timing", () => {
+  const wide = [
+    { value: "a", label: "Alpha" },
+    { value: "b", label: "A much longer second tab" },
   ]
+  // Bold is an escape code and the runner is not a TTY, so the codes are
+  // stripped — the rule's own position is the observable proxy for "arrived".
+  const ruleStart = (frame: string) => (frame.split("\n")[1] ?? "").indexOf("─")
 
-  it("lights the tab the rule is resting on", () => {
-    expect(nearestTo(bar, bar[0]!, 0)).toBe(0)
-    expect(nearestTo(bar, bar[1]!, 0)).toBe(1)
-    expect(nearestTo(bar, bar[2]!, 0)).toBe(2)
+  /*
+   * What is NOT asserted here, and why, so nobody adds it back believing it was
+   * an oversight: that the highlight stays put mid-slide.
+   *
+   * Boldness is an escape code, the runner is not a TTY, and the codes are
+   * stripped before a spec can read them — so the one thing this change is about
+   * is invisible from here. The nearest proxy would be to catch the rule at some
+   * chosen millisecond and infer the rest, which races Ink render loop against a
+   * wall clock and fails on a loaded machine while proving nothing. It is also
+   * not a pure function to test instead: it holds a ref across renders on purpose,
+   * so that switching tabs twice quickly leaves the highlight where it started.
+   *
+   * What IS pinned: the rule arrives where it was sent, from either direction.
+   */
+  it("arrives under the tab that asked for it", async () => {
+    const { rerender, lastFrame } = render(<Tabs active="a" items={wide} />)
+    rerender(<Tabs active="b" items={wide} />)
+    await new Promise((r) => setTimeout(r, 700))
+    const labels = (lastFrame() ?? "").split("\n")[0] ?? ""
+    expect(ruleStart(lastFrame() ?? "")).toBe(labels.indexOf("A much longer"))
   })
 
-  // The frames that matter: the rule is in the gap between two tabs, overlapping
-  // neither. An overlap test would light nothing at all here, which is a flicker
-  // rather than a fix — so nearest-by-centre always names exactly one.
-  it("always lights exactly one tab, even mid-gap", () => {
-    for (let start = 2; start <= 35; start += 1) {
-      const lit = nearestTo(bar, { start, width: 14 }, 0)
-      expect(lit).toBeGreaterThanOrEqual(0)
-      expect(lit).toBeLessThan(bar.length)
-    }
-  })
-
-  // It hands over once, on the way past — not at the start, and not on arrival.
-  it("hands the highlight over as the rule crosses between them", () => {
-    const lit = (start: number) => nearestTo(bar, { start, width: 14 }, 0)
-    expect(lit(2)).toBe(0)
-    expect(lit(35)).toBe(2)
-    const handovers = []
-    for (let s = 3; s <= 35; s += 1) if (lit(s) !== lit(s - 1)) handovers.push(s)
-    expect(handovers).toHaveLength(2)
-  })
-
-  it("falls back when there is nothing to be near", () => {
-    expect(nearestTo([], { start: 0, width: 0 }, 3)).toBe(3)
+  it("settles with the rule under the tab that asked for it", async () => {
+    const { rerender, lastFrame } = render(<Tabs active="b" items={wide} />)
+    rerender(<Tabs active="a" items={wide} />)
+    await new Promise((r) => setTimeout(r, 700))
+    const labels = (lastFrame() ?? "").split("\n")[0] ?? ""
+    expect(ruleStart(lastFrame() ?? "")).toBe(labels.indexOf("Alpha"))
   })
 })

@@ -89,60 +89,67 @@ export const between = (from: Rule, to: Rule, t: number): Rule => {
 }
 
 /**
- * Which tab the rule is currently closest to, by centre.
+ * Where the rule is this frame, and which tab is LIT.
  *
- * Exported for its own test and nothing else. Whether a label is drawn bold is
- * unobservable through a rendered frame here — the runner is not a TTY, so the
- * escape codes are stripped — so the choice has to be asserted as a function or
- * not at all.
+ * The two are deliberately not the same answer. The rule moves first and the
+ * highlight lands when it arrives — so throughout the slide the tab you came
+ * FROM stays lit, and the destination takes the highlight at the moment the rule
+ * reaches it. The underline leads, the text follows.
+ *
+ * Switching the label the instant `active` changed was the first attempt, and it
+ * read as a jump: the destination was already bold while the rule was still
+ * crossing towards it. Handing the highlight over mid-flight was the second — an
+ * improvement, still wrong, because a highlight that moves while nothing has
+ * arrived anywhere is one more thing in motion, when the whole point is that
+ * exactly one thing moves and the eye can follow it.
  */
-export const nearestTo = (rules: Rule[], rule: Rule, fallback: number): number => {
-  const centre = (r: Rule) => r.start + r.width / 2
-  if (rules.length === 0) return fallback
-  return rules.reduce(
-    (best, r, i) =>
-      Math.abs(centre(r) - centre(rule)) < Math.abs(centre(rules[best]!) - centre(rule))
-        ? i
-        : best,
-    Math.min(fallback, rules.length - 1),
-  )
-}
-
-const useSlide = (rules: Rule[], active: number): Rule | null => {
-  const target = rules[active] ?? null
-  const [step, setStep] = useState(SLIDE_STEPS)
-  const from = useRef<Rule | null>(target)
-  const last = useRef(active)
+const useSlide = (
+  rules: Rule[],
+  active: number,
+): { rule: Rule | null; lit: number } => {
+  const target = rules[active] ?? null;
+  const [step, setStep] = useState(SLIDE_STEPS);
+  const from = useRef<Rule | null>(target);
+  const last = useRef(active);
+  // The tab keeping its highlight until the rule lands. Held across an
+  // interrupted slide rather than updated: switch twice quickly and the highlight
+  // stays where it started, because it still has not arrived anywhere.
+  const litIndex = useRef(active);
 
   useEffect(() => {
-    if (last.current === active) return
+    if (last.current === active) return;
+    const settled = step >= SLIDE_STEPS;
     // Where it was when the tab changed — the interpolated position, not the old
     // tab's resting place, so interrupting a slide half-way carries on from where
     // the rule actually is rather than snapping back to start again.
-    from.current =
-      step >= SLIDE_STEPS
-        ? (rules[last.current] ?? target)
-        : between(
-            from.current ?? target!,
-            rules[last.current] ?? target!,
-            step / SLIDE_STEPS,
-          )
-    last.current = active
-    setStep(0)
+    from.current = settled
+      ? (rules[last.current] ?? target)
+      : between(
+          from.current ?? target!,
+          rules[last.current] ?? target!,
+          step / SLIDE_STEPS,
+        );
+    if (settled) litIndex.current = last.current;
+    last.current = active;
+    setStep(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active])
+  }, [active]);
 
   useEffect(() => {
-    if (step >= SLIDE_STEPS) return
-    const id = setTimeout(() => setStep((s) => s + 1), SLIDE_MS)
-    return () => clearTimeout(id)
-  }, [step])
+    if (step >= SLIDE_STEPS) return;
+    const id = setTimeout(() => setStep((s) => s + 1), SLIDE_MS);
+    return () => clearTimeout(id);
+  }, [step]);
 
-  if (!target) return null
-  if (step >= SLIDE_STEPS || !from.current) return target
-  return between(from.current, target, step / SLIDE_STEPS)
-}
-
+  const arrived = step >= SLIDE_STEPS;
+  if (arrived) litIndex.current = active;
+  if (!target) return { rule: null, lit: litIndex.current };
+  if (arrived || !from.current) return { rule: target, lit: active };
+  return {
+    rule: between(from.current, target, step / SLIDE_STEPS),
+    lit: litIndex.current,
+  };
+};
 // The active tab is marked by an underline (border-bottom) under it, in the
 // accent colour; inactive tabs get none. The underline's presence — not its
 // hue — is what distinguishes the active tab, so it reads correctly in
@@ -186,7 +193,9 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
     x += gutterOf(cell) + labelOf(cell) + GAP
   }
   const activeIndex = cells.findIndex((c) => c.isActive)
-  const rule = useSlide(rules, activeIndex) ?? { start: 0, width: 0 }
+  const slide = useSlide(rules, activeIndex)
+  const rule = slide.rule ?? { start: 0, width: 0 }
+  const litIndex = slide.lit
 
   /*
    * Which label is LIT follows the rule, not the prop.
@@ -203,7 +212,6 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
    * Nearest always names exactly one, and hands the highlight over as the rule
    * passes the midpoint between them.
    */
-  const litIndex = nearestTo(rules, rule, Math.max(0, activeIndex))
 
   return (
     <Box flexDirection="column">

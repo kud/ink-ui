@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.21.0 — 2026-09-03
+
+### Highlights
+
+- **The rule leads and the text follows: a tab takes its highlight when the underline arrives, not before.** Throughout the slide the tab you came FROM stays lit, and the destination lights at the moment the rule lands under it. Two earlier attempts were both the same mistake in different disguises — switching the label the instant `active` changed left the destination bold while the rule was still crossing towards it, and handing the highlight over mid-flight merely moved that mismatch into the middle. A highlight that changes while nothing has arrived anywhere is one more thing in motion, and the whole point of the animation is that exactly one thing moves and the eye can follow it. Switching tabs twice in quick succession leaves the highlight where it started, because it still has not arrived anywhere; the rule itself carries on from wherever it actually is rather than snapping back. `nearestTo` is gone — it existed only for the mid-flight handover this replaces.
+
+---
 ## 0.20.2 — 2026-09-03
 
 ### Highlights
