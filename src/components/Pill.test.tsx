@@ -2,7 +2,7 @@ import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, afterEach } from "vitest"
 import { glyphs } from "@kud/glyphs"
-import { Pill, pillWidth } from "./Pill.js"
+import { Pill, pillWidth, inkFor } from "./Pill.js"
 
 const frameOf = (node: React.ReactElement) => render(node).lastFrame() ?? ""
 
@@ -34,6 +34,19 @@ describe("Pill", () => {
     expect(frame).not.toContain(glyphs.plCapLeft)
   })
 
+  // The escape hatch exists for a caller mirroring an external palette, so the
+  // fill it asks for has to be the fill it gets — a variant quietly winning
+  // would repaint GitHub's merged purple as a theme colour.
+  it("takes an explicit fill over the variant", () => {
+    process.env["NO_COLOR"] = "1"
+    const frame = frameOf(
+      <Pill variant="success" color="#A371F7">
+        MERGED
+      </Pill>,
+    )
+    expect(frame).toContain("[MERGED]")
+  })
+
   it("takes every variant without falling back", () => {
     for (const variant of [
       "success",
@@ -61,4 +74,36 @@ describe("pillWidth", () => {
     const drawn = frameOf(<Pill>epic</Pill>).split("\n")[0] ?? ""
     expect([...drawn].length).toBe(pillWidth("epic"))
   })
+})
+
+// A caller passing a fill cannot also be asked to pass a legible ink for it: the
+// pairing is measurable, and getting it wrong renders the word invisible — which
+// for a component whose whole contract is "the word carries the meaning" is the
+// one failure that must not be reachable from outside. Asserted here rather than
+// through a rendered frame, which carries no escape codes under the test runner.
+describe("inkFor", () => {
+  it.each(["#3FB950", "#8B949E", "#FF8700", "#A371F7"])(
+    "inks the light fill %s black",
+    (fill) => {
+      expect(inkFor(fill)).toBe("black")
+    },
+  )
+
+  it.each(["#1F2328", "#0D1117", "#000000"])(
+    "inks the dark fill %s white",
+    (fill) => {
+      expect(inkFor(fill)).toBe("white")
+    },
+  )
+
+  // A named ANSI colour has no luminance to measure — the value is whatever the
+  // user's theme says — so it takes the ink that reads against a dark terminal
+  // rather than a guess dressed up as a calculation. Same for anything that is
+  // not a six-digit hex at all.
+  it.each(["magenta", "#fff", "rgb(1,2,3)", ""])(
+    "inks the unmeasurable %s white",
+    (fill) => {
+      expect(inkFor(fill)).toBe("white")
+    },
+  )
 })

@@ -451,6 +451,10 @@ export const entries: DemoEntry[] = [
         <Pill variant="accent">blocked</Pill>
         <Pill variant="success">shipped</Pill>
         <Pill variant="info">draft</Pill>
+        {/* The escape hatch, shown in the gallery so the ink it picks for a
+            fill is something you can look at rather than take on trust —
+            GitHub's merged purple is the case it exists for. */}
+        <Pill color="#A371F7">MERGED</Pill>
       </Box>
     ),
   },

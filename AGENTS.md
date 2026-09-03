@@ -79,6 +79,13 @@ import { colors, spacing } from "@kud/ink-ui"
 A literal like `color="orange"` or `color="#FF8C00"` is wrong even when it
 renders identically — it breaks the moment a token moves.
 
+The one exception is `<Pill color>`, for a surface mirroring an external
+system whose colours ARE its vocabulary — GitHub's merged purple, a CI
+provider's result colours. The test is whether the hue is a **fact about the
+thing being labelled**; a colour picked because it looks right is still a token
+job. The pill inks itself against whatever fill it is given, so a caller reaching
+for this never picks a foreground.
+
 **State is never signalled by colour alone.** Every status carries a shape, a
 glyph or a weight as well, because a colourblind reader cannot see the hue and
 a piped terminal has no colour at all. `SelectableRow` marks the active row
