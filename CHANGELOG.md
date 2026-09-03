@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.22.0 — 2026-09-03
+
+### Highlights
+
+- **The tab underline stops travelling: it lands under the active tab on the frame the tab changes, and the highlight lands with it.** The slide added across 0.20.0–0.21.0, and the rule-leads-highlight timing built on top of it, went out before they were finished — and a half-tuned animation on the one component every TUI draws across the top of the screen is worse than no animation at all, because it is the first thing the eye goes to and the last thing that should be asking for attention. None of it is thrown away: the step count, the ease shape and the lead/follow split are parked whole on `feat/tabs-underline-animation`, to be finished rather than rewritten. `between()` goes with it — it was only ever exported so the interpolation could be tested.
+- **Markers are untouched.** `marker`, `markerColor` and the gutter they sit in behave exactly as they did in 0.21.0; a tab's prefix status is unaffected by any of this.
+
+---
 ## 0.21.0 — 2026-09-03
 
 ### Highlights
