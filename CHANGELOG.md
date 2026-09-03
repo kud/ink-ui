@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.18.0 — 2026-09-03
+
+### Highlights
+
+- **`Pill` takes an explicit `color`**, for a surface mirroring an external system whose colours *are* its vocabulary — GitHub's merged purple, a CI provider's result colours. It overrides `variant`, and the pill picks its own foreground for whatever fill it is handed, by WCAG relative luminance and a contrast ratio against each candidate rather than a brightness threshold: GitHub's green `#3FB950` falls under the conventional 128 while black is three times the more legible ink on it, which is the whole argument for measuring the pair instead of the fill. A named ANSI colour has no luminance to measure — the value is the user's terminal theme — so it takes the ink that reads against a dark terminal, as does anything that is not a six-digit hex. `AGENTS.md` scopes the exception to the token-only colour rule: the hue has to be a fact about the thing being labelled, and a colour picked because it looks right is still a token job. First consumer is the cockpit's row markers — `NEW`, `GONE`, `UPDATED`, `MERGED` — which as plain coloured text read as one more column of trailing metadata beside the dim age and author cells. ([574521c](https://github.com/kud/ink-ui/commit/574521c))
+
+---
+
 ## 0.17.0 — 2026-09-03
 
 ### Highlights
