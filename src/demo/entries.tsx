@@ -2,7 +2,7 @@
 // Interactive components render live but inert until focused (isActive/isDisabled
 // gated on `focused`); parent-controlled ones (Tabs/Switch/Toggle) wire their
 // own input in focus mode.
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Box, Text, useInput } from "ink"
 import {
   Alert,
@@ -34,6 +34,7 @@ import {
   Toggle,
   ToggleSwitch,
   UnorderedList,
+  colors,
   type SwitchValue,
 } from "../index.js"
 
@@ -184,6 +185,69 @@ const TabsDemo = ({ focused }: { focused: boolean }) => {
     <Box flexDirection="column">
       <Tabs active={active} items={items} />
       <Text dimColor>← → to switch tab</Text>
+    </Box>
+  )
+}
+
+// The marker cell, which is the least discoverable thing in the package: a
+// field with a twelve-line doc comment nobody opens. Static, it looks like a
+// bullet somebody typed into the label; breathing, it is obviously a channel.
+//
+// Its OWN ramp, deliberately not the one the cockpit pulses with. The glyphs
+// are the caller's — `Tabs` reserves the cell and never looks inside it — so a
+// gallery that had to borrow a consumer's vocabulary to make this legible would
+// be evidence the vocabulary belonged here. It doesn't, and this shows why.
+const MARKER_PULSE = ["◦", "•", "●", "•"]
+const MARKER_MS = 150
+
+const TabsMarkerDemo = ({ focused }: { focused: boolean }) => {
+  const [active, setActive] = useState("inbox")
+  const [news, setNews] = useState(true)
+  const [frame, setFrame] = useState(0)
+
+  // Demo-local, like every other entry's state — the registry has no notion of
+  // time and needs none. It runs only while there is something to pulse, which
+  // is the same gate a real host applies.
+  useEffect(() => {
+    if (!news) return
+    const id = setInterval(() => setFrame((f) => f + 1), MARKER_MS)
+    return () => clearInterval(id)
+  }, [news])
+
+  // TWO columns on every tab, marked or not. That is the whole contract: a bar
+  // that widens when news lands is a bar you have to re-find, and it moves at
+  // exactly the moment you are trying to read it. Press n and watch the labels
+  // stay put.
+  const marker = (marked: boolean) =>
+    marked ? `${MARKER_PULSE[frame % MARKER_PULSE.length]} ` : "  "
+
+  const items = [
+    { label: "Inbox", value: "inbox", count: 4, marker: marker(false) },
+    {
+      label: "Review",
+      value: "review",
+      count: 2,
+      marker: marker(news),
+      markerColor: colors.accent,
+    },
+    { label: "Done", value: "done", marker: marker(false) },
+  ]
+
+  useInput(
+    (input, key) => {
+      const i = items.findIndex((x) => x.value === active)
+      if (key.leftArrow) setActive(items[Math.max(0, i - 1)]!.value)
+      if (key.rightArrow)
+        setActive(items[Math.min(items.length - 1, i + 1)]!.value)
+      if (input === "n") setNews((on) => !on)
+    },
+    { isActive: focused },
+  )
+
+  return (
+    <Box flexDirection="column">
+      <Tabs active={active} items={items} />
+      <Text dimColor>← → to switch tab · n to toggle the marker</Text>
     </Box>
   )
 }
@@ -353,6 +417,12 @@ export const entries: DemoEntry[] = [
     category: "Selection",
     interactive: true,
     render: (f) => <TabsDemo focused={f} />,
+  },
+  {
+    name: "Tabs · marker",
+    category: "Selection",
+    interactive: true,
+    render: (f) => <TabsMarkerDemo focused={f} />,
   },
   {
     name: "Switch",
