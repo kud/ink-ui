@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.23.0 — 2026-09-07
+
+### Highlights
+
+- **`TabItem` gains an optional `total`, and a tab that carries one renders `(count/total)` instead of `(count)`.** The motivating case: a cockpit's tabs held row counts that were a WINDOW onto a larger result set — 20 issues drawn out of 97 that matched — and `Tabs` offered only `label` and `count`, so "there are more than these" had nowhere to live and got smuggled into the label as `Issues +129 (20)`. That reads badly: `+` is an operator, it instructs the reader to add, and there's nothing on screen to add it to — worse, the arithmetic works, so a reader who obeys gets a real number for a question nobody asked, with no signal they've misread anything. (The user who hit it said simply "i dont understand the numbers".) A fraction is part-of-whole — page 3 of 12, the most over-learned notation there is — and nobody tries to compute with a slash. The distinction rides on a glyph rather than a hue, so it survives dimming, greyscale and colourblindness, and magnitude still carries: `(30/37)` and `(20/149)` say very different things about how far a tab can be trusted, where a bare truncation flag would only ever say "incomplete". It's also narrower than the notation it replaces. The rule it establishes: one number means the tab is whole, two mean you're looking at a sample — omit `total` when the count IS the whole. Same argument that already made `marker` its own field rather than something callers prepend to `label`. Backwards compatible: `total` is optional, and a tab without one renders exactly as before. Three specs added, including one asserting the active-tab underline still spans the whole fraction. ([173fa13](https://github.com/kud/ink-ui/commit/173fa1371aaa97ee761b9360292a754c3709492b))
+- **New demo shows a pulsing marker cell on `Tabs`**, exercising the marker/colour cycling the reserved gutter was built for in 0.19.0. ([6f2fb19](https://github.com/kud/ink-ui/commit/6f2fb19b54e94e46219e3c84515948e2d651d982))
+
+---
+
 ## 0.22.0 — 2026-09-03
 
 ### Highlights
@@ -12,6 +21,7 @@ All notable changes to this project are documented here.
 - **Markers are untouched.** `marker`, `markerColor` and the gutter they sit in behave exactly as they did in 0.21.0; a tab's prefix status is unaffected by any of this.
 
 ---
+
 ## 0.21.0 — 2026-09-03
 
 ### Highlights
@@ -19,6 +29,7 @@ All notable changes to this project are documented here.
 - **The rule leads and the text follows: a tab takes its highlight when the underline arrives, not before.** Throughout the slide the tab you came FROM stays lit, and the destination lights at the moment the rule lands under it. Two earlier attempts were both the same mistake in different disguises — switching the label the instant `active` changed left the destination bold while the rule was still crossing towards it, and handing the highlight over mid-flight merely moved that mismatch into the middle. A highlight that changes while nothing has arrived anywhere is one more thing in motion, and the whole point of the animation is that exactly one thing moves and the eye can follow it. Switching tabs twice in quick succession leaves the highlight where it started, because it still has not arrived anywhere; the rule itself carries on from wherever it actually is rather than snapping back. `nearestTo` is gone — it existed only for the mid-flight handover this replaces.
 
 ---
+
 ## 0.20.2 — 2026-09-03
 
 ### Highlights
@@ -27,6 +38,7 @@ All notable changes to this project are documented here.
 - **The lit label now follows the rule rather than the `active` prop.** Switching the label the instant `active` changed left the two signals disagreeing for the length of the slide: the destination tab was already bold and orange while the rule was still crossing the bar towards it — one saying "you are here", the other "on my way", and the mismatch reading as a jump in something otherwise moving smoothly. The highlight is now handed to whichever tab the rule is nearest, so it travels with it. Nearest by CENTRE rather than by overlap, because the rule spends part of its journey in the gap between two tabs, where an overlap test lights nothing at all and flickers instead. `nearestTo` is exported for its own test: boldness is an escape code, the runner is not a TTY, and the codes are stripped before a spec can read them, so the choice is assertable as a function or not at all.
 
 ---
+
 ## 0.20.1 — 2026-09-03
 
 ### Highlights
