@@ -24,6 +24,28 @@ export type TabItem<T extends string = string> = {
    */
   marker?: string
   markerColor?: string
+  /**
+   * The true size of what `count` is a window onto, drawn as `(count/total)`.
+   *
+   * A field rather than something a caller folds into `label`, for the same
+   * reason `marker` is one — and this one was learned the hard way. A caller
+   * with no channel for "there are more than these" smuggled it into the label
+   * as `Issues +129 (20)`, and `+` is an operator: it tells the reader to add,
+   * with nothing on screen to add it to. The arithmetic even works, which is
+   * what makes it vicious — a reader who obeys gets a real number for a question
+   * nobody asked, with no signal they have misread anything.
+   *
+   * A fraction is part-of-whole, the most over-learned notation there is: page 3
+   * of 12. Nobody computes with a slash. The distinction rides on a glyph rather
+   * than a hue, so it survives dimming, greyscale and colourblindness — and the
+   * magnitude survives with it, which is the half that matters most. `(30/37)`
+   * and `(20/149)` say very different things about how far a tab can be trusted,
+   * where a bare truncation flag says only "incomplete".
+   *
+   * Omit it when the count IS the whole, so one number keeps meaning "complete"
+   * and two always mean "you are looking at a sample".
+   */
+  total?: number
 }
 
 type TabsProps<T extends string> = {
@@ -46,7 +68,11 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
     marker: item.marker ?? "",
     markerColor: item.markerColor,
     text:
-      item.count !== undefined ? `${item.label} (${item.count})` : item.label,
+      item.count === undefined
+        ? item.label
+        : item.total === undefined
+          ? `${item.label} (${item.count})`
+          : `${item.label} (${item.count}/${item.total})`,
     isActive: item.value === active,
   }))
 
@@ -73,7 +99,8 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
   let x = 0
   let rule = { start: 0, width: 0 }
   for (const cell of cells) {
-    if (cell.isActive) rule = { start: x + gutterOf(cell), width: labelOf(cell) }
+    if (cell.isActive)
+      rule = { start: x + gutterOf(cell), width: labelOf(cell) }
     x += gutterOf(cell) + labelOf(cell) + GAP
   }
 

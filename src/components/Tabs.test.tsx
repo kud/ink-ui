@@ -20,6 +20,45 @@ describe("Tabs", () => {
     expect(lastFrame()).toContain("Open (3)")
   })
 
+  /*
+   * One number means the tab is whole; two mean you are looking at a sample.
+   * The rule has to hold in BOTH directions or it teaches nothing — a reader who
+   * sees a slash on some tabs and a bare count on others cannot tell whether the
+   * bare one means "complete" or "nobody passed a total".
+   */
+  it("draws a fraction when the count is a window onto something larger", () => {
+    const { lastFrame } = render(
+      <Tabs
+        active="issues"
+        items={[{ value: "issues", label: "Issues", count: 20, total: 97 }]}
+      />,
+    )
+    expect(lastFrame()).toContain("Issues (20/97)")
+  })
+
+  it("keeps a bare count when nothing is hidden", () => {
+    const { lastFrame } = render(
+      <Tabs
+        active="mine"
+        items={[{ value: "mine", label: "Mine", count: 8 }]}
+      />,
+    )
+    expect(lastFrame()).toContain("Mine (8)")
+    expect(lastFrame()).not.toContain("/")
+  })
+
+  it("underlines the whole fraction, not just the count", () => {
+    // The rule is sized off the rendered label, so a notation change the width
+    // maths did not hear about surfaces here as a short underline.
+    const { lastFrame } = render(
+      <Tabs
+        active="issues"
+        items={[{ value: "issues", label: "Issues", count: 20, total: 97 }]}
+      />,
+    )
+    expect(lastFrame()).toContain("─".repeat("Issues (20/97)".length))
+  })
+
   it("underlines the active tab", () => {
     const { lastFrame } = render(<Tabs active="open" items={items} />)
     // The active label "Open (3)" is 8 chars, so its underline is 8 dashes.
