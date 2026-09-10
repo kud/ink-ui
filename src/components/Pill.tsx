@@ -1,20 +1,24 @@
 import React from "react"
 import { Text } from "ink"
 import { glyph } from "@kud/glyphs"
-import { colors } from "../tokens.js"
+import { colors, softColors } from "../tokens.js"
 
 export type PillVariant =
-  "success" | "error" | "warning" | "info" | "accent" | "muted"
+  "success" | "error" | "warning" | "info" | "accent" | "muted" | "group"
 
-export type PillTone = "solid" | "outline"
+export type PillTone = "solid" | "soft" | "outline"
 
 type PillProps = {
   children: string
   variant?: PillVariant
   /**
    * Solid is an EVENT — something happened to the thing (`merged`, `NEW`,
-   * `GONE`). Outline is a CLASSIFICATION — what the thing is (`epic`, `bug`).
-   * The default stays solid so nothing already rendered moves.
+   * `GONE`). Soft is a CLASSIFICATION — what the thing is (`epic`, `bug`): a
+   * quiet permanent fill from `softColors`, built to sit on every row of a
+   * dark ground without out-shouting the row's news. Outline is the same
+   * classification drawn as a hue-only ring, for a ground where a fill of any
+   * weight is too much. The default stays solid so nothing already rendered
+   * moves.
    */
   tone?: PillTone
   /**
@@ -39,6 +43,7 @@ const FILL: Record<PillVariant, string> = {
   info: colors.info,
   accent: colors.accent,
   muted: colors.muted,
+  group: colors.group,
 }
 
 // Chosen against each fill rather than derived, because a terminal's idea of
@@ -53,6 +58,7 @@ const INK: Record<PillVariant, string> = {
   info: "black",
   accent: "black",
   muted: "white",
+  group: "white",
 }
 
 /**
@@ -94,12 +100,15 @@ export const inkFor = (fill: string): string => {
  * A rounded label — a category the thing belongs to, or an event that has
  * just happened to it.
  *
- * The law, in one line: the column says where it sits, outline says what it
- * is, solid says something happened. A solid pill is an event (`merged`,
- * `NEW`, `GONE`) and earns its fill by being news; an outline pill is a
- * classification (`epic`, `bug`, `task`) and takes only the hue, because a
- * type is a fact about the row, not something that happened to it. A screen
- * where both are solid has no way to say which pill is the news.
+ * The law, in one line: the column says where it sits, soft says what it is,
+ * solid says something happened. A solid pill is an event (`merged`, `NEW`,
+ * `GONE`) and earns its loud fill by being news; a soft pill is a
+ * classification (`epic`, `bug`, `task`) and takes the quiet fill from
+ * `softColors`, because a type is a fact about the row, not something that
+ * happened to it — it has to be legible on every row without competing with
+ * the one row that has news. Outline is the classification with no fill at
+ * all, for a ground where even a soft block is too much. A screen where every
+ * pill is solid has no way to say which pill is the news.
  *
  * Reach for it when the word IS the information and you want it to read as
  * one object rather than as more prose. For a reference the reader is meant
@@ -115,8 +124,8 @@ export const inkFor = (fill: string): string => {
  * the only way to get a genuinely rounded end out of a terminal cell, and a font
  * without them renders blanks, which degrades to a square pill rather than
  * breaking the layout. Not gated on `getIconMode` — that switch chooses between
- * two glyph SETS, and this is one glyph with a graceful absence. Solid takes the
- * filled caps, outline the thin ones from the same Powerline Extra block.
+ * two glyph SETS, and this is one glyph with a graceful absence. Solid and soft take
+ * the filled caps, outline the thin ones from the same Powerline Extra block.
  *
  * `NO_COLOR` sends solid to brackets: with the fill stripped, the caps would be
  * drawing the outline of a pill that is not there. Outline keeps its caps — they
@@ -128,7 +137,8 @@ export const Pill = ({
   tone = "solid",
   color,
 }: PillProps) => {
-  const fill = color ?? FILL[variant]
+  const fill =
+    color ?? (tone === "soft" ? softColors[variant] : FILL[variant])
   if (tone === "outline")
     return (
       <Text color={fill}>
@@ -137,7 +147,8 @@ export const Pill = ({
         {glyph("plCapRightThin")}
       </Text>
     )
-  const ink = color ? inkFor(color) : INK[variant]
+  const ink =
+    tone === "soft" || color ? inkFor(fill) : INK[variant]
   if (process.env["NO_COLOR"]) return <Text color={fill}>[{children}]</Text>
   return (
     <Text>

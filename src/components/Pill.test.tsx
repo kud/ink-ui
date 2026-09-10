@@ -3,6 +3,7 @@ import { render } from "ink-testing-library"
 import { describe, it, expect, afterEach } from "vitest"
 import { glyph } from "@kud/glyphs"
 import { Pill, pillWidth, inkFor } from "./Pill.js"
+import { softColors } from "../tokens.js"
 
 const frameOf = (node: React.ReactElement) => render(node).lastFrame() ?? ""
 
@@ -69,6 +70,37 @@ describe("Pill", () => {
     expect(frame).not.toContain("[task]")
   })
 
+  // A classification lives on every row, so its fill is the measured quiet
+  // one and the ink is whatever reads on it — white on all seven, by the same
+  // measure the escape hatch uses, not a second hand-written table.
+  it("fills a soft pill from softColors and inks it white", () => {
+    const frame = frameOf(
+      <Pill tone="soft" variant="group">
+        epic
+      </Pill>,
+    )
+    expect(frame).toContain(glyph("plCapLeft") + "epic" + glyph("plCapRight"))
+    for (const fill of Object.values(softColors)) expect(inkFor(fill)).toBe("white")
+  })
+
+  it("renders soft in monochrome as brackets, like solid", () => {
+    process.env["NO_COLOR"] = "1"
+    expect(frameOf(<Pill tone="soft" variant="info">task</Pill>)).toContain("[task]")
+  })
+
+  // The container of the rows beneath it is a kind of its own, and a kind
+  // that exists in one tone and not another is a hole a caller falls into.
+  it("takes group in every tone", () => {
+    for (const tone of ["solid", "soft", "outline"] as const)
+      expect(
+        frameOf(
+          <Pill tone={tone} variant="group">
+            epic
+          </Pill>,
+        ),
+      ).toContain("epic")
+  })
+
   // Nothing already rendered moves: every existing pill is an event pill.
   it("stays solid by default", () => {
     const frame = frameOf(<Pill>NEW</Pill>)
@@ -89,6 +121,7 @@ describe("Pill", () => {
       "info",
       "accent",
       "muted",
+      "group",
     ] as const)
       expect(frameOf(<Pill variant={variant}>x</Pill>)).toContain(
         glyph("plCapLeft"),

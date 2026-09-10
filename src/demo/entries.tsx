@@ -521,9 +521,14 @@ export const entries: DemoEntry[] = [
         <Pill variant="accent">blocked</Pill>
         <Pill variant="success">shipped</Pill>
         <Pill variant="info">draft</Pill>
-        {/* The law: solid says something happened, outline says what it is.
-            A type sits beside an event so the difference is visible, not told. */}
-        <Pill tone="outline" variant="accent">epic</Pill>
+        {/* The law: solid says something happened, soft says what it is.
+            A type sits beside an event so the difference is visible, not told;
+            group is the epic, off the accent so the key keeps orange. */}
+        <Pill tone="soft" variant="group">epic</Pill>
+        <Pill tone="soft" variant="success">story</Pill>
+        <Pill tone="soft" variant="error">bug</Pill>
+        <Pill tone="soft" variant="muted">subtask</Pill>
+        {/* Outline: the same classification on a ground where any fill is too much. */}
         <Pill tone="outline" variant="error">bug</Pill>
         {/* The escape hatch, shown in the gallery so the ink it picks for a
             fill is something you can look at rather than take on trust —
