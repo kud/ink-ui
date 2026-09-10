@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.25.0 — 2026-09-10
+
+### Highlights
+
+- **`Pill` gains a third tone, `soft`, for a classification that has to sit on every row of a dark ground rather than one that's making news.** `solid` and `outline` already split event from classification, but outline goes all the way to a hue-only ring — right for a busy screen, too little presence for a permanent label like `epic` or `bug` that's meant to read at a glance without competing with whatever row actually has news. `soft` is the middle ground: a filled block, drawn from a new exported `softColors` token family — seven hexes, one per variant, desaturated and darkened from the existing `colors` and individually measured against `#1e1f26` so white ink stays legible on all seven, deutan/protan readers included. Hex rather than an ANSI name, because the property that matters is the measured contrast, not whatever a terminal theme happens to call "green". `solid` and `outline` are untouched — an existing `Pill` renders exactly as before.
+- **`group` joins the set of `PillVariant`s, for the container of the rows beneath it — an epic holding its issues, say — available in every tone.** It's deliberately not `accent`: an accent-filled pill sitting on the same row as an accent-coloured key would steal the key's colour, and a group label needs its own identity that never collides with one. In `solid`, `group` reads as `magenta`, backed by a new `colors.group` token; in `soft` it takes its place in the `softColors` family alongside the rest. ([0ba0122](https://github.com/kud/ink-ui/commit/0ba0122854a18bc20259984d96d4019f5ca4a5fe))
+
+---
+
 ## 0.24.0 — 2026-09-10
 
 ### Highlights
