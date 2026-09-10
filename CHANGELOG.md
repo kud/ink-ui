@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.24.0 — 2026-09-10
+
+### Highlights
+
+- **`Pill` gains a `tone` prop (`"solid" | "outline"`), so a caller can draw the difference between an event and a classification.** A solid pill has always read as something that happened — a status flip, a result — and that reading was fine until pills started being used for type labels too, where a filled block claims more weight than "this is a `bug`" deserves. `outline` draws the pill as thin Powerline caps (`plCapLeftThin`/`plCapRightThin`) in the fill colour with no background fill, so a classification sits lighter on the row than an event does, and the caps survive `NO_COLOR` rather than vanishing with the colour. `solid` stays the default — an existing `Pill` with no `tone` renders exactly as before, nothing moves. `PillTone` is exported for callers who want to type the prop themselves, and outline rendering is covered with and without `NO_COLOR`. Internally, this also migrated `Pill`'s glyph reads off `@kud/glyphs`' named exports onto its `glyph()` helper and bumped the dependency 0.1.1 → 0.4.0 — no visible change, just the API the new caps needed. ([d6a4977](https://github.com/kud/ink-ui/commit/d6a497719f1a03f15a10deed15f43424f6b9589f))
+
+---
+
 ## 0.23.0 — 2026-09-07
 
 ### Highlights
