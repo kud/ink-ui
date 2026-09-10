@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, afterEach } from "vitest"
-import { glyphs } from "@kud/glyphs"
+import { glyph } from "@kud/glyphs"
 import { Pill, pillWidth, inkFor } from "./Pill.js"
 
 const frameOf = (node: React.ReactElement) => render(node).lastFrame() ?? ""
@@ -14,8 +14,8 @@ describe("Pill", () => {
   it("renders its label between powerline caps", () => {
     const frame = frameOf(<Pill>epic</Pill>)
     expect(frame).toContain("epic")
-    expect(frame).toContain(glyphs.plCapLeft)
-    expect(frame).toContain(glyphs.plCapRight)
+    expect(frame).toContain(glyph("plCapLeft"))
+    expect(frame).toContain(glyph("plCapRight"))
   })
 
   // The word is the signal and the colour only reinforces it, so the label has
@@ -31,7 +31,7 @@ describe("Pill", () => {
     process.env["NO_COLOR"] = "1"
     const frame = frameOf(<Pill>epic</Pill>)
     expect(frame).toContain("[epic]")
-    expect(frame).not.toContain(glyphs.plCapLeft)
+    expect(frame).not.toContain(glyph("plCapLeft"))
   })
 
   // The escape hatch exists for a caller mirroring an external palette, so the
@@ -47,6 +47,40 @@ describe("Pill", () => {
     expect(frame).toContain("[MERGED]")
   })
 
+  // A classification carries the hue and nothing else: no fill means no ink to
+  // pick, and no chance of a row of type pills reading as a row of events.
+  it("draws an outline with no background", () => {
+    const frame = frameOf(
+      <Pill tone="outline" variant="accent">
+        epic
+      </Pill>,
+    )
+    expect(frame).toContain(glyph("plCapLeftThin") + "epic" + glyph("plCapRightThin"))
+    expect(frame).not.toContain(glyph("plCapLeft"))
+  })
+
+  // The thin caps ARE the outline, so stripping colour leaves them exactly as
+  // they were — the bracket fallback exists for a fill that is not there, and
+  // an outline never had one.
+  it("keeps its thin caps when colour is off", () => {
+    process.env["NO_COLOR"] = "1"
+    const frame = frameOf(<Pill tone="outline">task</Pill>)
+    expect(frame).toContain(glyph("plCapLeftThin"))
+    expect(frame).not.toContain("[task]")
+  })
+
+  // Nothing already rendered moves: every existing pill is an event pill.
+  it("stays solid by default", () => {
+    const frame = frameOf(<Pill>NEW</Pill>)
+    expect(frame).toContain(glyph("plCapLeft"))
+    expect(frame).not.toContain(glyph("plCapLeftThin"))
+  })
+
+  it("prices an outline the same as a solid", () => {
+    const drawn = frameOf(<Pill tone="outline">epic</Pill>).split("\n")[0] ?? ""
+    expect([...drawn].length).toBe(pillWidth("epic"))
+  })
+
   it("takes every variant without falling back", () => {
     for (const variant of [
       "success",
@@ -57,7 +91,7 @@ describe("Pill", () => {
       "muted",
     ] as const)
       expect(frameOf(<Pill variant={variant}>x</Pill>)).toContain(
-        glyphs.plCapLeft,
+        glyph("plCapLeft"),
       )
   })
 })

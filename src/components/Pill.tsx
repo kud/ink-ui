@@ -1,22 +1,33 @@
 import React from "react"
 import { Text } from "ink"
-import { glyphs } from "@kud/glyphs"
+import { glyph } from "@kud/glyphs"
 import { colors } from "../tokens.js"
 
 export type PillVariant =
   "success" | "error" | "warning" | "info" | "accent" | "muted"
 
+export type PillTone = "solid" | "outline"
+
 type PillProps = {
   children: string
   variant?: PillVariant
   /**
-   * An explicit fill, for a caller that owns a palette of its own — one
-   * mirroring an external system whose colours ARE the vocabulary (GitHub's
-   * merged purple, a CI provider's result colours). Overrides `variant`.
+   * Solid is an EVENT — something happened to the thing (`merged`, `NEW`,
+   * `GONE`). Outline is a CLASSIFICATION — what the thing is (`epic`, `bug`).
+   * The default stays solid so nothing already rendered moves.
+   */
+  tone?: PillTone
+  /**
+   * An explicit fill, for a state the external system INVENTED — GitHub's
+   * merged purple, a CI provider's result colours. The hue is that system's
+   * vocabulary for something that happened, and repainting it as a token would
+   * mislabel the event. Overrides `variant`.
    *
-   * Not a way round the token rule. A colour picked because it looks nice is
-   * still wrong here; the test is whether the hue is a fact about the thing
-   * being labelled rather than a preference about the label.
+   * Never for that system's SKIN. Jira colours its issue types, but an issue
+   * type is a classification, and a classification takes a `variant` chosen by
+   * meaning, not the colour Jira happens to paint it. The test is whether the
+   * hue names a state the reader already knows from the source system, or
+   * merely decorates a category the tokens can already say.
    */
   color?: string
 }
@@ -80,14 +91,21 @@ export const inkFor = (fill: string): string => {
 }
 
 /**
- * A filled, rounded label — a category the thing belongs to, or an event that
- * has just happened to it.
+ * A rounded label — a category the thing belongs to, or an event that has
+ * just happened to it.
  *
- * Reach for it when the word IS the information (`epic`, `draft`, `blocked`,
- * `NEW`) and you want it to read as one object rather than as more prose. For a
- * reference the reader is meant to follow — a ticket key, a repo — leave the
- * text dim: a fill gives a breadcrumb a weight it has not earned, and once
- * everything is a pill none of them is.
+ * The law, in one line: the column says where it sits, outline says what it
+ * is, solid says something happened. A solid pill is an event (`merged`,
+ * `NEW`, `GONE`) and earns its fill by being news; an outline pill is a
+ * classification (`epic`, `bug`, `task`) and takes only the hue, because a
+ * type is a fact about the row, not something that happened to it. A screen
+ * where both are solid has no way to say which pill is the news.
+ *
+ * Reach for it when the word IS the information and you want it to read as
+ * one object rather than as more prose. For a reference the reader is meant
+ * to follow — a ticket key, a repo — leave the text dim: a fill gives a
+ * breadcrumb a weight it has not earned, and once everything is a pill none
+ * of them is.
  *
  * The WORD carries the meaning and the colour only reinforces it, so a pill
  * survives being read in monochrome, piped, or by someone who cannot separate
@@ -97,28 +115,44 @@ export const inkFor = (fill: string): string => {
  * the only way to get a genuinely rounded end out of a terminal cell, and a font
  * without them renders blanks, which degrades to a square pill rather than
  * breaking the layout. Not gated on `getIconMode` — that switch chooses between
- * two glyph SETS, and this is one glyph with a graceful absence.
+ * two glyph SETS, and this is one glyph with a graceful absence. Solid takes the
+ * filled caps, outline the thin ones from the same Powerline Extra block.
  *
- * `NO_COLOR` is the one case that does fall back to brackets: with the fill
- * stripped, the caps would be drawing the outline of a pill that is not there.
+ * `NO_COLOR` sends solid to brackets: with the fill stripped, the caps would be
+ * drawing the outline of a pill that is not there. Outline keeps its caps — they
+ * ARE the outline, and there was never a fill for them to be missing.
  */
-export const Pill = ({ children, variant = "muted", color }: PillProps) => {
+export const Pill = ({
+  children,
+  variant = "muted",
+  tone = "solid",
+  color,
+}: PillProps) => {
   const fill = color ?? FILL[variant]
+  if (tone === "outline")
+    return (
+      <Text color={fill}>
+        {glyph("plCapLeftThin")}
+        {children}
+        {glyph("plCapRightThin")}
+      </Text>
+    )
   const ink = color ? inkFor(color) : INK[variant]
   if (process.env["NO_COLOR"]) return <Text color={fill}>[{children}]</Text>
   return (
     <Text>
-      <Text color={fill}>{glyphs.plCapLeft}</Text>
+      <Text color={fill}>{glyph("plCapLeft")}</Text>
       <Text backgroundColor={fill} color={ink}>
         {children}
       </Text>
-      <Text color={fill}>{glyphs.plCapRight}</Text>
+      <Text color={fill}>{glyph("plCapRight")}</Text>
     </Text>
   )
 }
 
 /**
- * How many columns `<Pill>` occupies for `text` — the label plus its two caps.
+ * How many columns `<Pill>` occupies for `text` — the label plus its two caps,
+ * whichever tone draws them.
  *
  * Exported because a caller laying out a fixed-width row has to price the pill
  * BEFORE rendering it, and measuring the rendered output is not available at

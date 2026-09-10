@@ -521,6 +521,10 @@ export const entries: DemoEntry[] = [
         <Pill variant="accent">blocked</Pill>
         <Pill variant="success">shipped</Pill>
         <Pill variant="info">draft</Pill>
+        {/* The law: solid says something happened, outline says what it is.
+            A type sits beside an event so the difference is visible, not told. */}
+        <Pill tone="outline" variant="accent">epic</Pill>
+        <Pill tone="outline" variant="error">bug</Pill>
         {/* The escape hatch, shown in the gallery so the ink it picks for a
             fill is something you can look at rather than take on trust —
             GitHub's merged purple is the case it exists for. */}

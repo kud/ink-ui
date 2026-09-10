@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, afterEach } from "vitest"
-import { glyphs } from "@kud/glyphs"
+import { glyph } from "@kud/glyphs"
 import { StatusMessage } from "./components/StatusMessage.js"
 import { setIconMode, getIconMode } from "./icon-mode.js"
 
@@ -21,7 +21,7 @@ describe("icon mode", () => {
     const { lastFrame } = render(
       <StatusMessage variant="success">ok</StatusMessage>,
     )
-    expect(lastFrame()).toContain(glyphs.check)
+    expect(lastFrame()).toContain(glyph("check"))
     expect(lastFrame()).not.toContain("✓")
   })
 })

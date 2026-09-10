@@ -1,4 +1,4 @@
-import { glyphs } from "@kud/glyphs"
+import { glyph } from "@kud/glyphs"
 import { colors } from "../tokens.js"
 import { getIconMode } from "../icon-mode.js"
 
@@ -15,10 +15,10 @@ const UNICODE: Record<StatusVariant, string> = {
 }
 
 const NERD: Record<StatusVariant, string> = {
-  success: glyphs.check,
-  error: glyphs.cross,
-  warning: glyphs.warning,
-  info: glyphs.info,
+  success: glyph("check"),
+  error: glyph("cross"),
+  warning: glyph("warning"),
+  info: glyph("info"),
 }
 
 const COLOR: Record<StatusVariant, string> = {
