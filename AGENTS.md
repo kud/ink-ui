@@ -67,14 +67,14 @@ Composing a domain component on top of these is right and expected — wrapping
 ## House rules
 
 **Colour comes from tokens, never from a string literal.** Import `colors` and
-use it. There are seven tokens and only `accent` is a hex value — the rest are
+use it. There are eight tokens; `accent` and `secondary` are hex values — the rest are
 named ANSI colours that adapt to the user's terminal theme. `softColors` is
-the same seven as measured hexes, and only `Pill tone="soft"` should reach
+the seven semantic ones as measured hexes, and only `Pill tone="soft"` should reach
 for it:
 
 ```ts
 import { colors, spacing } from "@kud/ink-ui"
-// colors.accent "#FF8C00" · muted · success · error · warning · info · group
+// colors.accent "#FF8C00" · secondary "#999999" · muted · success · error · warning · info · group
 // spacing.xs 1 · sm 2 · md 3 · lg 4
 ```
 
