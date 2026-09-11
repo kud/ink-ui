@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.26.0 — 2026-09-11
+
+### Highlights
+
+- **`colors.secondary` (`#999999`) joins the token set as a third neutral, for text that's context rather than the answer — a row's labels sitting beside its title.** A middle tier drawn from `dimColor`/`muted` isn't quiet, it's absent: on a dark ground `dimColor` inks at L\* 50, and the eye files it with whatever's already faint on the row — the age column, the furniture — rather than reading it as its own tier. `#999999` sits at L\* 63, 5.9:1 against `#1c1c28`, 13 L\* above that faint floor — enough to read as a deliberate step rather than a rendering wobble (`#888888`, only 7 L\* above, doesn't clear that bar). Hex rather than an ANSI name, because the tier exists only as a measured step, not as a colour a terminal theme happens to already have a name for. `AGENTS.md`'s token list is updated to match — eight tokens, two hex. ([e51d52b](https://github.com/kud/ink-ui/commit/e51d52bf9771dd4e3f58b0f1d09c07cae8d6059b))
+
+---
+
 ## 0.25.0 — 2026-09-10
 
 ### Highlights
