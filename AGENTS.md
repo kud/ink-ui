@@ -90,10 +90,17 @@ same frame, so the border and the title row never come and go between states.
 `Page` draws it and binds no keys, which is what lets a host take the frame
 before (or without) taking the hook. Six bands inside one round border:
 
-1. **Title row** — the app's glyph, its name in bold, then the facts dim:
-   counts, scope, freshness (`12 items · @you · updated 2m ago`). Constant
-   across every page of the app. That is how you know which app you are in
-   and how stale it is, and neither changes when you open an item.
+1. **Title row** — the cockpit's, made general. The app's glyph and name,
+   bold in the accent; the count dim, padded in front so the header never
+   shuffles as it changes (`  127 items  ·  `); `@user` plain, never dim —
+   scope is the one fact this row exists to state; a further `scope` dim; an
+   `alert` bold in the accent (red when `critical`) for something to act on
+   today; a `status` that is news (`● 5 new · 38 moved · r apply`, bold
+   accent), busy (`↻ refreshing…`, info) or quiet (`updated 42m ago`, dim);
+   then a dotted rule `╌` in dim info to the edge, which absorbs whatever
+   width the status gains or loses. Constant across every page of the app.
+   That is how you know which app you are in and how stale it is, and
+   neither changes when you open an item.
 2. **Blank row** — where search lives when it is open.
 3. **Tabs** — only on pages that have them. A detail page passes none and the
    band is dropped, never left empty.
@@ -105,7 +112,7 @@ A root page:
 
 ```
 ╭──────────────────────────────────────────────────────────────────╮
-│ ◆ Jira   12 items · @you · updated 2m ago                        │
+│ ◆ Jira   12 items  ·  @you  updated 2m ago  ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ │
 │                                                                  │
 │  To do (4)  In progress (6)  Done (2)                            │
 │             ───────────────                                      │
@@ -127,7 +134,7 @@ moment the user acts:
 
 ```
 ╭──────────────────────────────────────────────────────────────────╮
-│ ◆ Jira   SHOP-312 · 3 of 12 · updated 2m ago                     │
+│ ◆ Jira   SHOP-312 · 3 of 12  updated 2m ago  ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ │
 │                                                                  │
 │  ▲ SHOP-312  Retry a declined card                       bug     │
 │                                                                  │
@@ -142,7 +149,7 @@ moment the user acts:
 ╰──────────────────────────────────────────────────────────────────╯
 ```
 
-In code that is `<Page icon title facts tabs counter hints page="nested">`
+In code that is `<Page icon title count user scope status tabs counter hints page="nested">`
 around the body; `PAGE_CHROME` is the four lines the frame spends around the
 body (two borders, the title row, the blank under it) — subtract it, plus the
 tab band and the footer rows you use, when sizing a body to the terminal.
