@@ -1,5 +1,6 @@
 import React, { type ReactNode } from "react"
 import { Box, Text } from "ink"
+import stringWidth from "string-width"
 import { colors } from "../tokens.js"
 import { FooterHints, type Hint } from "./FooterHints.js"
 
@@ -102,14 +103,11 @@ export const Page = ({
   const scopeSeg = scope ? `${scope}  ` : ""
   const alertSeg = alert ? `${alert}  ` : ""
   const statusSeg = status ? `${status.text}  ` : ""
-  const inner = (width ?? 80) - 2 - 1
-  const used =
-    [...brand].length +
-    countSeg.length +
-    userSeg.length +
-    scopeSeg.length +
-    alertSeg.length +
-    statusSeg.length
+  // Two borders, the left padding, and one cell of air before the right border.
+  const inner = (width ?? 80) - 4
+  const used = stringWidth(
+    brand + countSeg + userSeg + scopeSeg + alertSeg + statusSeg,
+  )
   const fill = Math.max(4, inner - used)
 
   return (

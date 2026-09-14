@@ -14,6 +14,7 @@ export type {
 export { FooterHints, tailHints } from "./components/FooterHints.js"
 export type { Hint } from "./components/FooterHints.js"
 export { Page, PAGE_CHROME } from "./components/Page.js"
+export type { PageStatus } from "./components/Page.js"
 export { KeyValue } from "./components/KeyValue.js"
 export { LoadingScreen } from "./components/LoadingScreen.js"
 export { Panel } from "./components/Panel.js"
