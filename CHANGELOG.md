@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.27.0 — 2026-09-14
+
+### Highlights
+
+- **`useAppKeys` gives every `@kud` TUI the same three app-level keys, mounted once at the root instead of re-implemented per screen.** `q` quits, `esc`/`backspace` step back one level by calling the host's `onBack` for a single "peel" rather than closing everything at once, and `atRoot` tells the hook whether there's nowhere left to peel to — so backing out of the last screen quits instead of doing nothing. The hook goes quiet while an input has focus (`isActive`), so a `q` typed into a text field lands in the field, not the app's face. A single claimant for these keys is the whole point: without it, every screen that wants "esc goes back" ends up wiring its own `useInput`, and two screens racing for the same key is how you get a double-back that skips past where the user meant to land.
+- **`Page` is the one frame every screen now sits inside** — a title row (icon, name, contextual facts), an optional tabs band, the body, a right-aligned counter, and the hint line, assembled from the same `PAGE_CHROME` constants so no two screens drift a column apart. It's presentational only: `Page` lays out what it's given and binds no keys itself, `useAppKeys` still owns those — so a screen picks up the frame without inheriting an opinion about what its own keys should do.
+- **`FooterHints` takes a `page: "root" | "nested"` and a `help` flag**, and derives the trailing `⌫ back · ? help · q quit` cluster itself instead of every caller spelling it out — `back` only appears when `page` is `"nested"`, since a root screen has nowhere to back to. The derivation is exported as `tailHints` for anyone assembling a hint line by hand.
+- **`TextInput` gains `onCancel`, fired on `esc` with the field's value left untouched** — the piece `useAppKeys`'s focus-awareness needs to make sense: an input can now say what "back" means while it holds focus, rather than swallowing the key with nothing to show for it.
+- **`AGENTS.md` is rewritten as the design-system manual, for agents and humans alike** — the token list and what each one means, `Pill`'s tone/variant registers, the rule that state is never carried by colour alone, emphasis following importance, the six-band page anatomy with worked mocks, the keys contract this release establishes, the footer's hint ordering, and how to test any of it. ([f217447](https://github.com/kud/ink-ui/commit/f217447fdf4bb3c36c36ebd2c58fb3401eaf8205))
+
+---
+
 ## 0.26.0 — 2026-09-11
 
 ### Highlights
