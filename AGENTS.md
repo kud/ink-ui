@@ -134,7 +134,7 @@ moment the user acts:
 
 ```
 ╭──────────────────────────────────────────────────────────────────╮
-│ ◆ Jira   SHOP-312 · 3 of 12  updated 2m ago  ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ │
+│ ◆ Jira   SHOP-312 · 3 of 12  updated 2m ago  ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ │
 │                                                                  │
 │  ▲ SHOP-312  Retry a declined card                       bug     │
 │                                                                  │
