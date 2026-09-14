@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.28.1 — 2026-09-14
+
+### Highlights
+
+- **`Page` measures its title row in columns.** A two-cell glyph in the brand made the dotted rule one cell too long, so the row wrapped and pushed the body out of the frame. `PageStatus` is exported. ([b15d438](https://github.com/kud/ink-ui/commit/b15d438123aabd8fc99be2f02bc2a0543837f9e8))
+
+---
+
 ## 0.28.0 — 2026-09-14
 
 ### Highlights
