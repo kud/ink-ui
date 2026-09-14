@@ -8,6 +8,12 @@ type TextInputProps = {
   defaultValue?: string
   onChange?: (value: string) => void
   onSubmit?: (value: string) => void
+  /**
+   * Called on `esc`. The value is kept — cancelling blurs the field, it does
+   * not clear it — so the host can drop focus and let its own back key
+   * take over, without a second `useInput` around the box.
+   */
+  onCancel?: () => void
   isDisabled?: boolean
 }
 
@@ -16,6 +22,7 @@ export const TextInput = ({
   defaultValue = "",
   onChange,
   onSubmit,
+  onCancel,
   isDisabled = false,
 }: TextInputProps) => {
   const [value, setValue] = useState(defaultValue)
@@ -31,6 +38,10 @@ export const TextInput = ({
     (input, key) => {
       if (key.return) {
         onSubmit?.(value)
+        return
+      }
+      if (key.escape) {
+        onCancel?.()
         return
       }
       if (key.leftArrow) {

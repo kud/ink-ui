@@ -11,8 +11,9 @@ export type {
   ColumnAlign,
   ColumnOverflow,
 } from "./components/Table.js"
-export { FooterHints } from "./components/FooterHints.js"
+export { FooterHints, tailHints } from "./components/FooterHints.js"
 export type { Hint } from "./components/FooterHints.js"
+export { Page, PAGE_CHROME } from "./components/Page.js"
 export { KeyValue } from "./components/KeyValue.js"
 export { LoadingScreen } from "./components/LoadingScreen.js"
 export { Panel } from "./components/Panel.js"
@@ -33,6 +34,7 @@ export { Tabs } from "./components/Tabs.js"
 export type { TabItem } from "./components/Tabs.js"
 export { useTabs } from "./components/use-tabs.js"
 export { useListCursor } from "./components/use-list-cursor.js"
+export { useAppKeys } from "./components/use-app-keys.js"
 export { Switch } from "./components/Switch.js"
 export type { SwitchValue } from "./components/Switch.js"
 export { Toggle } from "./components/Toggle.js"

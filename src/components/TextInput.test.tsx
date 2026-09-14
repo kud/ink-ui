@@ -42,3 +42,20 @@ describe("TextInput", () => {
     expect(onSubmit).toHaveBeenCalledWith("ready")
   })
 })
+
+describe("TextInput.onCancel", () => {
+  const ESC = String.fromCharCode(27)
+
+  it("fires on esc and keeps the value", async () => {
+    const onCancel = vi.fn()
+    const onChange = vi.fn()
+    const { stdin, lastFrame } = render(
+      <TextInput defaultValue="draft" onCancel={onCancel} onChange={onChange} />,
+    )
+    stdin.write(ESC)
+    await delay()
+    expect(onCancel).toHaveBeenCalledOnce()
+    expect(onChange).not.toHaveBeenCalled()
+    expect(lastFrame()).toContain("draft")
+  })
+})

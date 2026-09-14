@@ -45,3 +45,18 @@ describe("FooterHints", () => {
     expect(between.every((l) => l.trim())).toBe(true)
   })
 })
+
+describe("FooterHints tail", () => {
+  it("ends every page the same way, with back only when nested", () => {
+    const root = render(<FooterHints hints={[["a", "one"]]} page="root" />)
+    const nested = render(<FooterHints hints={[["a", "one"]]} page="nested" />)
+    expect(root.lastFrame()).toMatch(/a one.*\? help.*q quit$/)
+    expect(root.lastFrame()).not.toContain("back")
+    expect(nested.lastFrame()).toMatch(/a one.*⌫ back.*\? help.*q quit$/)
+  })
+
+  it("drops help for an app with no legend", () => {
+    const { lastFrame } = render(<FooterHints hints={[]} page="root" help={false} />)
+    expect(lastFrame()).toBe("q quit")
+  })
+})
