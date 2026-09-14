@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.28.2 — 2026-09-14
+
+### Highlights
+
+- **`Page` takes `gap={false}`** for a body that draws the blank under the title itself — a board whose search box lives in that band — so the two blanks no longer overflow the frame. ([7a33e67](https://github.com/kud/ink-ui/commit/7a33e67665fb714480797ab657e1645c7b6b5142))
+
+---
+
 ## 0.28.1 — 2026-09-14
 
 ### Highlights
