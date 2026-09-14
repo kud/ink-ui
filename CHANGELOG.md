@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.28.0 — 2026-09-14
+
+### Highlights
+
+- **`Page`'s title row is the cockpit's, made general.** Brand bold in the accent; `count` dim and padded in front so the header never shuffles; `user` plain (`@kud`); `scope` dim; `alert` bold accent (red when `critical`); a `status` that is news (bold accent), busy (info) or quiet (dim); then a dotted `╌` rule to the edge that absorbs the status's changing width. `facts` stays for a host with nothing structured to say. ([92fe8e2](https://github.com/kud/ink-ui/commit/92fe8e220453e73f6d2d21f61889dd0267d0b6b9))
+
+---
+
 ## 0.27.0 — 2026-09-14
 
 ### Highlights
