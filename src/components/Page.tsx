@@ -42,6 +42,12 @@ type PageProps = {
   page?: "root" | "nested"
   /** Whether the app has a `?` legend; drops `? help` from the tail when false. */
   help?: boolean
+  /**
+   * Whether the frame draws the blank under the title (band two). A body that
+   * draws that band itself — a board whose search box lives there — passes
+   * `false`, or the two blanks together overflow the frame and one is lost.
+   */
+  gap?: boolean
   width?: number
   height?: number
   children: ReactNode
@@ -88,6 +94,7 @@ export const Page = ({
   hints,
   page = "root",
   help = true,
+  gap = true,
   width,
   height,
   children,
@@ -149,7 +156,7 @@ export const Page = ({
           {tabs}
         </Box>
       ) : null}
-      <Box flexDirection="column" flexGrow={1} marginTop={1}>
+      <Box flexDirection="column" flexGrow={1} marginTop={gap ? 1 : 0}>
         {children}
       </Box>
       {counter ? (
