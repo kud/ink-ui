@@ -75,3 +75,37 @@ describe("useTabs", () => {
     expect(lastFrame()).toContain("active:open")
   })
 })
+
+const LEFT = "[D"
+const RIGHT = "[C"
+
+describe("useTabs arrows", () => {
+  it("moves forward on → and backward on ←, wrapping like Tab", async () => {
+    const { stdin, lastFrame } = render(<Harness />)
+    stdin.write(RIGHT)
+    await delay()
+    expect(lastFrame()).toContain("active:done")
+    stdin.write(LEFT)
+    await delay()
+    expect(lastFrame()).toContain("active:open")
+    stdin.write(LEFT)
+    await delay()
+    expect(lastFrame()).toContain("active:all")
+  })
+
+  // A screen whose arrows mean something else turns them off here rather than
+  // fighting the hook for the keys; Tab still works.
+  it("leaves the arrows alone when told to", async () => {
+    const NoArrows = () => {
+      const { active } = useTabs(items, { arrows: false })
+      return <Text>active:{active}</Text>
+    }
+    const { stdin, lastFrame } = render(<NoArrows />)
+    stdin.write(RIGHT)
+    await delay()
+    expect(lastFrame()).toContain("active:open")
+    stdin.write(TAB)
+    await delay()
+    expect(lastFrame()).toContain("active:done")
+  })
+})

@@ -37,8 +37,10 @@ from your own state.
 **The two hooks supply that state.** `useTabs(items)` and
 `useListCursor(length)` own the keyboard so you don't hand-roll it — and both
 take `{ isActive }` so a screen with several focus regions can gate them.
-`useTabs` wraps by default (a tab bar is a ring); `useListCursor` clamps (a
-list has ends) and takes `{ wrap }` when you genuinely want circular.
+`useTabs` binds Tab / Shift+Tab and ←→ alike, wrapping (a tab bar is a ring),
+and takes `{ arrows: false }` where ←→ mean something else on that screen;
+`useListCursor` clamps (a list has ends) and takes `{ wrap }` when you
+genuinely want circular.
 
 **Three keys belong to the app, never to a screen: `q`, `esc`, `backspace`.**
 `useAppKeys({ onBack, onQuit, atRoot, isActive })` binds them, and it is
