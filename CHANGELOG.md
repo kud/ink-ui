@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.29.0 — 2026-09-15
+
+### Highlights
+
+- **`useTabs` binds ←→ alongside Tab / Shift+Tab, wrapping in both directions exactly as Tab does** — every consumer that wanted arrow navigation had been hand-binding it, and the five hand-rolled versions had already drifted: two wrapped, two clamped, one toggled, and one screen's footer advertised `←→ section` while binding nothing at all. A new `arrows?: boolean` option (default `true`) stands the arrows down on a screen where ←→ already mean something else. `AGENTS.md` and the README are updated to match. **Upgrade note:** a consumer still hand-binding ←→ itself will now fire twice per press until that binding is dropped. ([74c4538](https://github.com/kud/ink-ui/commit/74c4538194ef6c62a7b15e7e21c2050734be4767))
+
+---
+
 ## 0.28.2 — 2026-09-14
 
 ### Highlights
