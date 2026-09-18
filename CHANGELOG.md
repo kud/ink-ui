@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.30.0 — 2026-09-18
+
+### Highlights
+
+- **`CommandPalette` adds a launcher primitive** — a query line over rows, one cursor, `⏎` runs the row under it, `esc` closes. Rows are grouped under a header while the query is empty and flatten to a plain hit list the moment typing starts, since a header is only useful before the reader has said what they want. It's dumb by design: the palette holds no query state and does no filtering itself, so the same component serves a host narrowing a fixed command tree and a host that derives rows from the query instead (a ticket key becoming two verbs). A `message` draws one muted line in place of the rows for "nothing found" or "not configured" — never a row, so the cursor can't land on it — and `label` lets a row draw richer than its plain `title` (a ticket key in the accent beside a destination word) while `title` still owns matching. A reserved one-cell `marker` keeps every row's title aligned the moment any row has one. It's uncontrolled only in the keyboard sense — typing, cursor movement and `esc` are handled internally — and it's meant to be mounted as the topmost layer with the host's `useAppKeys` stood down, or `esc` will close the palette and step the app back a level in the same keystroke.
+- **`fuzzyFilter(items, query)` ships as a pure helper** for the fixed-tree half of that split — substring hits rank above subsequence hits (`cfg` still finds `config`), because a verbatim match is what the reader typed on purpose. Hand it straight to `onQueryChange` and a static command list needs no filtering logic of its own. `PaletteItem` is exported alongside both. ([46bf748](https://github.com/kud/ink-ui/commit/46bf748d39e6d88c1870645e1fed2b16d1d02d34))
+
+---
+
 ## 0.29.0 — 2026-09-15
 
 ### Highlights
