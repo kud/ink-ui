@@ -2,7 +2,7 @@ import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, afterEach } from "vitest"
 import { glyph } from "@kud/glyphs"
-import { StatusMessage } from "./components/StatusMessage.js"
+import { StatusMessage } from "./components/status-message.js"
 import { setIconMode, getIconMode } from "./icon-mode.js"
 
 afterEach(() => setIconMode("text"))

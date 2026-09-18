@@ -2,7 +2,7 @@ import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
 import { Text } from "ink"
-import { Panel } from "./Panel.js"
+import { Panel } from "./panel.js"
 
 describe("Panel", () => {
   it("renders its title and children inside a rounded border", () => {

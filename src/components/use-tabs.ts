@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useInput } from "ink"
-import type { TabItem } from "./Tabs.js"
+import type { TabItem } from "./tabs.js"
 
 type UseTabsOptions<T extends string> = {
   initial?: T

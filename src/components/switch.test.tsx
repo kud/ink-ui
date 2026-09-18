@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Switch } from "./Switch.js"
+import { Switch } from "./switch.js"
 
 describe("Switch", () => {
   it("puts the filled dot on the left when left is active", () => {

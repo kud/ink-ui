@@ -1,6 +1,6 @@
 import React from "react"
 import { Box } from "ink"
-import { Spinner } from "./Spinner.js"
+import { Spinner } from "./spinner.js"
 
 type LoadingScreenProps = {
   label: string

@@ -2,7 +2,7 @@ import React from "react"
 import { Text } from "ink"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { UnorderedList } from "./UnorderedList.js"
+import { UnorderedList } from "./unordered-list.js"
 
 describe("UnorderedList", () => {
   it("renders each item with a bullet marker", () => {

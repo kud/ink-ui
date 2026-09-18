@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { ProgressBar } from "./ProgressBar.js"
+import { ProgressBar } from "./progress-bar.js"
 
 // Filled and track share one character now, distinguished only by colour — and
 // the test renderer strips colour entirely, so the frame is a run of identical

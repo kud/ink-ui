@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Alert } from "./Alert.js"
+import { Alert } from "./alert.js"
 
 describe("Alert", () => {
   it("renders the title, body, and variant glyph", () => {

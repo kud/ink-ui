@@ -1,4 +1,4 @@
-import type { PaletteItem } from "./CommandPalette.js"
+import type { PaletteItem } from "./command-palette.js"
 
 // A subsequence match: every character of the query appears in the haystack
 // in order, not necessarily adjacently — `cfg` finds `config`. Substring

@@ -381,7 +381,9 @@ to start a third of its files looks exactly like one that passed.
 
 ## Working on this repo
 
-If you are editing ink-ui itself rather than building with it: components stay
+If you are editing ink-ui itself rather than building with it: filenames are
+kebab-case (`command-palette.tsx` exporting `CommandPalette` — the file is a path,
+the export is code, and only the second is PascalCase), components stay
 presentational unless they are in the uncontrolled list above, every new
 component needs a `.test.tsx` beside it, and the public surface is whatever
 `src/index.ts` exports — a component not exported there does not exist.

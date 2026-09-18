@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { ScrollView } from "./ScrollView.js"
+import { ScrollView } from "./scroll-view.js"
 
 const DOWN = String.fromCharCode(27) + "[B" // down arrow escape sequence
 const delay = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms))

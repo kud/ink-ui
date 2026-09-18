@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Toggle } from "./Toggle.js"
+import { Toggle } from "./toggle.js"
 
 describe("Toggle", () => {
   it("shows a filled dot when on", () => {

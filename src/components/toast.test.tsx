@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, vi } from "vitest"
-import { Toast } from "./Toast.js"
+import { Toast } from "./toast.js"
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

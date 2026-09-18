@@ -2,7 +2,7 @@ import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
 import { Text } from "ink"
-import { Columns } from "./Columns.js"
+import { Columns } from "./columns.js"
 
 describe("Columns", () => {
   it("lays its children out side by side on the same row", () => {

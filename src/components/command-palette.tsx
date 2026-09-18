@@ -1,7 +1,7 @@
 import React, { useEffect, type ReactNode } from "react"
 import { Box, Text } from "ink"
-import { TextInput } from "./TextInput.js"
-import { FooterHints, type Hint } from "./FooterHints.js"
+import { TextInput } from "./text-input.js"
+import { FooterHints, type Hint } from "./footer-hints.js"
 import { useListCursor } from "./use-list-cursor.js"
 import { colors } from "../tokens.js"
 

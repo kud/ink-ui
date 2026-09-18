@@ -2,7 +2,7 @@ import React, { type ReactNode } from "react"
 import { Box, Text } from "ink"
 import stringWidth from "string-width"
 import { colors } from "../tokens.js"
-import { FooterHints, type Hint } from "./FooterHints.js"
+import { FooterHints, type Hint } from "./footer-hints.js"
 
 /**
  * The title row's live segment. `news` is something to act on (`● 5 new ·

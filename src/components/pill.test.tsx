@@ -2,7 +2,7 @@ import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, afterEach } from "vitest"
 import { glyph } from "@kud/glyphs"
-import { Pill, pillWidth, inkFor } from "./Pill.js"
+import { Pill, pillWidth, inkFor } from "./pill.js"
 import { softColors } from "../tokens.js"
 
 const frameOf = (node: React.ReactElement) => render(node).lastFrame() ?? ""

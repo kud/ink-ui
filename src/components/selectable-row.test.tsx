@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { Box, Text } from "ink"
 import { render } from "ink-testing-library"
-import { SelectableRow } from "./SelectableRow.js"
+import { SelectableRow } from "./selectable-row.js"
 
 describe("SelectableRow", () => {
   it("marks the active row and leaves the others plain", () => {

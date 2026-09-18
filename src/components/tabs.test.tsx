@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Tabs } from "./Tabs.js"
+import { Tabs } from "./tabs.js"
 
 const items = [
   { value: "open", label: "Open", count: 3 },

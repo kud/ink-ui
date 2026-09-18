@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, vi } from "vitest"
-import { PasswordInput } from "./PasswordInput.js"
+import { PasswordInput } from "./password-input.js"
 
 const CR = String.fromCharCode(13) // Enter
 const DEL = String.fromCharCode(127) // Backspace

@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { StatusMessage } from "./StatusMessage.js"
+import { StatusMessage } from "./status-message.js"
 
 describe("StatusMessage", () => {
   it("renders the message with the success glyph", () => {

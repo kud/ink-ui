@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, vi } from "vitest"
-import { MultiSelect } from "./MultiSelect.js"
+import { MultiSelect } from "./multi-select.js"
 
 const options = [
   { label: "First", value: "first" },

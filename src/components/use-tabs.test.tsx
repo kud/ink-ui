@@ -3,7 +3,7 @@ import { Text } from "ink"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
 import { useTabs } from "./use-tabs.js"
-import type { TabItem } from "./Tabs.js"
+import type { TabItem } from "./tabs.js"
 
 const items: TabItem<"open" | "done" | "all">[] = [
   { value: "open", label: "Open" },

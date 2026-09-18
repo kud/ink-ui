@@ -2,7 +2,7 @@ import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
 import { Text } from "ink"
-import { Page } from "./Page.js"
+import { Page } from "./page.js"
 
 describe("Page", () => {
   it("draws the title row, the body and the tail inside a round border", () => {

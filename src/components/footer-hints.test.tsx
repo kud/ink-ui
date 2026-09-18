@@ -2,7 +2,7 @@ import React from "react"
 import { Box } from "ink"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { FooterHints, type Hint } from "./FooterHints.js"
+import { FooterHints, type Hint } from "./footer-hints.js"
 
 const hints: Hint[] = [
   ["↑↓", "nav"],

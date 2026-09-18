@@ -2,9 +2,9 @@
 // and adapted to @kud/ink-ui tokens, glyph vocabulary, and conventions.
 import React, { useState } from "react"
 import { Box, Text, useInput } from "ink"
-import { SelectableRow } from "./SelectableRow.js"
+import { SelectableRow } from "./selectable-row.js"
 import { colors } from "../tokens.js"
-import type { SelectOption } from "./Select.js"
+import type { SelectOption } from "./select.js"
 
 type MultiSelectProps<T extends string> = {
   options: SelectOption<T>[]

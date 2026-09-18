@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, vi } from "vitest"
-import { ConfirmInput } from "./ConfirmInput.js"
+import { ConfirmInput } from "./confirm-input.js"
 
 const CR = String.fromCharCode(13) // Enter
 const delay = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms))

@@ -2,7 +2,7 @@ import React from "react"
 import { Text } from "ink"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { OrderedList } from "./OrderedList.js"
+import { OrderedList } from "./ordered-list.js"
 
 describe("OrderedList", () => {
   it("numbers items sequentially", () => {

@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { Text } from "ink"
 import { render } from "ink-testing-library"
 import { describe, it, expect, vi } from "vitest"
-import { CommandPalette, type PaletteItem } from "./CommandPalette.js"
+import { CommandPalette, type PaletteItem } from "./command-palette.js"
 import { fuzzyFilter } from "./fuzzy-filter.js"
 import { colors } from "../tokens.js"
 
