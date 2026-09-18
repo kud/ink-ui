@@ -28,7 +28,7 @@ that swallows keystrokes or responds twice.
 per focus region, and gate the rest with `isDisabled` / `isActive`:
 
 `Select` · `MultiSelect` · `TextInput` · `EmailInput` · `PasswordInput` ·
-`ConfirmInput` · `ScrollView` · `UpdateBanner`
+`ConfirmInput` · `ScrollView` · `UpdateBanner` · `CommandPalette`
 
 **Presentational — everything else.** They take `active` / `value` / `on` and
 render. They never listen for keys, so they compose freely and you drive them
@@ -188,6 +188,7 @@ between apps. `⌫` is shown, `esc` implied.
 | A focusable bordered region | `Panel` with `focused` — the border brightens and the title gains a ● marker |
 | One-off prompt for a value | `TextInput` / `EmailInput` / `PasswordInput` / `ConfirmInput` |
 | Pick one / pick many from a list | `Select` / `MultiSelect` — these own their keyboard, unlike `SelectableRow` |
+| A launcher — type, pick a row, Enter runs it | `CommandPalette`, mounted as the topmost layer with `useAppKeys` stood down; hand `fuzzyFilter` to `onQueryChange` for a fixed command tree, or derive `items` from the query yourself |
 | A persistent key-hints footer | `FooterHints` with `Hint` tuples: `[["↑↓", "move"], ["q", "quit"]]` |
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |
 | A category label — `epic`, `draft` — that should read as one object | `Pill`, filled and rounded; `Badge` for the bracket form. Never for a reference the reader follows |
