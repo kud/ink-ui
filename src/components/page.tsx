@@ -48,6 +48,13 @@ type PageProps = {
    * `false`, or the two blanks together overflow the frame and one is lost.
    */
   gap?: boolean
+  /**
+   * A `FilterBar`, drawn in band two — the blank under the title, which is
+   * where search lives — so every app puts its filter in the same place. It
+   * takes the blank's row rather than adding one, so the body never moves
+   * when a filter opens or closes.
+   */
+  filter?: ReactNode
   width?: number
   height?: number
   children: ReactNode
@@ -95,6 +102,7 @@ export const Page = ({
   page = "root",
   help = true,
   gap = true,
+  filter,
   width,
   height,
   children,
@@ -151,12 +159,17 @@ export const Page = ({
           {"╌".repeat(fill)}
         </Text>
       </Box>
+      {filter ? <Box paddingLeft={2}>{filter}</Box> : null}
       {tabs ? (
-        <Box paddingLeft={2} marginTop={1}>
+        <Box paddingLeft={2} marginTop={filter ? 0 : 1}>
           {tabs}
         </Box>
       ) : null}
-      <Box flexDirection="column" flexGrow={1} marginTop={gap ? 1 : 0}>
+      <Box
+        flexDirection="column"
+        flexGrow={1}
+        marginTop={gap && !(filter && !tabs) ? 1 : 0}
+      >
         {children}
       </Box>
       {counter ? (

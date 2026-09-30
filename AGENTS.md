@@ -76,14 +76,33 @@ between them never relearns "how do I leave":
 > overlay", never "back". `ctrl+c` likewise. Inside a focused text input `q`
 > types and `backspace` deletes — the input owns the keyboard, `esc` blurs it
 > and keeps the value. `esc` and `backspace` are synonyms for **back exactly
-> one level**: input focus → overlay → screen → main. At the main page `esc`
-> does nothing — not quit, not clear-the-filter: a layer is something you
-> *pushed*, a filter is something you *set*, and back pops layers, never edits
-> settings. `?` opens the legend as an overlay everywhere. Only one thing
-> listens at a time.
+> one level**: input focus → overlay → screen → filter → main. A list filter is
+> the exception to the input rule and the bottom of the peel: `/` types, `↵`
+> keeps the filter and hands the letter keys back as hotkeys, `/` again goes
+> back into the term, and `esc` clears it — while typing, or once every layer
+> above it is gone. At the main page with no filter `esc` does nothing, never
+> quit. `?` opens the legend as an overlay everywhere. Only one thing listens
+> at a time.
 
-`TextInput` already does its half: `onCancel` fires on `esc` and the value is
-kept, so a search box no longer needs a `useInput` of its own to close.
+`TextInput` already does its half for a value prompt: `onCancel` fires on
+`esc` and the value is kept. A list filter is `useFilterMode` instead — see
+below — because there `esc` means "clear", not "keep".
+
+**The filter, vim's way.** A list filter has two modes and every `@kud` TUI
+uses the same two. `useFilterMode()` owns them and returns `{ term, typing,
+active, clear, hints }`. Wire it in four places and nowhere else:
+`useListCursor(n, { vimKeys: !typing })` so the arrows still walk the matches
+while `j`/`k` type; `useAppKeys({ isActive: !typing })`; an early return in
+your hotkey handler while `typing`; and one arm at the bottom of your peel,
+`if (filter.active) return (filter.clear(), true)`. Matching stays yours —
+the hook only holds the term. Draw it with `FilterBar` in `Page`'s `filter`
+slot, and while `typing` show `filter.hints` in place of your own, since
+they are the only keys that work.
+
+This was amended on 2026-09-30. It used to say `esc` in a field keeps the value
+and `esc` never clears a filter, on the grounds that back pops layers and never
+edits settings. In practice that left a filter you could only get rid of one
+character at a time.
 
 ## The page: six bands, one frame
 
@@ -103,7 +122,8 @@ before (or without) taking the hook. Six bands inside one round border:
    width the status gains or loses. Constant across every page of the app.
    That is how you know which app you are in and how stale it is, and
    neither changes when you open an item.
-2. **Blank row** — where search lives when it is open.
+2. **Blank row** — where search lives when it is open: `Page`'s `filter`
+   slot, which takes this row rather than adding one.
 3. **Tabs** — only on pages that have them. A detail page passes none and the
    band is dropped, never left empty.
 4. **Body** — whatever the page is for.
@@ -188,6 +208,7 @@ between apps. `⌫` is shown, `esc` implied.
 | A focusable bordered region | `Panel` with `focused` — the border brightens and the title gains a ● marker |
 | One-off prompt for a value | `TextInput` / `EmailInput` / `PasswordInput` / `ConfirmInput` |
 | Pick one / pick many from a list | `Select` / `MultiSelect` — these own their keyboard, unlike `SelectableRow` |
+| A list you can narrow by typing, then act on with hotkeys | `useFilterMode` + `FilterBar` in `Page`'s `filter` slot — see the filter under the keys contract |
 | A launcher — type, pick a row, Enter runs it | `CommandPalette`, mounted as the topmost layer with `useAppKeys` stood down; hand `fuzzyFilter` to `onQueryChange` for a fixed command tree, or derive `items` from the query yourself |
 | A persistent key-hints footer | `FooterHints` with `Hint` tuples: `[["↑↓", "move"], ["q", "quit"]]` |
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |

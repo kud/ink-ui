@@ -79,4 +79,28 @@ describe("Page", () => {
     const line = (lastFrame() ?? "").split("\n").find((l) => l.includes("3 of 12")) ?? ""
     expect(line).toMatch(/3 of 12 │$/)
   })
+  /*
+   * The filter takes band two's blank rather than adding a row, so opening or
+   * closing one never shifts the list under the cursor.
+   */
+  it("draws a filter in band two without moving the body", () => {
+    const bodyRow = (filter?: React.ReactNode) =>
+      (
+        render(
+          <Page title="Jira" filter={filter}>
+            <Text>body</Text>
+          </Page>,
+        ).lastFrame() ?? ""
+      )
+        .split("\n")
+        .findIndex((l) => l.includes("body"))
+    const frame =
+      render(
+        <Page title="Jira" filter={<Text>/ acme</Text>}>
+          <Text>body</Text>
+        </Page>,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("/ acme")
+    expect(bodyRow(<Text>/ acme</Text>)).toBe(bodyRow())
+  })
 })
