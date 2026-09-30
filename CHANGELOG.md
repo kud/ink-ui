@@ -4,6 +4,26 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.31.0 — 2026-09-30
+
+### Upgrade note
+
+- **The keys contract in `AGENTS.md` changes: `esc` now clears a list filter**, while typing or as the bottom layer of the peel, where it used to keep it. No API changes: hosts on the old contract (`esc` at root never clears) can keep their behaviour, but the contract now expects a filter arm at the bottom of the peel. ([54d7e8e](https://github.com/kud/ink-ui/commit/54d7e8eba71472fffe36f963fb573597b8eba001))
+
+### Highlights
+
+- **`useFilterMode` adds a vim-style list filter.** `/` starts typing, `↵` keeps the term and hands the letter keys back as hotkeys, and `/` again resumes the term rather than clearing it. `esc` clears while typing; ↑↓ still move the list cursor; an empty term on `↵` is dropped. Pass `useListCursor(n, { vimKeys: !typing })` so `j`/`k` type while filtering.
+- **`FilterBar` draws the filter line** (`/ term▏   3 matches`), and `Page` gains a `filter` slot that renders it in band two without moving the body. ([54d7e8e](https://github.com/kud/ink-ui/commit/54d7e8eba71472fffe36f963fb573597b8eba001))
+
+<details>
+<summary>Internal (1 commit)</summary>
+
+- Component files renamed to kebab-case, with no API change. ([2f01ff4](https://github.com/kud/ink-ui/commit/2f01ff40281af4ca130fca6692c35b09c49c5851))
+
+</details>
+
+---
+
 ## 0.30.0 — 2026-09-18
 
 ### Highlights
