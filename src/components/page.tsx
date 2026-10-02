@@ -1,5 +1,5 @@
 import React, { type ReactNode } from "react"
-import { Box, Text } from "ink"
+import { Box, Text, useWindowSize } from "ink"
 import stringWidth from "string-width"
 import { colors } from "../tokens.js"
 import { FooterHints, type Hint } from "./footer-hints.js"
@@ -55,6 +55,12 @@ type PageProps = {
    * when a filter opens or closes.
    */
   filter?: ReactNode
+  /**
+   * Size the frame to the terminal, and follow it on resize. Without it the
+   * frame is content-sized: as wide as its container and as tall as its body.
+   * An explicit `width` or `height` still wins over the window on that axis.
+   */
+  fill?: boolean
   width?: number
   height?: number
   children: ReactNode
@@ -103,10 +109,14 @@ export const Page = ({
   help = true,
   gap = true,
   filter,
+  fill = false,
   width,
   height,
   children,
 }: PageProps) => {
+  const terminal = useWindowSize()
+  const frameWidth = width ?? (fill ? terminal.columns : undefined)
+  const frameHeight = height ?? (fill ? terminal.rows : undefined)
   const brand = icon ? `${icon} ${title}` : title
   const countSeg =
     count === undefined
@@ -119,17 +129,17 @@ export const Page = ({
   const alertSeg = alert ? `${alert}  ` : ""
   const statusSeg = status ? `${status.text}  ` : ""
   // Two borders, the left padding, and one cell of air before the right border.
-  const inner = (width ?? 80) - 4
+  const inner = (frameWidth ?? 80) - 4
   const used = stringWidth(
     brand + countSeg + userSeg + scopeSeg + alertSeg + statusSeg,
   )
-  const fill = Math.max(4, inner - used)
+  const ruleWidth = Math.max(4, inner - used)
 
   return (
     <Box
       flexDirection="column"
-      width={width}
-      height={height}
+      width={frameWidth}
+      height={frameHeight}
       borderStyle="round"
       borderColor={colors.muted}
       overflow="hidden"
@@ -156,7 +166,7 @@ export const Page = ({
           </Text>
         ) : null}
         <Text color={colors.info} dimColor>
-          {"╌".repeat(fill)}
+          {"╌".repeat(ruleWidth)}
         </Text>
       </Box>
       {filter ? <Box paddingLeft={2}>{filter}</Box> : null}

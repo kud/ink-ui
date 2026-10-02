@@ -29,7 +29,7 @@ export const ProgressBar = ({
   value,
   width = 20,
   color = colors.accent,
-  trackColor = "#2b323d",
+  trackColor = colors.track,
 }: ProgressBarProps) => {
   const clamped = Math.max(0, Math.min(100, value))
   const filled = Math.round((clamped / 100) * width)

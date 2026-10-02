@@ -5,7 +5,12 @@ import { colors } from "../tokens.js"
 export type TabItem<T extends string = string> = {
   value: T
   label: string
-  count?: number
+  /**
+   * How many things the tab holds. `null` means "not known yet" and draws as
+   * `(–)`, padded in front to the width of a two-digit count, so the bar does
+   * not shift when the real numbers land. Omit it for a tab with no count.
+   */
+  count?: number | null
   /**
    * A marker drawn immediately before the label, in its own colour.
    *
@@ -56,6 +61,9 @@ type TabsProps<T extends string> = {
 /** Columns between one tab and the next, on both rows. They must agree. */
 const GAP = 2
 
+/** An unknown count, as wide as `(12)`: the blank goes in front, as `Page` pads its count. */
+const PENDING_COUNT = " (–)"
+
 // The active tab is marked by an underline (border-bottom) under it, in the
 // accent colour; inactive tabs get none. The underline's presence — not its
 // hue — is what distinguishes the active tab, so it reads correctly in
@@ -70,7 +78,9 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
     text:
       item.count === undefined
         ? item.label
-        : item.total === undefined
+        : item.count === null
+          ? `${item.label} ${PENDING_COUNT}`
+          : item.total === undefined
           ? `${item.label} (${item.count})`
           : `${item.label} (${item.count}/${item.total})`,
     isActive: item.value === active,

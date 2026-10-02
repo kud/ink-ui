@@ -148,4 +148,27 @@ describe("Tabs markers", () => {
     )
     expect(asMarked.indexOf("Done")).toBe(asUnmarked.indexOf("Done"))
   })
+
+  /*
+   * A count that has not loaded yet is a dash, not a zero: zero is a real answer.
+   * It holds a two-digit count's width so the next tab does not move when the
+   * numbers land.
+   */
+  it("draws an unknown count as (–) at the width of a two-digit count", () => {
+    const row = (count: number | null) =>
+      (
+        render(
+          <Tabs
+            active="open"
+            items={[
+              { value: "open", label: "Open", count },
+              { value: "done", label: "Done" },
+            ]}
+          />,
+        ).lastFrame() ?? ""
+      ).split("\n")[0] ?? ""
+    expect(row(null)).toContain("Open  (–)")
+    expect(row(null)).not.toContain("0")
+    expect(row(null).indexOf("Done")).toBe(row(12).indexOf("Done"))
+  })
 })

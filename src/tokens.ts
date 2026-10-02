@@ -9,6 +9,11 @@
  * above the faint, which reads as a decision; `#888888` is 7 L* above it and
  * reads as a rendering wobble. Tuned to the dark ground every consumer already
  * commits to; a light-theme terminal would need its own value.
+ *
+ * `track` is the unlit ground of a measured strip: the empty part of a
+ * `ProgressBar`, and the whole of a `SkeletonBar` standing in for text that
+ * has not arrived. Furniture, never a state — kept clearly darker than any
+ * fill drawn over it, so the two separate by lightness for every reader.
  */
 export const colors = {
   accent: "#FF8C00",
@@ -19,6 +24,7 @@ export const colors = {
   warning: "yellow",
   info: "cyan",
   group: "magenta",
+  track: "#2b323d",
 } as const
 
 export type Color = (typeof colors)[keyof typeof colors]
