@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.32.0 — 2026-10-02
+
+### Upgrade note
+
+- **`TabItem.count` is now `number | null`.** A consumer that reads `item.count` as a `number` from its own tab values may need to narrow it first. ([5fffc8f](https://github.com/kud/ink-ui/commit/5fffc8fb45d7a415c103b4b5d67435d96d89fefe))
+
+### Highlights
+
+- **`Page` gains `fill`**, sizing the frame to the terminal and following resizes. Explicit `width` or `height` still win per axis, and the title row's dotted rule now reaches the real border.
+- **`SkeletonBar` and `SkeletonRows` draw loading placeholders** in the new `colors.track` ground, with deterministic widths and optional gaps. `ProgressBar`'s default track uses the same token, so nothing changes visually.
+- **`Tabs` accept an unknown count (`null`), drawn as `(–)`** and padded to two digits, so the bar no longer shifts when real counts arrive.
+- **`AGENTS.md` now says when to use skeletons:** only when nothing is known yet; afterwards keep the stale content and show busy in `Page`'s status slot. ([5fffc8f](https://github.com/kud/ink-ui/commit/5fffc8fb45d7a415c103b4b5d67435d96d89fefe))
+
+---
+
 ## 0.31.0 — 2026-09-30
 
 ### Upgrade note
