@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.33.2 — 2026-10-05
+
+### Fixes
+
+- **`FilterBar` no longer splits a term around the caret.** Mid-term, the caret is now a block that inverts the character under it, instead of a `▏` taking its own cell (which turned `2926` into `29▏26`); at the end of the term it is still the `▏` bar. ([a15fa59](https://github.com/kud/ink-ui/commit/a15fa59975dced4bb2d78eb8c881d1ba32123ace))
+
+---
+
 ## 0.33.1 — 2026-10-05
 
 ### Highlights
