@@ -1,6 +1,7 @@
 import React, { useState } from "react"
-import { Text } from "ink"
+import { Box, Text } from "ink"
 import { render } from "ink-testing-library"
+import stringWidth from "string-width"
 import { describe, it, expect, vi } from "vitest"
 import { CommandPalette, type PaletteItem } from "./command-palette.js"
 import { fuzzyFilter } from "./fuzzy-filter.js"
@@ -217,6 +218,186 @@ describe("CommandPalette", () => {
     expect(frame).not.toContain("item 29")
     const short = plain(render(<StaticHost />).lastFrame())
     expect(short).not.toMatch(/\d+ of \d+/)
+  })
+})
+
+describe("CommandPalette overlay paint", () => {
+  // The palette floats over host content, and Ink only paints the cells a
+  // line writes — a short line leaves the rows underneath showing through
+  // (a stray letter before the prompt, old text between the hints). The host
+  // below pulls the palette up over its own rows with a negative margin, so
+  // the frame is the true composite: every cell the palette does not paint
+  // still holds the host's character. Every line inside the box must
+  // therefore carry no host character at all.
+  const ROWS_ABOVE = 16
+  const OverHost = ({
+    width,
+    char = "X",
+    children,
+  }: {
+    width: number
+    char?: string
+    children: React.ReactNode
+  }) => (
+    <Box flexDirection="column">
+      {Array.from({ length: ROWS_ABOVE }, (_, index) => (
+        <Text key={index}>{char.repeat(width + 10)}</Text>
+      ))}
+      <Box marginTop={-ROWS_ABOVE}>{children}</Box>
+      <Text>{char.repeat(width + 10)}</Text>
+    </Box>
+  )
+  const boxLines = (frame: string) => {
+    const lines = plain(frame).split("\n")
+    const top = lines.findIndex((line) => line.startsWith("╭"))
+    const bottom = lines.findIndex((line) => line.startsWith("╰"))
+    return lines.slice(top, bottom + 1)
+  }
+  const expectSealed = (frame: string | undefined, width: number) => {
+    const lines = boxLines(plain(frame))
+    expect(lines.length).toBeGreaterThan(2)
+    for (const line of lines) {
+      // The box is the only border on screen, so the first closing border
+      // past the opening one ends its columns; the host fills the rest.
+      const end = 1 + line.slice(1).search(/[╮│╯]/)
+      const box = line.slice(0, end + 1)
+      expect(box).not.toContain("X") // no host row shows through
+      expect(stringWidth(box)).toBe(width) // every cell painted
+    }
+  }
+
+  it("seals the prompt, rules, grouped rows and hints with items", () => {
+    const frame = render(
+      <OverHost width={60}>
+        <StaticHost />
+      </OverHost>,
+    ).lastFrame()
+    expectSealed(frame, 60)
+    expect(plain(frame)).toMatch(/↑↓ move {2}⏎ select {2}esc close/)
+  })
+
+  it("seals short rows at a narrow width", () => {
+    const frame = render(
+      <OverHost width={40}>
+        <CommandPalette
+          items={[
+            { id: "a", title: "a" },
+            { id: "b", title: "bb", hint: "c" },
+          ]}
+          query=""
+          onQueryChange={() => {}}
+          onSelect={() => {}}
+          width={40}
+        />
+      </OverHost>,
+    ).lastFrame()
+    expectSealed(frame, 40)
+  })
+
+  it("seals the flattened rows while typing", async () => {
+    const { stdin, lastFrame } = render(
+      <OverHost width={60}>
+        <StaticHost />
+      </OverHost>,
+    )
+    stdin.write("co")
+    await delay()
+    const frame = plain(lastFrame())
+    expect(frame).toContain("❯ config")
+    expectSealed(frame, 60)
+  })
+
+  it("seals the message slot and the counter while scrolling", async () => {
+    const many: PaletteItem[] = Array.from({ length: 30 }, (_, i) => ({
+      id: `item-${i}`,
+      title: `item ${i}`,
+    }))
+    const scrolled = render(
+      <OverHost width={60}>
+        <CommandPalette
+          items={many}
+          query=""
+          onQueryChange={() => {}}
+          onSelect={() => {}}
+          maxRows={5}
+        />
+      </OverHost>,
+    ).lastFrame()
+    expect(plain(scrolled)).toContain("1 of 30")
+    expectSealed(scrolled, 60)
+
+    const { stdin, lastFrame } = render(
+      <OverHost width={60}>
+        <DerivingHost />
+      </OverHost>,
+    )
+    stdin.write("nope")
+    await delay()
+    const frame = plain(lastFrame())
+    expect(frame).toContain('no ticket matches "nope"')
+    expectSealed(frame, 60)
+  })
+
+  it("draws emptyHint once, dimmed, while waiting for the first query", async () => {
+    const idle = render(
+      <OverHost width={60}>
+        <CommandPalette
+          items={[]}
+          query=""
+          onQueryChange={() => {}}
+          onSelect={() => {}}
+          emptyHint="type a ticket key"
+        />
+      </OverHost>,
+    ).lastFrame()
+    expect(plain(idle)).toContain("type a ticket key")
+    expectSealed(idle, 60)
+  })
+
+  it("hides emptyHint once there is a query, rows, or a message", async () => {
+    const Host = ({ initial }: { initial: string }) => {
+      const [value, setValue] = useState(initial)
+      const items = value === "a" ? [{ id: "a", title: "a hit" }] : []
+      return (
+        <CommandPalette
+          items={items}
+          query={value}
+          onQueryChange={setValue}
+          onSelect={() => {}}
+          message={
+            value && !items.length ? `nothing for "${value}"` : undefined
+          }
+          emptyHint="type a ticket key"
+        />
+      )
+    }
+    const idle = render(
+      <OverHost width={60}>
+        <Host initial="" />
+      </OverHost>,
+    ).lastFrame()
+    expect(plain(idle)).toContain("type a ticket key")
+
+    const rows = render(
+      <OverHost width={60}>
+        <Host initial="a" />
+      </OverHost>,
+    ).lastFrame()
+    expect(plain(rows)).toContain("a hit")
+    expect(plain(rows)).not.toContain("type a ticket key")
+    expectSealed(rows, 60)
+
+    const { stdin, lastFrame } = render(
+      <OverHost width={60}>
+        <Host initial="" />
+      </OverHost>,
+    )
+    stdin.write("z")
+    await delay()
+    const frame = plain(lastFrame())
+    expect(frame).toContain('nothing for "z"') // the message wins
+    expect(frame).not.toContain("type a ticket key")
+    expectSealed(frame, 60)
   })
 })
 

@@ -1,7 +1,8 @@
 import React, { useEffect, type ReactNode } from "react"
 import { Box, Text } from "ink"
+import stringWidth from "string-width"
 import { TextInput } from "./text-input.js"
-import { FooterHints, type Hint } from "./footer-hints.js"
+import { type Hint } from "./footer-hints.js"
 import { useListCursor } from "./use-list-cursor.js"
 import { colors } from "../tokens.js"
 
@@ -43,6 +44,13 @@ type CommandPaletteProps = {
    * it shows. Never a row, so the cursor cannot land on it.
    */
   message?: string
+  /**
+   * One muted line drawn where the rows would be while the palette is still
+   * waiting for its first query: `items` is empty and the query is too, e.g.
+   * "type a ticket key". Loses to `message`, and never shows beside rows —
+   * once the host has rows (grouped or flat) they are drawn instead.
+   */
+  emptyHint?: string
   placeholder?: string
   width?: number
   /** Visual lines the row area may spend before it scrolls. */
@@ -86,6 +94,16 @@ const DEFAULT_HINTS: Hint[] = [
   ["esc", "close"],
 ]
 
+// Ink only paints the cells a line writes, so an overlay that leaves a cell
+// empty leaves whatever was underneath showing through. Every line below is
+// therefore exactly the inner width: literal leading spaces instead of Box
+// padding, literal separators instead of flex gaps, and trailing spaces out
+// to the border — measured with string-width, never padEnd, so wide glyphs
+// price correctly.
+const spaces = (count: number) => " ".repeat(Math.max(0, count))
+const padEndWidth = (value: string, width: number) =>
+  value + spaces(width - stringWidth(value))
+
 /**
  * A launcher: a query line over a list of rows, one cursor, Enter runs the row
  * under it. Dumb by design — it holds no query state of its own and does no
@@ -103,6 +121,7 @@ export const CommandPalette = ({
   onSelect,
   onClose,
   message,
+  emptyHint,
   placeholder = "type to search",
   width = 60,
   maxRows = 10,
@@ -128,19 +147,31 @@ export const CommandPalette = ({
   const visible = rows.slice(start, start + budget)
   const scrolls = rows.length > budget
   const hasMarkers = items.some((item) => item.marker)
-  const inner = width - 4
-  const headerTrail = (title: string) => Math.max(2, inner - title.length - 4)
+  const inner = width - 2
+  const headerTrail = (title: string) =>
+    Math.max(2, inner - 5 - stringWidth(title))
+  // Before the first keystroke there are no rows and no verdict yet: the
+  // hint holds the slot so the box keeps its shape, padded like every line.
+  const emptyLine = message ?? (query.trim() === "" ? emptyHint : undefined)
+  const counter = `${at + 1} of ${items.length}`
+  const hintsWidth =
+    hints.reduce(
+      (total, [key, label]) =>
+        total + stringWidth(key) + 1 + stringWidth(label),
+      0,
+    ) +
+    Math.max(0, hints.length - 1) * 2
 
   return (
     <Box
       flexDirection="column"
       borderStyle="round"
       borderColor={colors.info}
-      paddingX={1}
+      backgroundColor={colors.track}
       width={width}
     >
-      <Box>
-        <Text color={colors.info}>{"› "}</Text>
+      <Box width={inner}>
+        <Text color={colors.info}>{" › "}</Text>
         <TextInput
           defaultValue={query}
           placeholder={placeholder}
@@ -152,14 +183,23 @@ export const CommandPalette = ({
           onCancel={onClose}
           isDisabled={!isActive}
         />
+        {/* The filler takes whatever width the query leaves and its text
+            stretches across it, so the cells after the query are spaces,
+            not the host — whatever the query length or caret position. */}
+        <Box flexGrow={1} flexDirection="column">
+          <Text> </Text>
+        </Box>
       </Box>
-      <Text dimColor>{"─".repeat(inner)}</Text>
-      {items.length === 0 && message ? <Text dimColor>{message}</Text> : null}
+      <Text dimColor>{" " + "─".repeat(inner - 2) + " "}</Text>
+      {items.length === 0 && emptyLine ? (
+        <Text dimColor>{" " + padEndWidth(emptyLine, inner - 2) + " "}</Text>
+      ) : null}
       {visible.map((row) => {
         if (!isItemRow(row)) {
           const title = row.header.toUpperCase()
           return (
             <Text key={`header:${row.header}`}>
+              {" "}
               <Text dimColor>{"── "}</Text>
               <Text bold color={colors.group}>
                 {title}
@@ -171,7 +211,7 @@ export const CommandPalette = ({
         const { item } = row
         const active = row.index === at
         return (
-          <Box key={item.id}>
+          <Box key={item.id} width={inner}>
             <Box flexShrink={0}>
               <Text color={colors.info}>{active ? " ❯ " : "   "}</Text>
             </Box>
@@ -182,18 +222,38 @@ export const CommandPalette = ({
                 </Text>
               </Box>
             ) : null}
-            <Text bold={active}>{item.label ?? item.title}</Text>
-            {item.hint ? <Text dimColor>{"  " + item.hint}</Text> : null}
+            {/* The title cell takes whatever width the row leaves and its
+                text stretches across it, so a short row still paints every
+                cell after its hint — this is what stops host text showing
+                between the title and the border, whatever `label` draws. */}
+            <Box flexGrow={1} flexDirection="column">
+              <Text bold={active}>
+                {item.label ?? item.title}
+                {item.hint ? <Text dimColor>{"  " + item.hint}</Text> : null}
+              </Text>
+            </Box>
           </Box>
         )
       })}
       {scrolls ? (
-        <Box justifyContent="flex-end">
-          <Text dimColor>{`${at + 1} of ${items.length}`}</Text>
-        </Box>
+        <Text dimColor>
+          {" " + spaces(inner - 2 - stringWidth(counter)) + counter + " "}
+        </Text>
       ) : null}
-      <Text dimColor>{"─".repeat(inner)}</Text>
-      <FooterHints hints={hints} />
+      <Text dimColor>{" " + "─".repeat(inner - 2) + " "}</Text>
+      {/* Drawn inline rather than with FooterHints: its column gaps are
+          unwritten cells, which is where the host showed through the footer. */}
+      <Text>
+        {" "}
+        {hints.map(([key, label], index) => (
+          <React.Fragment key={key}>
+            {index > 0 ? "  " : null}
+            <Text color="white">{key}</Text>
+            <Text dimColor>{" " + label}</Text>
+          </React.Fragment>
+        ))}
+        {spaces(inner - 1 - hintsWidth)}
+      </Text>
     </Box>
   )
 }
