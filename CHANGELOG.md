@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.38.0 — 2026-10-05
+
+### Highlights
+
+- **`colors` gains `added` and `removed` for diff counts like `+42 -7`.** They are green (`#4ADE80`) and coral (`#FF6B6B`), drawn from `palette.green` and `palette.coral`. `success` and `error` are unchanged, so ✓/✗ glyphs don't move; a run of digits needs more chroma than a single glyph. ([838ff59](https://github.com/kud/ink-ui/commit/838ff593fa4aac23c1f2c5e28ba6b2396568f07e))
+
+---
+
 ## 0.37.0 — 2026-10-05
 
 ### Highlights
