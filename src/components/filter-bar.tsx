@@ -29,8 +29,20 @@ export const FilterBar = ({ term, typing, caret, matches }: FilterBarProps) => {
     <Box>
       <Text color={colors.info}>{"/ "}</Text>
       <Text>{term.slice(0, at)}</Text>
-      {typing ? <Text color={colors.info}>▏</Text> : null}
-      <Text>{term.slice(at)}</Text>
+      {/* Mid-term the caret is a block: the character under it inverted, so
+          the term keeps its width. A bar there would take a cell of its own
+          and split the term in two. At the end it is the bar, as before. */}
+      {typing && at < term.length ? (
+        <>
+          <Text inverse>{term[at]}</Text>
+          <Text>{term.slice(at + 1)}</Text>
+        </>
+      ) : (
+        <>
+          {typing ? <Text color={colors.info}>▏</Text> : null}
+          <Text>{term.slice(at)}</Text>
+        </>
+      )}
       {matches === undefined ? null : (
         <Text
           dimColor

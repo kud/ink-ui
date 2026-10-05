@@ -121,19 +121,19 @@ describe("useFilterMode", () => {
   it("moves the caret with ←→ and inserts mid-term", async () => {
     const { stdin, lastFrame } = render(<Host />)
     await press(stdin, "/", "a", "b", LEFT, "X")
-    expect(lastFrame()).toContain("/ aX▏b")
+    expect(lastFrame()).toContain("/ aXb")
   })
 
   it("deletes the character before the caret on backspace", async () => {
     const { stdin, lastFrame } = render(<Host />)
     await press(stdin, "/", "a", "b", LEFT, DEL)
-    expect(lastFrame()).toContain("/ ▏b")
+    expect(lastFrame()).toContain("/ b")
   })
 
   it("clamps the caret at both ends of the term", async () => {
     const { stdin, lastFrame } = render(<Host />)
     await press(stdin, "/", "a", LEFT, LEFT, "X")
-    expect(lastFrame()).toContain("/ X▏a")
+    expect(lastFrame()).toContain("/ Xa")
     await press(stdin, RIGHT, RIGHT, RIGHT, "Y")
     expect(lastFrame()).toContain("/ XaY▏")
   })
@@ -141,7 +141,7 @@ describe("useFilterMode", () => {
   it("jumps to the start and end on ctrl+a / ctrl+e", async () => {
     const { stdin, lastFrame } = render(<Host />)
     await press(stdin, "/", "a", "b", CTRL_A, "X")
-    expect(lastFrame()).toContain("/ X▏ab")
+    expect(lastFrame()).toContain("/ Xab")
     await press(stdin, CTRL_E, "Y")
     expect(lastFrame()).toContain("/ XabY▏")
   })
@@ -154,11 +154,14 @@ describe("useFilterMode", () => {
 })
 
 describe("FilterBar", () => {
-  it("draws the caret mid-term when given a caret", async () => {
+  // Mid-term the caret is the inverted character under it (invisible in a
+  // plain frame), so the term keeps its width: no bar splits it.
+  it("keeps the term whole with the caret mid-term", async () => {
     const { lastFrame } = render(
       <FilterBar term="ab" typing caret={1} matches={2} />,
     )
-    expect(lastFrame()).toContain("/ a▏b")
+    expect(lastFrame()).toContain("/ ab   2 matches")
+    expect(lastFrame()).not.toContain("▏")
   })
 
   it("draws the caret at the end when no caret is given", async () => {
