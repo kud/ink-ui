@@ -187,11 +187,15 @@ priced off whichever width won, so it always reaches the border.
 the body is `SkeletonRows` — `widths` as fractions of the space, cycled in
 order, `gapEvery` to hint at grouping, `indent` to sit under a gutter — and a
 tab whose count is unknown takes `count: null`, drawn `(–)` at a two-digit
-count's width. `SkeletonBar` is the single static bar they are made of, for a
-value in a detail row. **Once anything is known, never go back to skeletons:**
+count's width. `SkeletonBar` is the single bar they are made of, for a
+value in a detail row. A soft highlight band sweeps each bar left to right on
+one shared clock, staggered per row so the wave travels diagonally, then loops
+after a short pause — a first load with nothing on screen reads as frozen
+without motion. `animate={false}` stills them; piped output and `NO_MOTION` /
+`REDUCE_MOTION` are still automatically.
+**Once anything is known, never go back to skeletons:**
 a refresh keeps the stale rows and counts on screen and says busy in `Page`'s
-status slot (`↻ refreshing…`). Skeletons never animate — the status slot is
-where a page says it is working.
+status slot (`↻ refreshing…`).
 `Panel` stays for inner regions inside `Columns`.
 
 ## The footer, in order
@@ -245,13 +249,13 @@ it renders identically — it breaks the moment a token moves.
 
 ```ts
 import { colors, softColors, spacing } from "@kud/ink-ui"
-// colors: accent · secondary · muted · success · error · warning · info · group · track
+// colors: accent · secondary · muted · success · error · warning · info · group · track · trackHighlight
 // softColors: the same seven minus secondary, as quiet measured fills
 // spacing.xs 1 · sm 2 · md 3 · lg 4
 ```
 
-Nine tokens: seven semantic hues, each with a soft twin, one text tier, and
-one ground.
+Ten tokens: seven semantic hues, each with a soft twin, one text tier, and
+two grounds.
 Each answers a different question, and picking by "what looks right" is how
 two of them end up doing one job.
 
@@ -278,9 +282,11 @@ two of them end up doing one job.
 - **`group`** is the container of the rows beneath it — an epic heading, a
   fence over children that live elsewhere.
 - **`track`** (`#2b323d`) is ground, not ink: the unfilled part of a
-  `ProgressBar` and the whole of a `SkeletonBar`. Never a state and never
-  text — it is kept well below every fill drawn over it, so the two separate
-  by lightness for any reader.
+  `ProgressBar` and the base of a `SkeletonBar`. `trackHighlight` is the crest
+  of that ground — the lighter step a skeleton's shimmer band peaks at, the
+  falloff each side blended between the two. Still ground, never a state and
+  never text — the crest is kept well above the base so the two separate by
+  lightness for any reader.
 
 `softColors` is the seven semantic ones desaturated and darkened so white ink
 reads on all of them against a dark ground, measured for a deutan/protan

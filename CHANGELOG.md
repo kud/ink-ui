@@ -4,6 +4,19 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.33.0 — 2026-10-05
+
+### Upgrade note
+
+- **`SkeletonBar` and `SkeletonRows` now shimmer by default.** The wave runs only on a TTY and stills under `NO_MOTION` / `REDUCE_MOTION`, so piped output, snapshots and `ink-testing-library` frames are byte-identical to before — colour never survives a non-TTY frame. Pass `animate={false}` on either component to keep the plain static bar everywhere.
+
+### Highlights
+
+- **Skeleton loaders gain a shimmer wave** — a soft highlight band in the new `colors.trackHighlight` ground sweeps each bar left to right with a blended falloff each side, then loops after a short pause. A first load with nothing on screen read as frozen without motion, and the status slot alone cannot reassure a body that does not exist yet. `SkeletonRows` keeps one clock for the group and staggers each row, so the wave travels diagonally down-and-across instead of marching in lockstep; a standalone `SkeletonBar` keeps its own clock. The per-cell colour maths is pinned by unit tests through a pure module function, after `Pill`'s `inkFor` precedent.
+- **`AGENTS.md` records the reversal** — skeletons animate; a refresh still keeps stale content and says busy in `Page`'s status slot.
+
+---
+
 ## 0.32.0 — 2026-10-02
 
 ### Upgrade note

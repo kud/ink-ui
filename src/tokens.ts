@@ -11,9 +11,14 @@
  * commits to; a light-theme terminal would need its own value.
  *
  * `track` is the unlit ground of a measured strip: the empty part of a
- * `ProgressBar`, and the whole of a `SkeletonBar` standing in for text that
+ * `ProgressBar`, and the base of a `SkeletonBar` standing in for text that
  * has not arrived. Furniture, never a state — kept clearly darker than any
  * fill drawn over it, so the two separate by lightness for every reader.
+ *
+ * `trackHighlight` is the crest of that ground: the lighter step a skeleton's
+ * shimmer band peaks at while it sweeps, with the falloff each side blended
+ * between the two. Still ground, never ink — nothing is ever written in it,
+ * which is why it can sit well above `track` without becoming a state.
  */
 export const colors = {
   accent: "#FF8C00",
@@ -25,6 +30,7 @@ export const colors = {
   info: "cyan",
   group: "magenta",
   track: "#2b323d",
+  trackHighlight: "#6b7480",
 } as const
 
 export type Color = (typeof colors)[keyof typeof colors]
