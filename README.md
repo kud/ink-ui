@@ -118,7 +118,7 @@ All components accept only the props they need — no theme provider or context 
 import { colors, spacing } from "@kud/ink-ui"
 
 // colors.accent   → "#FF8C00"
-// colors.success  → "green"
+// colors.success  → "#5FD7A7"
 // spacing.md      → 3
 ```
 

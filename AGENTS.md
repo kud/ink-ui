@@ -261,15 +261,15 @@ use it. A literal like `color="orange"` or `color="#FF8C00"` is wrong even when
 it renders identically — it breaks the moment a token moves.
 
 ```ts
-import { colors, softColors, spacing } from "@kud/ink-ui"
-// colors: accent · secondary · muted · success · error · warning · info · group · track · trackHighlight
-// softColors: the same seven minus secondary, as quiet measured fills
+import { colors, palette, priorityColors, softColors, spacing } from "@kud/ink-ui"
+// colors: accent · secondary · muted · dim · success · error · warning · info · pending · group
+//         ticket · pr · link · selection · track · trackHighlight
+// palette: the raw hexes those are drawn from; priorityColors: highest · high · medium · low · lowest
+// softColors: seven of them (not secondary), as quiet measured fills
 // spacing.xs 1 · sm 2 · md 3 · lg 4
 ```
 
-Ten tokens: seven semantic hues, each with a soft twin, one text tier, and
-two grounds.
-Each answers a different question, and picking by "what looks right" is how
+Each token answers a different question, and picking by "what looks right" is how
 two of them end up doing one job.
 
 - **The default foreground is the answer.** No token. The row's title, the
@@ -286,8 +286,9 @@ two of them end up doing one job.
   column. It is a hex because the tier only exists as a measured step, tuned to
   the dark ground every consumer already commits to. It has no soft twin
   because it is never a fill.
-- **`muted`** is furniture — what `dimColor` renders: the frame, hint labels,
-  facts, the counter, an age. Everything the reader may skip.
+- **`muted`** (`#75767E`, what `dimColor` measures on this ground) is
+  furniture: the frame, hint labels, facts, the counter, an age. Everything the
+  reader may skip. `dim` is one step below, for rules and separators only.
 - **`success` · `error` · `warning` · `info`** are verdicts and events, and
   they never travel alone: `StatusMessage` and `Alert` pair each with its
   glyph (`✓` `✗` `⚠` `ℹ`) because the shape is the channel and the hue only
@@ -303,9 +304,7 @@ two of them end up doing one job.
 
 `softColors` is the seven semantic ones desaturated and darkened so white ink
 reads on all of them against a dark ground, measured for a deutan/protan
-reader. Only `Pill tone="soft"` should reach for it. Named ANSI colours adapt
-to the user's theme; the hexes exist where a fixed, measured contrast is the
-whole point.
+reader. Only `Pill tone="soft"` should reach for it.
 
 The one exception to the token rule is `<Pill color>`, for a state an external
 system **invented** and whose colour is its vocabulary — GitHub's merged
@@ -315,6 +314,38 @@ chosen by meaning. The test is whether the hue names a state the reader already
 knows from the source, or merely decorates a category the tokens can already
 say. The pill inks itself against whatever fill it is given, so a caller never
 picks a foreground.
+
+## Colour system
+
+Tuned to #1a1b27; dark-only; truecolour assumed, chalk downsamples. `palette`
+holds the raw hexes (`Palette` is their union), `colors` maps roles onto them,
+`priorityColors` (`PriorityColor`) is the priority tier. There is no light
+theme and no provider.
+
+1. **Hex only, never ANSI names.** The terminal theme repaints `cyan`,
+   `magenta` and `gray`; every token is a hex.
+2. **Red is for errors and failures only.** Not priority, not brand.
+3. **Status always carries a glyph or a word** (`✓` `⚠` `✗` `ℹ` `◌`); the hue
+   only reinforces it. `pending` has no hue: waiting is not news.
+4. **Identifiers take identifier hues, never status hues.** `ticket` (yellow)
+   for a Jira-style key, `pr` (orange) for a PR or issue number; bold only on
+   the row's own identifier, regular when cited. `link` (blue) is never an
+   identifier.
+5. **The accent is spent once per row or column.** On a PR row the number *is*
+   the accent, so nothing else there spends orange; the `❯` keeps its column.
+6. **Four text tiers:** default foreground, `secondary`, `muted`, `dim`. `dim`
+   is furniture (rules, separators, borders), never text to read.
+7. **On the `selection` ground, `muted` lifts to `secondary`**, and the row
+   still carries `❯`: the fill alone is 1.4:1.
+8. **Solid fill is an event, soft fill is a classification.**
+9. **Priority is lightness, not hue:** `ink` → `grey` → `slate`, with the
+   chevron shape carrying the rank.
+10. **An external system's state colour may be used, never its theme.**
+
+Never share a hue: `accent`/`ticket`; identifiers/status; priority/status;
+`ticket`/`pr`; `success`/`warning` (hence mint, not green); `pending`/any hue.
+`warning` sits between `pr` and `ticket`, which is why it always carries `⚠`
+and a word. `tokens.test.ts` checks these pairs stay apart at 256 colours.
 
 ## Pill: solid says something happened, soft says what it is
 
@@ -350,13 +381,12 @@ add.
 
 Two worked examples from real boards:
 
-- **Opposing marks need distinct shape *and* hues from different bins.** A
+- **Opposing marks need distinct shape *and* a lightness step.** A
   Jira row's priority is `▲` above normal, `▼` below, nothing for normal. The
   shapes are the channel, but two arrows painted in the same colour still read
-  as "a mark" at row-scan speed, and red/green collapses for a deutan reader.
-  So up takes a warm hue and down a cool one, both on a lightness step that
-  clears the row text. Shape for the reader who cannot see hue; hue-bin so the
-  pair does not merge for the eye that is moving.
+  as "a mark" at row-scan speed. Priority is ordinal, so `priorityColors`
+  steps it in lightness (`ink` → `grey` → `slate`), never in a status hue:
+  a red chevron would claim a failure.
 - **`behind` is a word, and the bright one.** When an epic's status trails its
   children — still To do with a child started — its trailing note reads
   `behind · 1 In progress`, the word bright and the rest dim. A word rather
