@@ -271,7 +271,7 @@ it renders identically — it breaks the moment a token moves.
 ```ts
 import { colors, palette, priorityColors, softColors, spacing } from "@kud/ink-ui"
 // colors: accent · secondary · muted · dim · success · error · warning · info · pending · group
-//         ticket · pr · link · selection · track · trackHighlight
+//         ticket · pr · link · added · removed · selection · track · trackHighlight
 // palette: the raw hexes those are drawn from; priorityColors: highest · high · medium · low · lowest
 // softColors: seven of them (not secondary), as quiet measured fills
 // spacing.xs 1 · sm 2 · md 3 · lg 4
@@ -301,6 +301,9 @@ two of them end up doing one job.
   they never travel alone: `StatusMessage` and `Alert` pair each with its
   glyph (`✓` `✗` `⚠` `ℹ`) because the shape is the channel and the hue only
   reinforces it.
+- **`added` · `removed`** (`#4ADE80` · `#FF6B6B`) count a diff: the `+N -N`
+  beside a PR. Not `success`/`error`: a run of digits needs more chroma than a
+  single glyph, and a line count is a size, not a verdict.
 - **`group`** is the container of the rows beneath it — an epic heading, a
   fence over children that live elsewhere.
 - **`track`** (`#2b323d`) is ground, not ink: the unfilled part of a
