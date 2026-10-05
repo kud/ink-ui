@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.37.0 — 2026-10-05
+
+### Highlights
+
+- **`CommandPalette`'s `message` now takes a tone.** Pass a `PaletteMessage` (`{ text, tone, onSubmit }`) instead of a string and `tone: "error"` draws the line in the error colour behind `✗`, so a failure reads as one rather than as another muted miss. `onSubmit` makes Enter act while the message shows, which is how a host retries a failed lookup without inventing a row for it. A plain string still renders muted exactly as before, and the new `PaletteMessage` type is exported. ([e79f7b4](https://github.com/kud/ink-ui/commit/e79f7b4dfebe9f88ac6eb714ec286c6546db31f1))
+
+### Documentation
+
+- **`AGENTS.md` explains the palette's message slot.** A string is a miss, an error-toned `PaletteMessage` is a failure, and `onSubmit` is the retry. ([e79f7b4](https://github.com/kud/ink-ui/commit/e79f7b4dfebe9f88ac6eb714ec286c6546db31f1))
+
+---
+
 ## 0.36.0 — 2026-10-05
 
 ### Breaking Changes
