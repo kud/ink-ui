@@ -77,17 +77,18 @@ between them never relearns "how do I leave":
 > overlay", never "back". `ctrl+c` likewise. Inside a focused text input `q`
 > types and `backspace` deletes — the input owns the keyboard, `esc` blurs it
 > and keeps the value. `esc` and `backspace` are synonyms for **back exactly
-> one level**: input focus → overlay → screen → filter → main. A list filter is
-> the exception to the input rule and the bottom of the peel: `/` types, `↵`
-> keeps the filter and hands the letter keys back as hotkeys, `/` again goes
-> back into the term, and `esc` clears it — while typing, or once every layer
-> above it is gone. At the main page with no filter `esc` does nothing, never
-> quit. `?` opens the legend as an overlay everywhere. Only one thing listens
-> at a time.
+> one level**: input focus → overlay → screen → filter → main. A list filter
+> is the bottom of the peel: `/` types, `↵` or `esc` keeps the filter and
+> hands the letter keys back as hotkeys (an empty term leaves no filter),
+> `ctrl+u` clears the term and stays in the field, `/` again goes back into
+> the term, and `esc` from the list clears it once every layer above it is
+> gone, so `esc` twice clears it from anywhere. At the main page with no
+> filter `esc` does nothing, never quit. `?` opens the legend as an overlay
+> everywhere. Only one thing listens at a time.
 
 `TextInput` already does its half for a value prompt: `onCancel` fires on
 `esc` and the value is kept. A list filter is `useFilterMode` instead — see
-below — because there `esc` means "clear", not "keep".
+below — because it also has a kept mode the host's peel clears.
 
 **The filter, vim's way.** A list filter has two modes and every `@kud` TUI
 uses the same two. `useFilterMode()` owns them and returns `{ term, typing,
@@ -101,10 +102,10 @@ the hook only holds the term. Draw it with `FilterBar` (passing `caret`) in
 `Page`'s `filter` slot, and while `typing` show `filter.hints` in place of
 your own, since they are the only keys that work.
 
-This was amended on 2026-09-30. It used to say `esc` in a field keeps the value
-and `esc` never clears a filter, on the grounds that back pops layers and never
-edits settings. In practice that left a filter you could only get rid of one
-character at a time.
+This was amended on 2026-09-30, when `esc` never cleared a filter and one could
+only be removed a character at a time, and again on 2026-10-05: `esc` while
+typing now keeps the filter like `↵`, so leaving the field never throws the
+term away, `ctrl+u` clears it in place, and clearing stays the peel's job.
 
 ## The page: six bands, one frame
 

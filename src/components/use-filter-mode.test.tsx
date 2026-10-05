@@ -13,6 +13,7 @@ const LEFT = `${ESC}[D`
 const RIGHT = `${ESC}[C`
 const CTRL_A = String.fromCharCode(1)
 const CTRL_E = String.fromCharCode(5)
+const CTRL_U = String.fromCharCode(21)
 const delay = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /*
@@ -20,7 +21,8 @@ const delay = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms))
  * cursor keeps the arrows but gives up j/k while typing, and a hotkey handler
  * stands down while the field is open. `c` is the stand-in for any letter
  * command — the whole reason the kept mode exists is that it fires there and
- * types here.
+ * types here. `esc` outside the field is the host's peel, whose bottom arm
+ * clears a kept filter.
  */
 const Host = ({
   onHotkey,
@@ -32,7 +34,8 @@ const Host = ({
   const filter = useFilterMode({ onChange })
   const { cursor } = useListCursor(5, { vimKeys: !filter.typing })
   useInput(
-    (input) => {
+    (input, key) => {
+      if (key.escape && filter.active) return filter.clear()
       if (input === "c") onHotkey?.(input)
     },
     { isActive: !filter.typing },
@@ -89,13 +92,52 @@ describe("useFilterMode", () => {
     expect(lastFrame()).toContain("/ pu▏")
   })
 
-  it("clears the term and leaves the field on esc while typing", async () => {
+  it("keeps the filter on esc while typing, like ↵", async () => {
+    const onHotkey = vi.fn()
+    const onChange = vi.fn()
+    const { stdin, lastFrame } = render(
+      <Host onHotkey={onHotkey} onChange={onChange} />,
+    )
+    await press(stdin, "/", "p", ESC, "c")
+    expect(lastFrame()).toContain("/ p")
+    expect(lastFrame()).not.toContain("▏")
+    expect(lastFrame()).toContain("/ edit")
+    expect(onChange).toHaveBeenLastCalledWith("p")
+    expect(onHotkey).toHaveBeenCalledOnce()
+  })
+
+  it("clears a kept filter on a second esc, through the host's peel", async () => {
     const onChange = vi.fn()
     const { stdin, lastFrame } = render(<Host onChange={onChange} />)
-    await press(stdin, "/", "p", ESC)
+    await press(stdin, "/", "p", ESC, ESC)
     expect(lastFrame()).not.toContain("/ p")
     expect(lastFrame()).toContain("/ filter")
     expect(onChange).toHaveBeenLastCalledWith(null)
+  })
+
+  it("clears the term on ctrl+u and stays in the field", async () => {
+    const { stdin, lastFrame } = render(<Host />)
+    await press(stdin, "/", "a", "b", CTRL_U)
+    expect(lastFrame()).toContain("/ ▏")
+    expect(lastFrame()).toContain("⌃u clear")
+    await press(stdin, "x")
+    expect(lastFrame()).toContain("/ x▏")
+  })
+
+  it("leaves no filter on esc from an empty field", async () => {
+    const onChange = vi.fn()
+    const { stdin, lastFrame } = render(<Host onChange={onChange} />)
+    await press(stdin, "/", ESC)
+    expect(lastFrame()).toContain("/ filter")
+    await press(stdin, "/", "a", CTRL_U, ESC)
+    expect(lastFrame()).toContain("/ filter")
+    expect(onChange).toHaveBeenLastCalledWith(null)
+  })
+
+  it("shows the typing hints while the field is open", async () => {
+    const { stdin, lastFrame } = render(<Host />)
+    await press(stdin, "/")
+    expect(lastFrame()).toContain("↑↓ move · ↵/esc done · ⌃u clear")
   })
 
   it("deletes on backspace", async () => {
@@ -107,6 +149,8 @@ describe("useFilterMode", () => {
   it("drops an empty term on ↵ rather than keeping a filter of nothing", async () => {
     const { stdin, lastFrame } = render(<Host />)
     await press(stdin, "/", "\r")
+    expect(lastFrame()).toContain("/ filter")
+    await press(stdin, "/", "a", CTRL_U, "\r")
     expect(lastFrame()).toContain("/ filter")
   })
 

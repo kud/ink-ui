@@ -13,7 +13,8 @@ type UseFilterModeOptions = {
  * A list filter with two modes, vim's split between inserting and acting.
  *
  * TYPING: `/` opens the field and every printable key goes into the term.
- * `↵` leaves typing and KEEPS the filter; `esc` clears the term and leaves.
+ * `↵` and `esc` both leave typing and KEEP the filter (an empty term leaves
+ * no filter); `ctrl+u` clears the term and stays in the field.
  * ↑↓ are not taken, so a host's `useListCursor` still walks the matches while
  * the field is open — pass it `vimKeys: !typing` so `j`/`k` type instead.
  *
@@ -22,6 +23,7 @@ type UseFilterModeOptions = {
  * point of keeping it is being able to refine it. `esc` here is not this
  * hook's: a kept filter is the bottom layer of the host's peel, so the host's
  * `onBack` clears it through `clear()`, after every layer pushed above it.
+ * `esc` twice therefore clears a filter from anywhere.
  *
  * Owns its own `useInput`, like `useListCursor`. The host stands its other
  * handlers down while `typing` is true — `useAppKeys({ isActive: !typing })`
@@ -74,13 +76,14 @@ export const useFilterMode = ({
         return
       }
       if (key.upArrow || key.downArrow) return
-      // An empty term accepted is no filter at all, not a filter matching
+      // An empty term left behind is no filter at all, not a filter matching
       // everything that still needs an `esc` to get rid of.
-      if (key.return) {
+      if (key.return || key.escape) {
         setState((s) => (!s.term ? { term: null, caret: 0 } : s))
         return setTyping(false)
       }
-      if (key.escape) return clear()
+      if (key.ctrl && (input === "u" || input === "U"))
+        return setState({ term: "", caret: 0 })
       if (key.leftArrow)
         return setState((s) => ({ ...s, caret: Math.max(0, s.caret - 1) }))
       if (key.rightArrow)
@@ -122,8 +125,8 @@ export const useFilterMode = ({
   const hints: Hint[] = typing
     ? [
         ["↑↓", "move"],
-        ["↵", "keep"],
-        ["esc", "clear"],
+        ["↵/esc", "done"],
+        ["⌃u", "clear"],
       ]
     : term !== null
       ? [
