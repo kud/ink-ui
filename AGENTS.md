@@ -242,6 +242,18 @@ Composing a domain component on top of these is right and expected — wrapping
 `Table` to render your own row shape is the system working. Reimplementing
 `Table` is not.
 
+## Opening the command palette: the trigger is the host's
+
+`CommandPalette` binds no open key. A terminal never passes a `⌘` chord
+through to the program, so a literal `⌘K` cannot be a binding. The host picks
+a chord the terminal does deliver and opens the palette from its own
+`useInput`; `Ctrl+K` is the convention across `@kud` TUIs. A user who wants
+`⌘K` maps it in their terminal to send the same byte (`0x0b`, which is
+`Ctrl+K`), so the host binds one chord and both work.
+
+While the palette is open it is the topmost layer: stand `useAppKeys` and the
+host's own hotkeys down with `isActive: false`, and close it from `onClose`.
+
 ## Colour: what the tokens mean
 
 **Colour comes from tokens, never from a string literal.** Import `colors` and
