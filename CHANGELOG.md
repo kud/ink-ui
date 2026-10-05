@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.36.0 — 2026-10-05
+
+### Breaking Changes
+
+- **`useFilterMode` now keeps the filter when you press Esc while typing.** Esc leaves the field exactly as Enter does, where it used to clear the term; ctrl+u clears it, and Esc or Enter on an empty field leaves no filter. No API change, so nothing fails to compile: clearing a kept filter now takes Esc from the list, which means two Escs clear it from anywhere. The hints read `↵/esc done · ⌃u clear`. ([531377f](https://github.com/kud/ink-ui/commit/531377f02e167b8b2dae0b4974b76f35f2d21267))
+
+### Highlights
+
+- **A new `palette` export holds the raw hexes, and `colors` now draws every value from it.** Every key stays, but each shade shifts, so any TUI using `colors` changes colour with no compile error. ([5273ab6](https://github.com/kud/ink-ui/commit/5273ab6df2c8dbb84b98bdc05a21f6f58033cd17))
+- **`colors` gains `ticket`, `pr`, `link`, `pending`, `dim` and `selection` roles, plus a `priorityColors` export.** The `Palette` and `PriorityColor` types come with them; a test keeps colours meant to differ distinct after 256-colour downsampling. ([5273ab6](https://github.com/kud/ink-ui/commit/5273ab6df2c8dbb84b98bdc05a21f6f58033cd17))
+
+### Documentation
+
+- **`AGENTS.md` now spells out the colour usage rules.** It covers when to reach for `palette`, `colors` and `priorityColors`. ([5273ab6](https://github.com/kud/ink-ui/commit/5273ab6df2c8dbb84b98bdc05a21f6f58033cd17))
+
+---
+
 ## 0.35.0 — 2026-10-05
 
 ### Highlights
