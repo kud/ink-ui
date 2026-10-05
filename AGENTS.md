@@ -91,14 +91,15 @@ below — because there `esc` means "clear", not "keep".
 
 **The filter, vim's way.** A list filter has two modes and every `@kud` TUI
 uses the same two. `useFilterMode()` owns them and returns `{ term, typing,
-active, clear, hints }`. Wire it in four places and nowhere else:
+caret, active, clear, hints }` — `caret` is the index into `term` (←→ move it
+while typing, printable input inserts there). Wire it in four places and nowhere else:
 `useListCursor(n, { vimKeys: !typing })` so the arrows still walk the matches
 while `j`/`k` type; `useAppKeys({ isActive: !typing })`; an early return in
 your hotkey handler while `typing`; and one arm at the bottom of your peel,
 `if (filter.active) return (filter.clear(), true)`. Matching stays yours —
-the hook only holds the term. Draw it with `FilterBar` in `Page`'s `filter`
-slot, and while `typing` show `filter.hints` in place of your own, since
-they are the only keys that work.
+the hook only holds the term. Draw it with `FilterBar` (passing `caret`) in
+`Page`'s `filter` slot, and while `typing` show `filter.hints` in place of
+your own, since they are the only keys that work.
 
 This was amended on 2026-09-30. It used to say `esc` in a field keeps the value
 and `esc` never clears a filter, on the grounds that back pops layers and never

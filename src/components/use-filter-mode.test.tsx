@@ -9,6 +9,10 @@ import { useListCursor } from "./use-list-cursor.js"
 const ESC = String.fromCharCode(27)
 const DEL = String.fromCharCode(127)
 const DOWN = `${ESC}[B`
+const LEFT = `${ESC}[D`
+const RIGHT = `${ESC}[C`
+const CTRL_A = String.fromCharCode(1)
+const CTRL_E = String.fromCharCode(5)
 const delay = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /*
@@ -35,7 +39,12 @@ const Host = ({
   )
   return (
     <>
-      <FilterBar term={filter.term} typing={filter.typing} matches={2} />
+      <FilterBar
+        term={filter.term}
+        typing={filter.typing}
+        caret={filter.caret}
+        matches={2}
+      />
       <Text>{`cursor ${cursor} · ${filter.hints.map(([k, l]) => `${k} ${l}`).join(" · ")}`}</Text>
     </>
   )
@@ -107,5 +116,53 @@ describe("useFilterMode", () => {
     await press(stdin, "/", DOWN, "j")
     expect(lastFrame()).toContain("cursor 1")
     expect(lastFrame()).toContain("/ j▏")
+  })
+
+  it("moves the caret with ←→ and inserts mid-term", async () => {
+    const { stdin, lastFrame } = render(<Host />)
+    await press(stdin, "/", "a", "b", LEFT, "X")
+    expect(lastFrame()).toContain("/ aX▏b")
+  })
+
+  it("deletes the character before the caret on backspace", async () => {
+    const { stdin, lastFrame } = render(<Host />)
+    await press(stdin, "/", "a", "b", LEFT, DEL)
+    expect(lastFrame()).toContain("/ ▏b")
+  })
+
+  it("clamps the caret at both ends of the term", async () => {
+    const { stdin, lastFrame } = render(<Host />)
+    await press(stdin, "/", "a", LEFT, LEFT, "X")
+    expect(lastFrame()).toContain("/ X▏a")
+    await press(stdin, RIGHT, RIGHT, RIGHT, "Y")
+    expect(lastFrame()).toContain("/ XaY▏")
+  })
+
+  it("jumps to the start and end on ctrl+a / ctrl+e", async () => {
+    const { stdin, lastFrame } = render(<Host />)
+    await press(stdin, "/", "a", "b", CTRL_A, "X")
+    expect(lastFrame()).toContain("/ X▏ab")
+    await press(stdin, CTRL_E, "Y")
+    expect(lastFrame()).toContain("/ XabY▏")
+  })
+
+  it("resumes a kept term with the caret at the end", async () => {
+    const { stdin, lastFrame } = render(<Host />)
+    await press(stdin, "/", "a", "b", "\r", "/", "X")
+    expect(lastFrame()).toContain("/ abX▏")
+  })
+})
+
+describe("FilterBar", () => {
+  it("draws the caret mid-term when given a caret", async () => {
+    const { lastFrame } = render(
+      <FilterBar term="ab" typing caret={1} matches={2} />,
+    )
+    expect(lastFrame()).toContain("/ a▏b")
+  })
+
+  it("draws the caret at the end when no caret is given", async () => {
+    const { lastFrame } = render(<FilterBar term="ab" typing matches={2} />)
+    expect(lastFrame()).toContain("/ ab▏")
   })
 })

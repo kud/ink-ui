@@ -36,12 +36,17 @@ export const useFilterMode = ({
   onChange,
 }: UseFilterModeOptions = {}) => {
   // `null` is no filter; `""` is the field open with nothing typed yet.
-  const [term, setTerm] = useState<string | null>(null)
+  // Term and caret live in one object so a burst of keys between two renders
+  // reads and writes the latest pair rather than the one this closure saw.
+  const [state, setState] = useState<{ term: string | null; caret: number }>({
+    term: null,
+    caret: 0,
+  })
   const [typing, setTyping] = useState(false)
+  const { term, caret } = state
 
-  // Functional updates below, so a burst of keys between two renders appends
-  // to the latest term rather than to the one this closure saw. The callback
-  // therefore fires from an effect, once the term has settled, and not on mount.
+  // The callback fires from an effect, once the term has settled, and not on
+  // mount.
   const previous = useRef(term)
   useEffect(() => {
     if (previous.current === term) return
@@ -50,7 +55,7 @@ export const useFilterMode = ({
   }, [term, onChange])
 
   const clear = () => {
-    setTerm(null)
+    setState({ term: null, caret: 0 })
     setTyping(false)
   }
 
@@ -58,7 +63,12 @@ export const useFilterMode = ({
     (input, key) => {
       if (!typing) {
         if (input === "/") {
-          setTerm((t) => t ?? "")
+          // Resume a kept term, or open empty — either way the caret starts
+          // at the end, the way a field you just opened does.
+          setState((s) => {
+            const next = s.term ?? ""
+            return { term: next, caret: next.length }
+          })
           setTyping(true)
         }
         return
@@ -67,14 +77,42 @@ export const useFilterMode = ({
       // An empty term accepted is no filter at all, not a filter matching
       // everything that still needs an `esc` to get rid of.
       if (key.return) {
-        setTerm((t) => (t ? t : null))
+        setState((s) => (!s.term ? { term: null, caret: 0 } : s))
         return setTyping(false)
       }
       if (key.escape) return clear()
+      if (key.leftArrow)
+        return setState((s) => ({ ...s, caret: Math.max(0, s.caret - 1) }))
+      if (key.rightArrow)
+        return setState((s) => ({
+          ...s,
+          caret: Math.min((s.term ?? "").length, s.caret + 1),
+        }))
+      if (key.ctrl && (input === "a" || input === "A"))
+        return setState((s) => ({ ...s, caret: 0 }))
+      if (key.ctrl && (input === "e" || input === "E"))
+        return setState((s) => ({ ...s, caret: (s.term ?? "").length }))
+      // Both backspace and delete remove the character before the caret —
+      // macOS sends DEL (127) for the key some terminals report as BS (8),
+      // and forward-delete isn't worth the ambiguity for a single-line field.
       if (key.backspace || key.delete)
-        return setTerm((t) => (t ?? "").slice(0, -1))
+        return setState((s) => {
+          const current = s.term ?? ""
+          if (s.caret === 0) return { term: current, caret: 0 }
+          return {
+            term: current.slice(0, s.caret - 1) + current.slice(s.caret),
+            caret: s.caret - 1,
+          }
+        })
       if (input && !key.ctrl && !key.meta && !key.tab)
-        setTerm((t) => (t ?? "") + input)
+        return setState((s) => {
+          const current = s.term ?? ""
+          const at = Math.min(s.caret, current.length)
+          return {
+            term: current.slice(0, at) + input + current.slice(at),
+            caret: at + input.length,
+          }
+        })
     },
     { isActive },
   )
@@ -94,5 +132,5 @@ export const useFilterMode = ({
         ]
       : [["/", "filter"]]
 
-  return { term, typing, active: term !== null, clear, hints }
+  return { term, typing, caret, active: term !== null, clear, hints }
 }

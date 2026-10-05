@@ -7,6 +7,8 @@ type FilterBarProps = {
   term: string | null
   /** From `useFilterMode`. Draws the caret. */
   typing: boolean
+  /** From `useFilterMode`. Where the caret sits; defaults to end-of-term. */
+  caret?: number
   /** How many rows survive the filter. Omit to draw no count. */
   matches?: number
 }
@@ -20,13 +22,15 @@ type FilterBarProps = {
  * Presentational and keyless. It sits in the `Page`'s `filter` slot, band two,
  * so every app draws its filter in the same place.
  */
-export const FilterBar = ({ term, typing, matches }: FilterBarProps) => {
+export const FilterBar = ({ term, typing, caret, matches }: FilterBarProps) => {
   if (term === null) return null
+  const at = Math.max(0, Math.min(caret ?? term.length, term.length))
   return (
     <Box>
       <Text color={colors.info}>{"/ "}</Text>
-      <Text>{term}</Text>
+      <Text>{term.slice(0, at)}</Text>
       {typing ? <Text color={colors.info}>▏</Text> : null}
+      <Text>{term.slice(at)}</Text>
       {matches === undefined ? null : (
         <Text
           dimColor
