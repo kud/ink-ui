@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.33.1 — 2026-10-05
+
+### Highlights
+
+- **`useFilterMode` fields gain a caret.** ←/→ now move within the term (they did nothing before), ctrl+a / ctrl+e jump to the start or end, typing and backspace act at the caret, and `/` puts it at the end, fresh or resuming a kept term. ([5496e08](https://github.com/kud/ink-ui/commit/5496e08b1715d19e63346d29451b59c3e9492d8d))
+- **New `caret: number` from `useFilterMode`, and an optional `caret` prop on `FilterBar`**, which draws the `▏` there and defaults to the end of the term, so existing usage renders as before. ([5496e08](https://github.com/kud/ink-ui/commit/5496e08b1715d19e63346d29451b59c3e9492d8d))
+
+---
+
 ## 0.33.0 — 2026-10-05
 
 ### Upgrade note
