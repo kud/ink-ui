@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.35.0 — 2026-10-05
+
+### Highlights
+
+- **`Tabs` accepts an optional `group` per tab and draws a dim divider where the group changes.** Related tabs now sit together; tabs with the same group, or none, render exactly as before. ([c0092c5](https://github.com/kud/ink-ui/commit/c0092c5e0cc17ed94650cc909c327f557b4f939f))
+
+### Documentation
+
+- **`AGENTS.md` explains the command palette trigger.** `CommandPalette` binds no open key, so the host chooses the chord (Ctrl+K by convention); a terminal can map ⌘K to the same byte. ([f583d59](https://github.com/kud/ink-ui/commit/f583d596742b43e428465725e974365708b25407))
+
+---
+
 ## 0.34.0 — 2026-10-05
 
 ### Highlights
