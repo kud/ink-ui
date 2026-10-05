@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.34.0 — 2026-10-05
+
+### Highlights
+
+- **`CommandPalette` gains an optional `emptyHint?: string` prop.** It shows one dim line under the prompt when there are no items and no query; `message` takes precedence. ([a3c5291](https://github.com/kud/ink-ui/commit/a3c5291e11af2e533e9d46031cc370c2176f4f54))
+
+### Fixes
+
+- **`CommandPalette` no longer lets the rows underneath show through.** It now paints every cell of its box, so the prompt, rules, short rows and hints stay clean; the hints are drawn inline, which ends a garbled footer like "moved/⏎ opennd esc closes". ([a3c5291](https://github.com/kud/ink-ui/commit/a3c5291e11af2e533e9d46031cc370c2176f4f54))
+
+---
+
 ## 0.33.2 — 2026-10-05
 
 ### Fixes
