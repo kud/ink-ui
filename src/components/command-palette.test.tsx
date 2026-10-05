@@ -399,6 +399,55 @@ describe("CommandPalette overlay paint", () => {
     expect(frame).not.toContain("type a ticket key")
     expectSealed(frame, 60)
   })
+
+  it("keeps a string message muted, with no glyph", () => {
+    const frame = render(
+      <CommandPalette
+        items={[]}
+        query="x"
+        onQueryChange={() => {}}
+        onSelect={() => {}}
+        message={{ text: 'nothing for "x"', tone: "muted" }}
+      />,
+    ).lastFrame()
+    expect(plain(frame)).toContain('nothing for "x"')
+    expect(plain(frame)).not.toContain("✗")
+  })
+
+  it("draws an error-toned message behind the error glyph, sealed", () => {
+    const frame = render(
+      <OverHost width={60}>
+        <CommandPalette
+          items={[]}
+          query="acme/api#12"
+          onQueryChange={() => {}}
+          onSelect={() => {}}
+          message={{ text: "couldn't look up acme/api#12", tone: "error" }}
+        />
+      </OverHost>,
+    ).lastFrame()
+    expect(plain(frame)).toContain("✗ couldn't look up acme/api#12")
+    expectSealed(frame, 60)
+  })
+
+  it("runs the message's onSubmit on Enter when there are no rows", async () => {
+    const onSubmit = vi.fn()
+    const onSelect = vi.fn()
+    const { stdin } = render(
+      <CommandPalette
+        items={[]}
+        query="acme/api#12"
+        onQueryChange={() => {}}
+        onSelect={onSelect}
+        message={{ text: "failed", tone: "error", onSubmit }}
+      />,
+    )
+    await delay()
+    stdin.write("\r")
+    await delay()
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+    expect(onSelect).not.toHaveBeenCalled()
+  })
 })
 
 describe("fuzzyFilter", () => {

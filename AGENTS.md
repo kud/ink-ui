@@ -255,6 +255,13 @@ a chord the terminal does deliver and opens the palette from its own
 While the palette is open it is the topmost layer: stand `useAppKeys` and the
 host's own hotkeys down with `isActive: false`, and close it from `onClose`.
 
+The palette's `message` is the one line drawn where the rows would be when
+there are none. A string is muted: what the query did not find, what is not
+configured. A failure is not a miss, so pass a `PaletteMessage` with
+`tone: "error"` and it draws in `colors.error` behind `✗`; give it `onSubmit`
+and Enter retries while it shows, so the input stays open and a failure never
+has to pose as a row to be actionable.
+
 ## Colour: what the tokens mean
 
 **Colour comes from tokens, never from a string literal.** Import `colors` and

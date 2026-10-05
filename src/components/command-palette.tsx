@@ -5,6 +5,7 @@ import { TextInput } from "./text-input.js"
 import { type Hint } from "./footer-hints.js"
 import { useListCursor } from "./use-list-cursor.js"
 import { colors } from "../tokens.js"
+import { statusVariant } from "./status-variants.js"
 
 export type PaletteItem = {
   id: string
@@ -30,6 +31,19 @@ export type PaletteItem = {
   markerColor?: string
 }
 
+/**
+ * A message with a tone. `muted` (the default) is what the query did not find
+ * or what is not configured; `error` is a failure, drawn in `colors.error`
+ * behind the error glyph so it reads as one without the hue. `onSubmit` makes
+ * Enter act while the message shows — a failure the host can retry — where a
+ * bare message leaves Enter a no-op.
+ */
+export type PaletteMessage = {
+  text: string
+  tone?: "muted" | "error"
+  onSubmit?: () => void
+}
+
 type CommandPaletteProps = {
   /** The rows to draw, in order. The palette never filters them. */
   items: PaletteItem[]
@@ -39,11 +53,13 @@ type CommandPaletteProps = {
   /** `esc`. The value is the host's, so nothing here clears it. */
   onClose?: () => void
   /**
-   * One muted line drawn where the rows would be, when there are none: what
+   * One line drawn where the rows would be, when there are none: what
    * the query did not find, or what is not configured. Enter is a no-op while
-   * it shows. Never a row, so the cursor cannot land on it.
+   * it shows, unless the message carries `onSubmit`. Never a row, so the
+   * cursor cannot land on it. A string is a muted message; pass a
+   * `PaletteMessage` for the error tone.
    */
-  message?: string
+  message?: string | PaletteMessage
   /**
    * One muted line drawn where the rows would be while the palette is still
    * waiting for its first query: `items` is empty and the query is too, e.g.
@@ -152,7 +168,12 @@ export const CommandPalette = ({
     Math.max(2, inner - 5 - stringWidth(title))
   // Before the first keystroke there are no rows and no verdict yet: the
   // hint holds the slot so the box keeps its shape, padded like every line.
-  const emptyLine = message ?? (query.trim() === "" ? emptyHint : undefined)
+  const note: PaletteMessage | undefined =
+    typeof message === "string" ? { text: message } : message
+  const emptyLine =
+    note ?? (query.trim() === "" && emptyHint ? { text: emptyHint } : undefined)
+  const errorMark =
+    emptyLine?.tone === "error" ? statusVariant("error") : undefined
   const counter = `${at + 1} of ${items.length}`
   const hintsWidth =
     hints.reduce(
@@ -179,6 +200,7 @@ export const CommandPalette = ({
           onSubmit={() => {
             const item = items[at]
             if (item) onSelect(item.id)
+            else note?.onSubmit?.()
           }}
           onCancel={onClose}
           isDisabled={!isActive}
@@ -191,8 +213,18 @@ export const CommandPalette = ({
         </Box>
       </Box>
       <Text dimColor>{" " + "─".repeat(inner - 2) + " "}</Text>
-      {items.length === 0 && emptyLine ? (
-        <Text dimColor>{" " + padEndWidth(emptyLine, inner - 2) + " "}</Text>
+      {items.length === 0 && emptyLine?.text ? (
+        errorMark ? (
+          <Text color={errorMark.color}>
+            {" " +
+              padEndWidth(`${errorMark.icon} ${emptyLine.text}`, inner - 2) +
+              " "}
+          </Text>
+        ) : (
+          <Text dimColor>
+            {" " + padEndWidth(emptyLine.text, inner - 2) + " "}
+          </Text>
+        )
       ) : null}
       {visible.map((row) => {
         if (!isItemRow(row)) {
