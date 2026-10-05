@@ -172,3 +172,107 @@ describe("Tabs markers", () => {
     expect(row(null).indexOf("Done")).toBe(row(12).indexOf("Done"))
   })
 })
+
+describe("Tabs groups", () => {
+  const grouped = [
+    { value: "qa", label: "QA", count: 22, group: "board" },
+    { value: "off", label: "Off board", count: 4, group: "board" },
+    { value: "prs", label: "My PRs", count: 3, group: "github" },
+  ]
+
+  it("draws a divider when group changes between neighbouring tabs", () => {
+    const frame = render(<Tabs active="qa" items={grouped} />).lastFrame() ?? ""
+    expect(frame).toContain("│")
+    expect(frame).toContain("QA (22)")
+    expect(frame).toContain("Off board (4)")
+    expect(frame).toContain("My PRs (3)")
+  })
+
+  it("draws the divider with exactly GAP spaces on each side (via Box gap)", () => {
+    const frame = render(<Tabs active="qa" items={grouped} />).lastFrame() ?? ""
+    // First line: "QA (22)  Off board (4)  │  My PRs (3)"
+    const firstLine = frame.split("\n")[0] ?? ""
+    expect(firstLine).toContain("QA (22)  Off board (4)  │  My PRs (3)")
+  })
+
+  it("draws no divider when all tabs share the same group", () => {
+    const sameGroup = [
+      { value: "qa", label: "QA", count: 22, group: "board" },
+      { value: "off", label: "Off board", count: 4, group: "board" },
+    ]
+    const frame = render(<Tabs active="qa" items={sameGroup} />).lastFrame() ?? ""
+    expect(frame).not.toContain("│")
+  })
+
+  it("draws no divider when no tabs have a group", () => {
+    const frame = render(<Tabs active="open" items={items} />).lastFrame() ?? ""
+    expect(frame).not.toContain("│")
+  })
+
+  it("draws a divider when transitioning from no group to a group", () => {
+    const mixed = [
+      { value: "a", label: "Alpha" },
+      { value: "b", label: "Bravo", group: "one" },
+    ]
+    const frame = render(<Tabs active="a" items={mixed} />).lastFrame() ?? ""
+    expect(frame).toContain("│")
+  })
+
+  it("draws a divider when transitioning from a group to no group", () => {
+    const mixed = [
+      { value: "a", label: "Alpha", group: "one" },
+      { value: "b", label: "Bravo" },
+    ]
+    const frame = render(<Tabs active="a" items={mixed} />).lastFrame() ?? ""
+    expect(frame).toContain("│")
+  })
+
+  it("draws multiple dividers for several group changes", () => {
+    const manyGroups = [
+      { value: "a", label: "Alpha", group: "one" },
+      { value: "b", label: "Bravo", group: "one" },
+      { value: "c", label: "Charlie", group: "two" },
+      { value: "d", label: "Delta", group: "three" },
+      { value: "e", label: "Echo", group: "three" },
+    ]
+    const frame = render(<Tabs active="a" items={manyGroups} />).lastFrame() ?? ""
+    const dividers = frame.split("│").length - 1
+    expect(dividers).toBe(2)
+  })
+
+  it("keeps the underline aligned under the active label across dividers", () => {
+    const frame = render(<Tabs active="prs" items={grouped} />).lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    // "My PRs (3)" label should align with its underline
+    expect(labels!.indexOf("My PRs")).toBe(rules!.indexOf("─"))
+  })
+
+  it("keeps the underline aligned when the active tab is before a divider", () => {
+    const frame = render(<Tabs active="qa" items={grouped} />).lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    expect(labels!.indexOf("QA")).toBe(rules!.indexOf("─"))
+  })
+
+  it("keeps the underline aligned when the active tab is after a divider", () => {
+    const frame = render(<Tabs active="off" items={grouped} />).lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    expect(labels!.indexOf("Off board")).toBe(rules!.indexOf("─"))
+  })
+
+  it("overflow: many grouped tabs wider than 80 cols, active tab last and in middle; underline still aligned", () => {
+    const overflowItems = [
+      { value: "a", label: "Alpha", group: "one" },
+      { value: "b", label: "Bravo", group: "one" },
+      { value: "c", label: "Charlie", group: "two" },
+      { value: "d", label: "Delta", group: "two" },
+      { value: "e", label: "Echo", group: "three" },
+      { value: "f", label: "Foxtrot", group: "three" },
+      { value: "g", label: "Golf", group: "four" },
+      { value: "h", label: "Hotel", group: "four" },
+    ]
+    // Total width with dividers > 80. Active is "Echo" (in group three, middle group).
+    const frame = render(<Tabs active="e" items={overflowItems} />).lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    expect(labels!.indexOf("Echo")).toBe(rules!.indexOf("─"))
+  })
+})

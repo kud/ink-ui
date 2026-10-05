@@ -51,6 +51,12 @@ export type TabItem<T extends string = string> = {
    * and two always mean "you are looking at a sample".
    */
   total?: number
+  /**
+   * Optional group name. A divider is drawn between tabs whose group value
+   * changes. Tabs with no group, or the same group as their neighbour, render
+   * without a divider.
+   */
+  group?: string
 }
 
 type TabsProps<T extends string> = {
@@ -63,6 +69,10 @@ const GAP = 2
 
 /** An unknown count, as wide as `(12)`: the blank goes in front, as `Page` pads its count. */
 const PENDING_COUNT = " (–)"
+
+/** Divider rendered between groups: a single pipe. The Box gap={GAP} adds 2 spaces on each side. */
+const DIVIDER = "│"
+const DIVIDER_WIDTH = 1
 
 // The active tab is marked by an underline (border-bottom) under it, in the
 // accent colour; inactive tabs get none. The underline's presence — not its
@@ -84,6 +94,7 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
           ? `${item.label} (${item.count})`
           : `${item.label} (${item.count}/${item.total})`,
     isActive: item.value === active,
+    group: item.group,
   }))
 
   // The rule goes under the LABEL, and the marker sits in a gutter outside it.
@@ -102,35 +113,68 @@ export const Tabs = <T extends string>({ active, items }: TabsProps<T>) => {
   const gutterOf = (cell: (typeof cells)[number]) => [...cell.marker].length
   const labelOf = (cell: (typeof cells)[number]) => [...cell.text].length
 
+  // Build a flat render list: tabs and dividers between groups.
+  // A divider is inserted BEFORE a tab whose group differs from the previous tab.
+  type RenderItem =
+    | { type: "tab"; cell: (typeof cells)[number] }
+    | { type: "divider" }
+
+  const renderItems: RenderItem[] = []
+  for (let i = 0; i < cells.length; i++) {
+    const prevGroup = i > 0 ? cells[i - 1].group : undefined
+    const currGroup = cells[i].group
+    if (i > 0 && currGroup !== prevGroup) {
+      renderItems.push({ type: "divider" })
+    }
+    renderItems.push({ type: "tab", cell: cells[i] })
+  }
+
   // Where the rule sits: the column the active label starts in, and how wide that
   // label is. Accumulated left to right, charging the same GAP the label row's own
   // `gap` puts between cells — the two rows have to agree to the column or the
-  // rule drifts off its word.
+  // rule drifts off its word. Dividers are also items in the Box gap, so they
+  // consume their width plus GAP like any other item.
   let x = 0
   let rule = { start: 0, width: 0 }
-  for (const cell of cells) {
-    if (cell.isActive)
-      rule = { start: x + gutterOf(cell), width: labelOf(cell) }
-    x += gutterOf(cell) + labelOf(cell) + GAP
+  for (const item of renderItems) {
+    if (item.type === "tab") {
+      if (item.cell.isActive)
+        rule = { start: x + gutterOf(item.cell), width: labelOf(item.cell) }
+      x += gutterOf(item.cell) + labelOf(item.cell) + GAP
+    } else {
+      x += DIVIDER_WIDTH + GAP
+    }
   }
 
   return (
     <Box flexDirection="column">
       <Box gap={GAP}>
-        {cells.map((cell) => (
-          <Box key={cell.key}>
-            {cell.marker ? (
-              <Text color={cell.markerColor}>{cell.marker}</Text>
-            ) : null}
-            <Text
-              bold={cell.isActive}
-              color={cell.isActive ? colors.accent : undefined}
-              dimColor={!cell.isActive}
-            >
-              {cell.text}
-            </Text>
-          </Box>
-        ))}
+        {renderItems.map((item, idx) => {
+          if (item.type === "divider") {
+            return (
+              <Box key={`divider-${idx}`}>
+                <Text color={colors.muted} dimColor>
+                  {DIVIDER}
+                </Text>
+              </Box>
+            )
+          }
+          const cell = item.cell
+          return (
+            <Box key={cell.key}>
+              {cell.marker ? (
+                <Text color={cell.markerColor}>{cell.marker}</Text>
+              ) : null}
+              <Text
+                bold={cell.isActive}
+                color={cell.isActive ? colors.accent : undefined}
+                dimColor={!cell.isActive}
+              >
+                {cell.text}
+              </Text>
+            </Box>
+          )
+        })}
       </Box>
       {/* One positioned string rather than a run per cell, so the leading blanks
           carry the markers' gutters and every run lands under its own label. It
