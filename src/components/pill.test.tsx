@@ -2,7 +2,7 @@ import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect, afterEach } from "vitest"
 import { glyph } from "@kud/glyphs"
-import { Pill, pillWidth, inkFor } from "./pill.js"
+import { Pill, pillWidth, inkFor, pillStyle } from "./pill.js"
 import { softColors } from "../tokens.js"
 
 const frameOf = (node: React.ReactElement) => render(node).lastFrame() ?? ""
@@ -88,10 +88,33 @@ describe("Pill", () => {
     expect(frameOf(<Pill tone="soft" variant="info">task</Pill>)).toContain("[task]")
   })
 
+  // Chrome on the frame rather than row data: a tint of the hue over the
+  // ground, inked in the hue — the filled caps, like solid and soft.
+  it("draws a tonal pill between filled caps", () => {
+    const frame = frameOf(
+      <Pill tone="tonal" variant="accent">
+        focus
+      </Pill>,
+    )
+    expect(frame).toContain(glyph("plCapLeft") + "focus" + glyph("plCapRight"))
+    expect(frame).not.toContain(glyph("plCapLeftThin"))
+  })
+
+  it("renders tonal in monochrome as brackets, like solid and soft", () => {
+    process.env["NO_COLOR"] = "1"
+    const frame = frameOf(
+      <Pill tone="tonal" variant="accent">
+        focus
+      </Pill>,
+    )
+    expect(frame).toContain("[focus]")
+    expect(frame).not.toContain(glyph("plCapLeft"))
+  })
+
   // The container of the rows beneath it is a kind of its own, and a kind
   // that exists in one tone and not another is a hole a caller falls into.
   it("takes group in every tone", () => {
-    for (const tone of ["solid", "soft", "outline"] as const)
+    for (const tone of ["solid", "soft", "outline", "tonal"] as const)
       expect(
         frameOf(
           <Pill tone={tone} variant="group">
@@ -129,12 +152,58 @@ describe("Pill", () => {
   })
 })
 
+describe("pillStyle", () => {
+  // The focus pill is a measured tint, not an exact mix — and quiet, so no
+  // bold. Asserted here rather than through a rendered frame, which carries
+  // no escape codes under the test runner.
+  it("tints a tonal pill in its hue, unbolded", () => {
+    expect(pillStyle("accent", "tonal", false)).toEqual({
+      fill: "#3D2A1C",
+      ink: "#C47718",
+      bold: false,
+    })
+  })
+
+  // The thing you are ON takes the stronger tint and bolds its label.
+  it("strengthens and bolds the tonal pill you are on", () => {
+    expect(pillStyle("accent", "tonal", true)).toEqual({
+      fill: "#5A3816",
+      ink: "#E0913A",
+      bold: true,
+    })
+  })
+
+  // Strong is a tonal word: every other tone ignores it, so a stray prop
+  // cannot bold a pill that was never meant to shout.
+  it("ignores strong outside tonal", () => {
+    expect(pillStyle("accent", "solid", true)).toEqual(
+      pillStyle("accent", "solid", false),
+    )
+    expect(pillStyle("accent", "solid", true).bold).toBe(false)
+  })
+})
+
 describe("pillWidth", () => {
   // A caller budgeting for the label alone overflows by exactly the two caps,
   // and in a frame sized to the terminal that scrolls the panel rather than
   // clipping the row.
   it("charges for the caps as well as the label", () => {
     expect(pillWidth("epic")).toBe(6)
+  })
+
+  // Tonal takes the filled caps, so it prices exactly as before: label plus
+  // two, in every tone.
+  it("prices a tonal pill the same as every other tone", () => {
+    for (const tone of ["solid", "soft", "outline", "tonal"] as const) {
+      expect(pillWidth("focus")).toBe(7)
+      const drawn =
+        frameOf(
+          <Pill tone={tone} variant="accent">
+            focus
+          </Pill>,
+        ).split("\n")[0] ?? ""
+      expect([...drawn].length).toBe(pillWidth("focus"))
+    }
   })
 
   it("agrees with what the component actually draws", () => {

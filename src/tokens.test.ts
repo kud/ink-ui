@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest"
-import { palette, colors, priorityColors } from "./tokens.js"
+import {
+  palette,
+  colors,
+  priorityColors,
+  tonalColors,
+  tonalStrongColors,
+} from "./tokens.js"
 
 // Mirrors ansi-styles 6 `rgbToAnsi256`, which chalk (and so Ink) uses to
 // downsample a hex on a 256-colour terminal: an exact grey goes to the
@@ -102,6 +108,81 @@ describe("the never-share-a-hue pairs survive 256-colour downsampling", () => {
       { warning: colors.warning },
       { pr: colors.pr, ticket: colors.ticket },
     )
+  })
+})
+
+// WCAG relative luminance and contrast, the same measure `inkFor` in
+// `pill.tsx` uses to pair a fill with its ink: a threshold would have to be
+// tuned, and the number that needs tuning is exactly the one nobody revisits.
+const luminance = (hex: string): number => {
+  const channel = (at: number) => {
+    const c = parseInt(hex.slice(at, at + 2), 16) / 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  }
+  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5)
+}
+
+const contrast = (first: string, second: string): number => {
+  const high = Math.max(luminance(first), luminance(second))
+  const low = Math.min(luminance(first), luminance(second))
+  return (high + 0.05) / (low + 0.05)
+}
+
+describe("tonalColors", () => {
+  const variants = [
+    "success",
+    "error",
+    "warning",
+    "info",
+    "accent",
+    "muted",
+    "group",
+  ] as const
+
+  it("covers the seven pill variants in both strengths", () => {
+    for (const family of [tonalColors, tonalStrongColors]) {
+      expect(Object.keys(family).sort()).toEqual([...variants].sort())
+      for (const variant of variants) {
+        expect(family[variant].fill).toMatch(/^#[0-9A-F]{6}$/)
+        expect(family[variant].ink).toMatch(/^#[0-9A-F]{6}$/)
+      }
+    }
+  })
+
+  // Every tonal pair carries its meaning in the word, but the ink still has
+  // to read on the fill: WCAG 3:1 everywhere, in both strengths.
+  it("inks every pair at 3:1 or better", () => {
+    for (const variant of variants) {
+      for (const family of [tonalColors, tonalStrongColors]) {
+        expect(
+          contrast(family[variant].fill, family[variant].ink),
+          `${variant} ${family[variant].fill} on ${family[variant].ink}`,
+        ).toBeGreaterThanOrEqual(3)
+      }
+    }
+  })
+
+  // A tint is ground with hue in it: darker than nothing, lighter with more
+  // hue. Ground, rest, strong step up in luminance for every variant.
+  it("steps up from the ground through rest to strong", () => {
+    for (const variant of variants) {
+      const ground = luminance(palette.ground)
+      const rest = luminance(tonalColors[variant].fill)
+      const strong = luminance(tonalStrongColors[variant].fill)
+      expect(
+        ground < rest && rest < strong,
+        `${variant} ground ${ground} rest ${rest} strong ${strong}`,
+      ).toBe(true)
+    }
+  })
+
+  it("keeps the measured accents where the tabs draw them", () => {
+    expect(tonalColors.accent).toEqual({ fill: "#3D2A1C", ink: "#C47718" })
+    expect(tonalStrongColors.accent).toEqual({
+      fill: "#5A3816",
+      ink: "#E0913A",
+    })
+    expect(tonalColors.muted).toEqual({ fill: "#262735", ink: "#7A7B85" })
   })
 })
 

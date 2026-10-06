@@ -22,6 +22,7 @@ export const palette = {
   selection: "#30364A",
   track: "#2B323D",
   trackHigh: "#6B7480",
+  ground: "#1A1B27",
 } as const
 
 export type Palette = (typeof palette)[keyof typeof palette]
@@ -97,6 +98,51 @@ export const softColors = {
 } as const
 
 export type SoftColor = (typeof softColors)[keyof typeof softColors]
+
+/**
+ * The tonal family: a tint of the hue over the ground, inked in the hue — the
+ * quietest filled form, for chrome on the frame (a count, a slot label)
+ * rather than row data.
+ *
+ * Each fill is a linear blend of the variant's solid hue over `#1A1B27` at a
+ * fixed weight (16% rest, 28% strong), computed once and written in as a
+ * literal — no runtime mixing. The accent and muted pairs are frozen
+ * measurements rather than exact mixes: the focus pill is about 16% orange,
+ * the active tab chip about 28%, and the inactive tab chip a step above the
+ * ground that never dims into it. Measured like `softColors`, for the same
+ * reason: a tint is a fixed contrast, and a named colour is whatever the
+ * theme says it is.
+ *
+ * `tonalStrongColors` is the thing you are ON — the active tab's chip — a
+ * stronger tint of the same hue with the same ink, plus a bold label at the
+ * call site. The keys are the seven `Pill` variant names, written out rather
+ * than imported: tokens never reach back into components.
+ */
+export const tonalColors: Record<
+  "success" | "error" | "warning" | "info" | "accent" | "muted" | "group",
+  { fill: string; ink: string }
+> = {
+  success: { fill: "#25393B", ink: "#5FD7A7" },
+  error: { fill: "#3F2431", ink: "#FF5364" },
+  warning: { fill: "#3F3321", ink: "#FFB400" },
+  info: { fill: "#2C3A4A", ink: "#89DDFF" },
+  accent: { fill: "#3D2A1C", ink: "#C47718" },
+  muted: { fill: "#262735", ink: "#7A7B85" },
+  group: { fill: "#362E46", ink: "#C792EA" },
+} as const
+
+export const tonalStrongColors: Record<
+  "success" | "error" | "warning" | "info" | "accent" | "muted" | "group",
+  { fill: string; ink: string }
+> = {
+  success: { fill: "#2D504B", ink: "#5FD7A7" },
+  error: { fill: "#5A2B38", ink: "#FF5364" },
+  warning: { fill: "#5A461C", ink: "#FFB400" },
+  info: { fill: "#395163", ink: "#89DDFF" },
+  accent: { fill: "#5A3816", ink: "#E0913A" },
+  muted: { fill: "#33343F", ink: "#7F808A" },
+  group: { fill: "#4A3C5E", ink: "#C792EA" },
+} as const
 
 /**
  * Priority is ordinal, so it steps in lightness, never hue: a red chevron

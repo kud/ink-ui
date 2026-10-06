@@ -269,11 +269,12 @@ use it. A literal like `color="orange"` or `color="#FF8C00"` is wrong even when
 it renders identically — it breaks the moment a token moves.
 
 ```ts
-import { colors, palette, priorityColors, softColors, spacing } from "@kud/ink-ui"
+import { colors, palette, priorityColors, softColors, tonalColors, tonalStrongColors, spacing } from "@kud/ink-ui"
 // colors: accent · secondary · muted · dim · success · error · warning · info · pending · group
 //         ticket · pr · link · added · removed · selection · track · trackHighlight
 // palette: the raw hexes those are drawn from; priorityColors: highest · high · medium · low · lowest
 // softColors: seven of them (not secondary), as quiet measured fills
+// tonalColors/tonalStrongColors: the same seven hues as tints over the ground, inked in the hue — rest, and the stronger thing-you-are-on
 // spacing.xs 1 · sm 2 · md 3 · lg 4
 ```
 
@@ -317,6 +318,10 @@ two of them end up doing one job.
 reads on all of them against a dark ground, measured for a deutan/protan
 reader. Only `Pill tone="soft"` should reach for it.
 
+`tonalColors` is the same seven hues as tints over the ground, inked in the
+hue — rest — with `tonalStrongColors` the stronger step for the thing you are
+on. Only `Pill tone="tonal"` should reach for either.
+
 The one exception to the token rule is `<Pill color>`, for a state an external
 system **invented** and whose colour is its vocabulary — GitHub's merged
 purple, a CI provider's result colours. Never for that system's *skin*: Jira
@@ -348,7 +353,7 @@ theme and no provider.
    is furniture (rules, separators, borders), never text to read.
 7. **On the `selection` ground, `muted` lifts to `secondary`**, and the row
    still carries `❯`: the fill alone is 1.4:1.
-8. **Solid fill is an event, soft fill is a classification.**
+8. **Solid fill is an event, soft fill is a classification, tonal fill is chrome.**
 9. **Priority is lightness, not hue:** `ink` → `grey` → `slate`, with the
    chevron shape carrying the rank.
 10. **An external system's state colour may be used, never its theme.**
@@ -358,10 +363,10 @@ Never share a hue: `accent`/`ticket`; identifiers/status; priority/status;
 `warning` sits between `pr` and `ticket`, which is why it always carries `⚠`
 and a word. `tokens.test.ts` checks these pairs stay apart at 256 colours.
 
-## Pill: solid says something happened, soft says what it is
+## Pill: solid says something happened, soft says what it is, tonal says where you are
 
 The law in one line: **the column says where it sits, soft says what it is,
-solid says something happened.**
+solid says something happened, tonal says where you are.**
 
 - **`tone="solid"`** is an *event* — `merged`, a fresh arrival, a removal. It
   earns its loud fill by being news. The default, so nothing already rendered
@@ -371,6 +376,13 @@ solid says something happened.**
   out-shouting the one row that has news.
 - **`tone="outline"`** is the same classification as a hue-only ring, for a
   ground where even a soft block is too much.
+- **`tone="tonal"`** is *chrome* — a count, a slot label. A tint of the hue
+  over the ground from `tonalColors`, inked in the hue: the quietest filled
+  form, for what the frame says about itself rather than row data. `Tabs`
+  draws its counts in it; nothing else should reach for it without a reason
+  as good. `strong` takes the tint from `tonalStrongColors` and bolds the
+  label, for the thing you are on — the active tab's chip — and is ignored by
+  every other tone.
 
 A screen where every pill is solid has no way to say which pill is the news.
 And a pill is for a word that *is* the information; a reference the reader

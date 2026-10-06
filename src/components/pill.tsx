@@ -1,12 +1,12 @@
 import React from "react"
 import { Text } from "ink"
 import { glyph } from "@kud/glyphs"
-import { colors, softColors } from "../tokens.js"
+import { colors, softColors, tonalColors, tonalStrongColors } from "../tokens.js"
 
 export type PillVariant =
   "success" | "error" | "warning" | "info" | "accent" | "muted" | "group"
 
-export type PillTone = "solid" | "soft" | "outline"
+export type PillTone = "solid" | "soft" | "outline" | "tonal"
 
 type PillProps = {
   children: string
@@ -17,10 +17,17 @@ type PillProps = {
    * quiet permanent fill from `softColors`, built to sit on every row of a
    * dark ground without out-shouting the row's news. Outline is the same
    * classification drawn as a hue-only ring, for a ground where a fill of any
-   * weight is too much. The default stays solid so nothing already rendered
-   * moves.
-   */
+   * weight is too much. Tonal is CHROME — a count, a slot label — a tint of
+   * the hue over the ground from `tonalColors`, inked in the hue: the
+   * quietest filled form, for what the frame says about itself rather than
+   * row data. The default stays solid so nothing already rendered moves.
+ */
   tone?: PillTone
+  /**
+   * Tonal only: the thing you are ON takes the stronger tint from
+   * `tonalStrongColors` and bolds its label. Ignored by every other tone.
+   */
+  strong?: boolean
   /**
    * An explicit fill, for a state the external system INVENTED — GitHub's
    * merged purple, a CI provider's result colours. The hue is that system's
@@ -97,18 +104,53 @@ export const inkFor = (fill: string): string => {
 }
 
 /**
+ * Which fill and ink a variant takes in a tone — and whether the label bolds.
+ * Tonal reads its pair from `tonalColors` (or `tonalStrongColors` with
+ * `strong`, which also bolds); solid and outline read the hand-written
+ * tables, soft the measured fill with whatever ink reads on it. Outline has
+ * no ink to pick, so it reports its fill as both: it draws a hue-only ring.
+ *
+ * Exported for its own test and nothing else — `src/index.ts` does not
+ * re-export it, which is this package's definition of internal. The frame a
+ * test renders carries no escape codes (the runner is not a TTY), so the
+ * choice is unobservable through the component and has to be asserted here
+ * or not at all, as `inkFor` already is.
+ */
+export const pillStyle = (
+  variant: PillVariant,
+  tone: PillTone,
+  strong = false,
+): { fill: string; ink: string; bold: boolean } => {
+  if (tone === "tonal") {
+    const pair = strong ? tonalStrongColors[variant] : tonalColors[variant]
+    return { fill: pair.fill, ink: pair.ink, bold: strong }
+  }
+  if (tone === "soft")
+    return {
+      fill: softColors[variant],
+      ink: inkFor(softColors[variant]),
+      bold: false,
+    }
+  if (tone === "outline")
+    return { fill: FILL[variant], ink: FILL[variant], bold: false }
+  return { fill: FILL[variant], ink: INK[variant], bold: false }
+}
+
+/**
  * A rounded label — a category the thing belongs to, or an event that has
  * just happened to it.
  *
  * The law, in one line: the column says where it sits, soft says what it is,
- * solid says something happened. A solid pill is an event (`merged`, `NEW`,
- * `GONE`) and earns its loud fill by being news; a soft pill is a
- * classification (`epic`, `bug`, `task`) and takes the quiet fill from
- * `softColors`, because a type is a fact about the row, not something that
- * happened to it — it has to be legible on every row without competing with
- * the one row that has news. Outline is the classification with no fill at
- * all, for a ground where even a soft block is too much. A screen where every
- * pill is solid has no way to say which pill is the news.
+ * solid says something happened, tonal says where you are. A solid pill is an
+ * event (`merged`, `NEW`, `GONE`) and earns its loud fill by being news; a
+ * soft pill is a classification (`epic`, `bug`, `task`) and takes the quiet
+ * fill from `softColors`, because a type is a fact about the row, not
+ * something that happened to it — it has to be legible on every row without
+ * competing with the one row that has news. Outline is the classification
+ * with no fill at all, for a ground where even a soft block is too much.
+ * Tonal is chrome on the frame — a count, a slot label — the quietest filled
+ * form, with `strong` for the thing you are on. A screen where every pill is
+ * solid has no way to say which pill is the news.
  *
  * Reach for it when the word IS the information and you want it to read as
  * one object rather than as more prose. For a reference the reader is meant
@@ -127,19 +169,20 @@ export const inkFor = (fill: string): string => {
  * two glyph SETS, and this is one glyph with a graceful absence. Solid and soft take
  * the filled caps, outline the thin ones from the same Powerline Extra block.
  *
- * `NO_COLOR` sends solid to brackets: with the fill stripped, the caps would be
- * drawing the outline of a pill that is not there. Outline keeps its caps — they
- * ARE the outline, and there was never a fill for them to be missing.
+ * `NO_COLOR` sends solid, soft and tonal to brackets: with the fill stripped,
+ * the caps would be drawing the outline of a pill that is not there. Outline
+ * keeps its caps — they ARE the outline, and there was never a fill for them
+ * to be missing.
  */
 export const Pill = ({
   children,
   variant = "muted",
   tone = "solid",
+  strong = false,
   color,
 }: PillProps) => {
-  const fill =
-    color ?? (tone === "soft" ? softColors[variant] : FILL[variant])
-  if (tone === "outline")
+  if (tone === "outline") {
+    const fill = color ?? FILL[variant]
     return (
       <Text color={fill}>
         {glyph("plCapLeftThin")}
@@ -147,6 +190,26 @@ export const Pill = ({
         {glyph("plCapRightThin")}
       </Text>
     )
+  }
+  if (tone === "tonal") {
+    // A caller mirroring an external palette may override the fill; the ink
+    // stays the variant's tonal ink either way — a tint is already the
+    // quietest form, and measuring a second ink for it would invent a tier.
+    const style = pillStyle(variant, tone, strong)
+    const fill = color ?? style.fill
+    if (process.env["NO_COLOR"]) return <Text color={fill}>[{children}]</Text>
+    return (
+      <Text>
+        <Text color={fill}>{glyph("plCapLeft")}</Text>
+        <Text backgroundColor={fill} color={style.ink} bold={style.bold}>
+          {children}
+        </Text>
+        <Text color={fill}>{glyph("plCapRight")}</Text>
+      </Text>
+    )
+  }
+  const fill =
+    color ?? (tone === "soft" ? softColors[variant] : FILL[variant])
   const ink =
     tone === "soft" || color ? inkFor(fill) : INK[variant]
   if (process.env["NO_COLOR"]) return <Text color={fill}>[{children}]</Text>

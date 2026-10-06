@@ -3,6 +3,7 @@ import { Box, Text, useStdout } from "ink"
 import stringWidth from "string-width"
 import { glyph } from "@kud/glyphs"
 import { colors } from "../tokens.js"
+import { Pill, pillStyle } from "./pill.js"
 
 export type TabItem<T extends string = string> = {
   value: T
@@ -111,38 +112,30 @@ const FOLDED_PENDING_COUNT = "–"
 const DIVIDER = "│"
 const DIVIDER_WIDTH = 1
 
-/** The count chip's fill beside an active label: a muted orange ground on #1A1B27. */
-const TAB_CHIP_FILL_ACTIVE = "#5A3816"
-
-/** The count chip's fill beside an inactive label: a step above the ground, never dimmed into it. */
-const TAB_CHIP_FILL_INACTIVE = "#262735"
-
-/** The number inked on an active chip: bold, brighter than the fill it sits on. */
-const TAB_CHIP_NUMBER_ACTIVE = "#E0913A"
-
-/** The number inked on an inactive chip: its own tier, never `dimColor` — a number filed with the ages reads as skippable. */
-const TAB_CHIP_NUMBER_INACTIVE = "#7A7B85"
-
 /**
- * The count chip's fill for `isActive`, drawn as the caps' foreground and the
- * number's ground — the same division of labour as `Pill`. Exported for its
- * own test and nothing else, for the same reason as `shouldFoldTabs`: the
- * runner never sees a hue.
+ * The count chip's fill for `isActive` — the tonal pill's own fill, rest
+ * beside an inactive label (a step above the ground, never dimmed into it),
+ * strong beside the active one. Exported for its own test and nothing else,
+ * for the same reason as `shouldFoldTabs`: the runner never sees a hue.
  */
 export const tabCountChipFill = (isActive: boolean): string =>
-  isActive ? TAB_CHIP_FILL_ACTIVE : TAB_CHIP_FILL_INACTIVE
+  pillStyle(isActive ? "accent" : "muted", "tonal", isActive).fill
 
 /**
  * The count run's style for `isActive`: the number inked on its chip fill —
- * bold on the active tab, and never `dimColor` in either state. Exported for
- * its own test and nothing else, for the same reason as `shouldFoldTabs`: the
- * runner never sees a hue.
+ * bold on the active tab, and never `dimColor` in either state (a number
+ * filed with the ages reads as skippable). Exported for its own test and
+ * nothing else, for the same reason as `shouldFoldTabs`: the runner never
+ * sees a hue.
  */
-export const tabCountStyle = (isActive: boolean) => ({
-  bold: isActive,
-  color: isActive ? TAB_CHIP_NUMBER_ACTIVE : TAB_CHIP_NUMBER_INACTIVE,
-  backgroundColor: tabCountChipFill(isActive),
-})
+export const tabCountStyle = (isActive: boolean) => {
+  const style = pillStyle(isActive ? "accent" : "muted", "tonal", isActive)
+  return {
+    bold: style.bold,
+    color: style.ink,
+    backgroundColor: style.fill,
+  }
+}
 
 // The number (or fraction, or pending dash) drawn inside the count chip —
 // without caps, parens or the separating space. A fraction stays ONE chip:
@@ -375,7 +368,6 @@ export const Tabs = <T extends string>({
           const isFolded = folded && !cell.isActive && cell.hasIcon
           const labelText = isFolded ? cell.foldedLabel : cell.fullLabel
           const tailText = isFolded ? cell.foldedTail : cell.fullTail
-          const chipFill = tabCountChipFill(cell.isActive)
           return (
             <Box key={cell.key}>
               {cell.marker ? (
@@ -386,13 +378,18 @@ export const Tabs = <T extends string>({
                 process.env["NO_COLOR"] ? (
                   <Text {...tabCountStyle(cell.isActive)}>{tailText}</Text>
                 ) : (
+                  // The separating space lives inside this run, not beside
+                  // it: a bare string child of the row's `Box` blanks the
+                  // whole strip, while a string inside a `Text` is just text.
                   <Text>
                     {" "}
-                    <Text color={chipFill}>{glyph("plCapLeft")}</Text>
-                    <Text {...tabCountStyle(cell.isActive)}>
-                      {cell.countContent}
-                    </Text>
-                    <Text color={chipFill}>{glyph("plCapRight")}</Text>
+                    <Pill
+                      tone="tonal"
+                      variant={cell.isActive ? "accent" : "muted"}
+                      strong={cell.isActive}
+                    >
+                      {cell.countContent ?? ""}
+                    </Pill>
                   </Text>
                 )
               ) : null}
