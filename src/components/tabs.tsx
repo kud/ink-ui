@@ -137,37 +137,62 @@ export const tabLabelStyle = (isActive: boolean) => ({
   dimColor: !isActive,
 })
 
-// The full text of a tab: its label, its count, and — when given — its icon,
-// one space after the icon. The icon lives in the label's own run, not in a
-// second gutter beside the marker: it answers "which tab is this", the same
-// question the label answers, so it takes the label's style and the active rule
-// spans it. A Nerd Font glyph is one cell but a caller could pass anything, so
-// its width is measured at render time, never counted.
-const fullTextOf = <T extends string>(item: TabItem<T>): string => {
-  const base =
-    item.count === undefined
-      ? item.label
-      : item.count === null
-        ? `${item.label} ${PENDING_COUNT}`
-        : item.total === undefined
-          ? `${item.label} (${item.count})`
-          : `${item.label} (${item.count}/${item.total})`
-  return item.icon === undefined ? base : `${item.icon} ${base}`
+/** The count beside an active label: the same orange, stepped down so the label stays the answer. */
+const TAB_COUNT_ACTIVE_COLOR = "#A35F10"
+
+/** The count beside an inactive label: its own tier, never dimmed into the furniture. */
+const TAB_COUNT_INACTIVE_COLOR = "#585961"
+
+/**
+ * The count run's style for `isActive`: bold in the stepped-down orange when
+ * on, its own grey when off, and never `dimColor` — a number filed with the
+ * ages reads as skippable. Exported for its own test and nothing else, for
+ * the same reason as `shouldFoldTabs`: the runner never sees a hue.
+ */
+export const tabCountStyle = (isActive: boolean) => ({
+  bold: isActive,
+  color: isActive ? TAB_COUNT_ACTIVE_COLOR : TAB_COUNT_INACTIVE_COLOR,
+})
+
+// The full text of a tab, split for its two runs: the label part and the count
+// part. The icon lives in the label part, not in a second gutter beside the
+// marker: it answers "which tab is this", the same question the label answers,
+// so it takes the label's style and the active rule spans icon, space and label
+// together. The separating space goes with the count, so the label run never
+// carries a trailing blank. A Nerd Font glyph is one cell but a caller could
+// pass anything, so its width is measured at render time, never counted.
+const fullPartsOf = <T extends string>(item: TabItem<T>): [string, string] => {
+  const head =
+    item.icon === undefined ? item.label : `${item.icon} ${item.label}`
+  if (item.count === undefined) return [head, ""]
+  if (item.count === null) return [head, ` ${PENDING_COUNT}`]
+  if (item.total === undefined) return [head, ` (${item.count})`]
+  return [head, ` (${item.count}/${item.total})`]
 }
 
-// An inactive icon tab with nowhere to sit: the label goes, the icon and the
-// count stay. The count drops its parentheses — with the label gone there is no
-// phrase for them to attach to — and a tab with no count at all is its icon
-// alone. Only ever read for a tab with an icon: those are the only ones that
-// fold.
-const foldedTextOf = <T extends string>(item: TabItem<T>): string => {
+// The full text of a tab, for measuring the strip and sizing the rule: the
+// two parts joined, byte for byte what the two runs draw.
+const fullTextOf = <T extends string>(item: TabItem<T>): string =>
+  fullPartsOf(item).join("")
+
+// An inactive icon tab with nowhere to sit, split the same way: the label
+// goes, the icon and the count stay. The count drops its parentheses — with the
+// label gone there is no phrase for them to attach to — and a tab with no count
+// at all is its icon alone. Only ever read for a tab with an icon: those are
+// the only ones that fold.
+const foldedPartsOf = <T extends string>(
+  item: TabItem<T>,
+): [string, string] => {
   const icon = item.icon ?? ""
-  if (item.count === undefined) return icon
-  if (item.count === null) return `${icon} ${FOLDED_PENDING_COUNT}`
-  return item.total === undefined
-    ? `${icon} ${item.count}`
-    : `${icon} ${item.count}/${item.total}`
+  if (item.count === undefined) return [icon, ""]
+  if (item.count === null) return [icon, ` ${FOLDED_PENDING_COUNT}`]
+  if (item.total === undefined) return [icon, ` ${item.count}`]
+  return [icon, ` ${item.count}/${item.total}`]
 }
+
+// The folded text, for measuring: the two parts joined.
+const foldedTextOf = <T extends string>(item: TabItem<T>): string =>
+  foldedPartsOf(item).join("")
 
 // The active tab is marked by an underline (border-bottom) under it, in the
 // accent colour; inactive tabs get none. The underline's presence — not its
@@ -183,16 +208,24 @@ export const Tabs = <T extends string>({
   const { stdout } = useStdout()
   const availableWidth = width ?? stdout?.columns
 
-  const cells = items.map((item) => ({
-    key: item.value,
-    marker: item.marker ?? "",
-    markerColor: item.markerColor,
-    fullText: fullTextOf(item),
-    foldedText: foldedTextOf(item),
-    hasIcon: item.icon !== undefined,
-    isActive: item.value === active,
-    group: item.group,
-  }))
+  const cells = items.map((item) => {
+    const [fullLabel, fullCount] = fullPartsOf(item)
+    const [foldedLabel, foldedCount] = foldedPartsOf(item)
+    return {
+      key: item.value,
+      marker: item.marker ?? "",
+      markerColor: item.markerColor,
+      fullText: fullTextOf(item),
+      foldedText: foldedTextOf(item),
+      fullLabel,
+      fullCount,
+      foldedLabel,
+      foldedCount,
+      hasIcon: item.icon !== undefined,
+      isActive: item.value === active,
+      group: item.group,
+    }
+  })
 
   // Build a flat render list: tabs and dividers between groups.
   // A divider is inserted BEFORE a tab whose group differs from the previous tab.
@@ -280,12 +313,18 @@ export const Tabs = <T extends string>({
             )
           }
           const cell = item.cell
+          const isFolded = folded && !cell.isActive && cell.hasIcon
+          const labelText = isFolded ? cell.foldedLabel : cell.fullLabel
+          const countText = isFolded ? cell.foldedCount : cell.fullCount
           return (
             <Box key={cell.key}>
               {cell.marker ? (
                 <Text color={cell.markerColor}>{cell.marker}</Text>
               ) : null}
-              <Text {...tabLabelStyle(cell.isActive)}>{textOf(cell)}</Text>
+              <Text {...tabLabelStyle(cell.isActive)}>{labelText}</Text>
+              {countText ? (
+                <Text {...tabCountStyle(cell.isActive)}>{countText}</Text>
+              ) : null}
             </Box>
           )
         })}

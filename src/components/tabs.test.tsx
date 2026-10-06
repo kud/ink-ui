@@ -1,9 +1,39 @@
 import React from "react"
 import { render } from "ink-testing-library"
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import stringWidth from "string-width"
-import { Tabs, shouldFoldTabs, tabLabelStyle } from "./tabs.js"
+import { Tabs, shouldFoldTabs, tabLabelStyle, tabCountStyle } from "./tabs.js"
 import { colors } from "../tokens.js"
+
+/*
+ * The runner is not a TTY, so the frame carries no escape codes and two runs
+ * in different colours read as one string — which is the point (the string is
+ * byte-identical), but leaves the split itself unassertable on the frame. The
+ * probe records every `Text`'s props while rendering the real component, so the
+ * split is asserted on props and the frames stay what the user sees.
+ */
+vi.mock("ink", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("ink")>()
+  const React = await import("react")
+  const store = globalThis as unknown as { __inkTextCalls: unknown[] }
+  store.__inkTextCalls = []
+  return {
+    ...actual,
+    Text: (props: any) => {
+      store.__inkTextCalls.push(props)
+      return React.createElement(actual.Text, props)
+    },
+  }
+})
+
+type TextCall = Record<string, any>
+
+const textCalls = () =>
+  (globalThis as unknown as { __inkTextCalls: TextCall[] }).__inkTextCalls
+
+beforeEach(() => {
+  textCalls().length = 0
+})
 
 const items = [
   { value: "open", label: "Open", count: 3 },
@@ -435,6 +465,136 @@ describe("Tabs icons", () => {
       color: undefined,
       dimColor: true,
     })
+  })
+})
+
+/*
+ * The count sits in its own run so it can be darker than the label: bold in a
+ * stepped-down orange on the active tab, its own grey beside an inactive one,
+ * and never dimmed into the furniture. Colour is unobservable through the
+ * frame, so the mapping is asserted here instead, as `Pill` does with its ink
+ * picker — and the split itself on the `Text` props the probe records, since
+ * the frame reads the two runs as one string by design.
+ */
+describe("Tabs count run", () => {
+  it("styles the count darker than the label, never dimmed", () => {
+    expect(tabCountStyle(true)).toEqual({ bold: true, color: "#A35F10" })
+    expect(tabCountStyle(false)).toEqual({ bold: false, color: "#585961" })
+    expect("dimColor" in tabCountStyle(true)).toBe(false)
+    expect("dimColor" in tabCountStyle(false)).toBe(false)
+  })
+
+  it("renders the count in its own run with the count style", () => {
+    const frame =
+      render(<Tabs active="open" items={items} />).lastFrame() ?? ""
+    expect(frame).toBe("Open (3)  Done\n────────")
+    const runs = textCalls()
+    expect(runs.filter((p) => p.children === "Open (3)")).toHaveLength(0)
+    expect(runs).toContainEqual(
+      expect.objectContaining({
+        children: "Open",
+        bold: true,
+        color: colors.accent,
+        dimColor: false,
+      }),
+    )
+    expect(runs).toContainEqual(
+      expect.objectContaining({
+        children: " (3)",
+        bold: true,
+        color: "#A35F10",
+      }),
+    )
+    expect(
+      runs.filter(
+        (p) =>
+          (p.color === "#A35F10" || p.color === "#585961") &&
+          p.children === "",
+      ),
+    ).toHaveLength(0)
+  })
+
+  it("gives an inactive count its own grey run with no dim", () => {
+    render(<Tabs active="done" items={items} />)
+    const runs = textCalls()
+    expect(runs).toContainEqual(
+      expect.objectContaining({
+        children: "Open",
+        bold: false,
+        dimColor: true,
+      }),
+    )
+    expect(runs).toContainEqual(
+      expect.objectContaining({
+        children: " (3)",
+        bold: false,
+        color: "#585961",
+      }),
+    )
+    expect(
+      runs
+        .filter((p) => p.children === " (3)")
+        .every((p) => !("dimColor" in p)),
+    ).toBe(true)
+  })
+
+  it("keeps the folded count in the count run", () => {
+    const frame =
+      render(
+        <Tabs
+          active="alpha"
+          items={[
+            { value: "alpha", label: "Alpha", count: 12, icon: "◆" },
+            { value: "bravo", label: "Bravo", count: 3, icon: "▲" },
+            { value: "charlie", label: "Charlie", icon: "●" },
+          ]}
+          width={35}
+        />,
+      ).lastFrame() ?? ""
+    expect(frame).toBe("◆ Alpha (12)  ▲ 3  ●\n────────────")
+    const runs = textCalls()
+    expect(runs.filter((p) => p.children === "◆ Alpha (12)")).toHaveLength(0)
+    expect(runs.filter((p) => p.children === "▲ Bravo (3)")).toHaveLength(0)
+    expect(runs).toContainEqual(
+      expect.objectContaining({ children: "◆ Alpha" }),
+    )
+    expect(runs).toContainEqual(
+      expect.objectContaining({ children: " (12)", color: "#A35F10" }),
+    )
+    expect(runs).toContainEqual(expect.objectContaining({ children: "▲" }))
+    expect(runs).toContainEqual(
+      expect.objectContaining({ children: " 3", color: "#585961" }),
+    )
+  })
+
+  it("keeps the pending count's padding and the fraction in the count run", () => {
+    const pending =
+      render(
+        <Tabs
+          active="open"
+          items={[
+            { value: "open", label: "Open", count: null },
+            { value: "done", label: "Done" },
+          ]}
+        />,
+      ).lastFrame() ?? ""
+    expect(pending.split("\n")[0]).toContain("Open  (–)")
+    expect(textCalls()).toContainEqual(
+      expect.objectContaining({ children: "  (–)" }),
+    )
+
+    render(
+      <Tabs
+        active="issues"
+        items={[{ value: "issues", label: "Issues", count: 20, total: 97 }]}
+      />,
+    )
+    expect(textCalls()).toContainEqual(
+      expect.objectContaining({ children: "Issues" }),
+    )
+    expect(textCalls()).toContainEqual(
+      expect.objectContaining({ children: " (20/97)" }),
+    )
   })
 })
 
