@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.39.0 — 2026-10-06
+
+### Highlights
+
+- **`Tabs` items can carry an `icon`, and `Tabs` takes a `width`.** Icons sit one space before the label in its style; when the strip outgrows `width`, inactive icon tabs fold to `icon count`. Without `width`, nothing changes. ([8f21423](https://github.com/kud/ink-ui/commit/8f214239b52ac6f33c82c541bb320aa52f60b924))
+
+---
+
 ## 0.38.0 — 2026-10-05
 
 ### Highlights
