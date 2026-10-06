@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.40.0 — 2026-10-06
+
+### Highlights
+
+- **`Tabs` counts now sit in their own, darker run.** The active count is bold amber (`#A35F10`) under the `#FF8C00` label; inactive counts use `#585961` instead of dim. The new `tabCountStyle` export exposes the styling. ([faed6e3](https://github.com/kud/ink-ui/commit/faed6e39125000632ec3ef1873c424fbfb4f5a46))
+
+---
+
 ## 0.39.0 — 2026-10-06
 
 ### Highlights
