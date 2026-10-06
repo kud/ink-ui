@@ -188,7 +188,7 @@ priced off whichever width won, so it always reaches the border.
 **Skeletons are for when nothing is known yet.** Before the first load lands,
 the body is `SkeletonRows` — `widths` as fractions of the space, cycled in
 order, `gapEvery` to hint at grouping, `indent` to sit under a gutter — and a
-tab whose count is unknown takes `count: null`, drawn `(–)` at a two-digit
+tab whose count is unknown takes `count: null`, drawn as a chip holding `–` at a two-digit
 count's width. `SkeletonBar` is the single bar they are made of, for a
 value in a detail row. A soft highlight band sweeps each bar left to right on
 one shared clock, staggered per row so the wave travels diagonally, then loops
