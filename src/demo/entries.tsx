@@ -167,9 +167,9 @@ const ScrollViewDemo = ({ focused }: { focused: boolean }) => {
 
 const TabsDemo = ({ focused }: { focused: boolean }) => {
   const items = [
-    { label: "Files", value: "files" },
-    { label: "Search", value: "search" },
-    { label: "Settings", value: "settings" },
+    { label: "Files", value: "files", icon: "◆" },
+    { label: "Search", value: "search", icon: "▲" },
+    { label: "Settings", value: "settings", icon: "●" },
   ]
   const [active, setActive] = useState("files")
   useInput(

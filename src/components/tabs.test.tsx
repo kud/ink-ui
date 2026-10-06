@@ -1,7 +1,9 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Tabs } from "./tabs.js"
+import stringWidth from "string-width"
+import { Tabs, shouldFoldTabs, tabLabelStyle } from "./tabs.js"
+import { colors } from "../tokens.js"
 
 const items = [
   { value: "open", label: "Open", count: 3 },
@@ -200,7 +202,8 @@ describe("Tabs groups", () => {
       { value: "qa", label: "QA", count: 22, group: "board" },
       { value: "off", label: "Off board", count: 4, group: "board" },
     ]
-    const frame = render(<Tabs active="qa" items={sameGroup} />).lastFrame() ?? ""
+    const frame =
+      render(<Tabs active="qa" items={sameGroup} />).lastFrame() ?? ""
     expect(frame).not.toContain("│")
   })
 
@@ -235,13 +238,15 @@ describe("Tabs groups", () => {
       { value: "d", label: "Delta", group: "three" },
       { value: "e", label: "Echo", group: "three" },
     ]
-    const frame = render(<Tabs active="a" items={manyGroups} />).lastFrame() ?? ""
+    const frame =
+      render(<Tabs active="a" items={manyGroups} />).lastFrame() ?? ""
     const dividers = frame.split("│").length - 1
     expect(dividers).toBe(2)
   })
 
   it("keeps the underline aligned under the active label across dividers", () => {
-    const frame = render(<Tabs active="prs" items={grouped} />).lastFrame() ?? ""
+    const frame =
+      render(<Tabs active="prs" items={grouped} />).lastFrame() ?? ""
     const [labels, rules] = frame.split("\n")
     // "My PRs (3)" label should align with its underline
     expect(labels!.indexOf("My PRs")).toBe(rules!.indexOf("─"))
@@ -254,7 +259,8 @@ describe("Tabs groups", () => {
   })
 
   it("keeps the underline aligned when the active tab is after a divider", () => {
-    const frame = render(<Tabs active="off" items={grouped} />).lastFrame() ?? ""
+    const frame =
+      render(<Tabs active="off" items={grouped} />).lastFrame() ?? ""
     const [labels, rules] = frame.split("\n")
     expect(labels!.indexOf("Off board")).toBe(rules!.indexOf("─"))
   })
@@ -271,8 +277,301 @@ describe("Tabs groups", () => {
       { value: "h", label: "Hotel", group: "four" },
     ]
     // Total width with dividers > 80. Active is "Echo" (in group three, middle group).
-    const frame = render(<Tabs active="e" items={overflowItems} />).lastFrame() ?? ""
+    const frame =
+      render(<Tabs active="e" items={overflowItems} />).lastFrame() ?? ""
     const [labels, rules] = frame.split("\n")
     expect(labels!.indexOf("Echo")).toBe(rules!.indexOf("─"))
+  })
+})
+
+/*
+ * An icon names its tab at a glance and is part of the label, not a second
+ * gutter: it takes the label's style and the active rule spans icon, space and
+ * label together, while the marker keeps its own cell — so a pulse appearing
+ * beside an icon still moves nothing.
+ */
+describe("Tabs icons", () => {
+  const iconItems = [
+    { value: "alpha", label: "Alpha", count: 12, icon: "◆" },
+    { value: "bravo", label: "Bravo", count: 3, icon: "▲" },
+    { value: "charlie", label: "Charlie", icon: "●" },
+  ]
+
+  it("leaves no-icon output byte-identical, underline row included", () => {
+    expect(render(<Tabs active="open" items={items} />).lastFrame()).toBe(
+      "Open (3)  Done\n────────",
+    )
+    expect(
+      render(
+        <Tabs
+          active="open"
+          items={[
+            {
+              value: "open",
+              label: "Open",
+              count: 3,
+              marker: "● ",
+              markerColor: "red",
+            },
+            { value: "done", label: "Done", marker: "  " },
+          ]}
+        />,
+      ).lastFrame(),
+    ).toBe("● Open (3)    Done\n  ────────")
+  })
+
+  it("draws the icon between the marker gutter and the label", () => {
+    const frame =
+      render(
+        <Tabs
+          active="alpha"
+          items={[
+            {
+              value: "alpha",
+              label: "Alpha",
+              count: 12,
+              icon: "◆",
+              marker: "● ",
+              markerColor: "red",
+            },
+            {
+              value: "bravo",
+              label: "Bravo",
+              count: 3,
+              icon: "▲",
+              marker: "  ",
+            },
+          ]}
+        />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("● ◆ Alpha (12)")
+  })
+
+  it("draws the icon one space before the label when there is no marker", () => {
+    const frame =
+      render(
+        <Tabs active="alpha" items={iconItems} width={80} />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("◆ Alpha (12)")
+    expect(frame).toContain("▲ Bravo (3)")
+    expect(frame).toContain("● Charlie")
+  })
+
+  it("spans the active underline across icon, space and label", () => {
+    const frame =
+      render(
+        <Tabs active="alpha" items={iconItems} width={80} />,
+      ).lastFrame() ?? ""
+    // The whole first line, so a gutter leak or a short rule fails here, not
+    // three tests away.
+    expect(frame).toBe(
+      "◆ Alpha (12)  ▲ Bravo (3)  ● Charlie\n" +
+        "─".repeat(stringWidth("◆ Alpha (12)")),
+    )
+    const [labels, rules] = frame.split("\n")
+    expect(labels!.indexOf("◆")).toBe(rules!.indexOf("─"))
+  })
+
+  it("underlines only the active icon tab", () => {
+    const frame =
+      render(
+        <Tabs active="bravo" items={iconItems} width={80} />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("─".repeat(stringWidth("▲ Bravo (3)")))
+    expect(frame).not.toContain("─".repeat(stringWidth("◆ Alpha (12)")))
+  })
+
+  // The marker contract holds with icons on the bar: an unmarked tab reserving
+  // a blank of the same width sits in exactly the column it would without any
+  // markers — the icon is inside the label run, so it moves with the label.
+  it("keeps a tab in the same column whether or not it is the marked one", () => {
+    const lineOf = (frame: string) =>
+      frame.split("\n").find((l) => l.includes("Charlie")) ?? ""
+    const marked = [
+      {
+        value: "alpha",
+        label: "Alpha",
+        count: 12,
+        icon: "◆",
+        marker: "● ",
+        markerColor: "red",
+      },
+      { value: "bravo", label: "Bravo", count: 3, icon: "▲", marker: "  " },
+      { value: "charlie", label: "Charlie", icon: "●", marker: "  " },
+    ]
+    const asMarked = lineOf(
+      render(<Tabs active="alpha" items={marked} />).lastFrame() ?? "",
+    )
+    const asUnmarked = lineOf(
+      render(
+        <Tabs
+          active="alpha"
+          items={[
+            { ...marked[0]!, marker: "  " },
+            { ...marked[1]!, marker: "● ", markerColor: "red" },
+            marked[2]!,
+          ]}
+        />,
+      ).lastFrame() ?? "",
+    )
+    expect(asMarked.indexOf("Charlie")).toBe(asUnmarked.indexOf("Charlie"))
+  })
+
+  /*
+   * Bold, accent and dim are unobservable through the component: the runner is
+   * not a TTY, so a bold accent run renders as its bare text and the frame
+   * carries no escape codes. The mapping is asserted here instead, as `Pill`
+   * does with its ink picker — and the icon needs no mapping of its own,
+   * because it shares the label's `Text`.
+   */
+  it("styles the icon run bold in the accent when active, dim when not", () => {
+    expect(tabLabelStyle(true)).toEqual({
+      bold: true,
+      color: colors.accent,
+      dimColor: false,
+    })
+    expect(tabLabelStyle(false)).toEqual({
+      bold: false,
+      color: undefined,
+      dimColor: true,
+    })
+  })
+})
+
+/*
+ * A strip that does not fit its width folds every inactive icon tab at once —
+ * label gone, `icon count` left — measured against its own width, never a
+ * breakpoint. The active tab always keeps its full form, tabs without an icon
+ * never fold, and the rule still lands under the active label.
+ */
+describe("Tabs narrow fold", () => {
+  const foldItems = [
+    { value: "alpha", label: "Alpha", count: 12, icon: "◆" },
+    { value: "bravo", label: "Bravo", count: 3, icon: "▲" },
+    { value: "charlie", label: "Charlie", icon: "●" },
+  ]
+  // Full strip: 12 + 11 + 9 cells with two 2-column gaps = 36.
+
+  it("decides the fold off the measured strip, never a breakpoint", () => {
+    expect(shouldFoldTabs(36, 36)).toBe(false)
+    expect(shouldFoldTabs(36, 80)).toBe(false)
+    expect(shouldFoldTabs(37, 36)).toBe(true)
+    expect(shouldFoldTabs(37, undefined)).toBe(false)
+  })
+
+  it("keeps every label when the strip fits exactly", () => {
+    const frame =
+      render(
+        <Tabs active="alpha" items={foldItems} width={36} />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("◆ Alpha (12)")
+    expect(frame).toContain("▲ Bravo (3)")
+    expect(frame).toContain("● Charlie")
+  })
+
+  it("folds every inactive icon tab at once when one column short", () => {
+    // No progressive collapse: one column over folds both inactive tabs, not
+    // just enough to fit.
+    const frame =
+      render(
+        <Tabs active="alpha" items={foldItems} width={35} />,
+      ).lastFrame() ?? ""
+    expect(frame).toBe("◆ Alpha (12)  ▲ 3  ●\n────────────")
+  })
+
+  it("never folds the active tab", () => {
+    const frame =
+      render(
+        <Tabs active="bravo" items={foldItems} width={35} />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("▲ Bravo (3)")
+    expect(frame).toContain("◆ 12")
+    expect(frame).not.toContain("Alpha")
+  })
+
+  it("never folds a tab without an icon", () => {
+    const frame =
+      render(<Tabs active="open" items={items} width={5} />).lastFrame() ?? ""
+    expect(frame).toContain("Open (3)")
+    expect(frame).toContain("Done")
+  })
+
+  it("leaves an iconless tab full beside folded neighbours", () => {
+    const frame =
+      render(
+        <Tabs
+          active="plain"
+          items={[
+            { value: "alpha", label: "Alpha", count: 12, icon: "◆" },
+            { value: "plain", label: "Plain", count: 3 },
+          ]}
+          width={22}
+        />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("◆ 12")
+    expect(frame).toContain("Plain (3)")
+    expect(frame).not.toContain("Alpha")
+  })
+
+  it("drops the count's parentheses when folded, and the pending dash keeps no width", () => {
+    const frame =
+      render(
+        <Tabs
+          active="alpha"
+          items={[
+            { value: "alpha", label: "Alpha", count: 12, icon: "◆" },
+            {
+              value: "issues",
+              label: "Issues",
+              count: 20,
+              total: 97,
+              icon: "◉",
+            },
+            { value: "fresh", label: "Fresh", count: null, icon: "▲" },
+          ]}
+          width={10}
+        />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("◉ 20/97")
+    expect(frame).not.toContain("(20/97)")
+    expect(frame).toContain("▲ –")
+    expect(frame).not.toContain("(–)")
+  })
+
+  it("keeps the divider when folded", () => {
+    const frame =
+      render(
+        <Tabs
+          active="alpha"
+          items={[
+            {
+              value: "alpha",
+              label: "Alpha",
+              count: 12,
+              icon: "◆",
+              group: "one",
+            },
+            {
+              value: "bravo",
+              label: "Bravo",
+              count: 3,
+              icon: "▲",
+              group: "two",
+            },
+          ]}
+          width={27}
+        />,
+      ).lastFrame() ?? ""
+    expect(frame).toContain("│")
+    expect(frame).toContain("▲ 3")
+  })
+
+  it("keeps the rule aligned under the active label after folding", () => {
+    const frame =
+      render(
+        <Tabs active="bravo" items={foldItems} width={35} />,
+      ).lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    expect(labels!.indexOf("▲")).toBe(rules!.indexOf("─"))
   })
 })

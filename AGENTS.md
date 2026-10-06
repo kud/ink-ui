@@ -225,7 +225,7 @@ between apps. `⌫` is shown, `esc` implied.
 | --- | --- |
 | A scrolling list of selectable rows | `useListCursor` + `SelectableRow`, one row per item |
 | A long scrollable text/log region | `ScrollView` with `StyledLine[]` — it owns its own scroll keys |
-| A tab bar | `useTabs` + `Tabs` — the hook holds `active`, the component renders it |
+| A tab bar | `useTabs` + `Tabs` — the hook holds `active`, the component renders it; a tab takes an optional `icon` before its label, and the strip folds inactive icon tabs to `icon count` when it does not fit its `width` |
 | Tabular data with aligned columns | `Table` with a `Column[]` spec — do not lay out columns by hand |
 | Two or more side-by-side regions | `Columns`, and `Panel` for each region that needs a border |
 | A focusable bordered region | `Panel` with `focused` — the border brightens and the title gains a ● marker |
