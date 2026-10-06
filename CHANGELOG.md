@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.41.0 — 2026-10-06
+
+### Highlights
+
+- **`Pill` gains a `tonal` tone for chrome such as counts and slot labels.** It tints a hue over the ground, with a `strong` prop for the active state. New `tonalColors` and `tonalStrongColors` tokens give seven hues at two strengths. ([2963db3](https://github.com/kud/ink-ui/commit/2963db37f04f956cc9ee7ab58d6c13111614ac28))
+- **`Tabs` counts now render as a soft chip instead of `(n)`.** The active underline spans the label only, and with `NO_COLOR` the count falls back to parentheses. Tabs draw the chip through `Pill`, so it matches other tonal pills. ([3122aee](https://github.com/kud/ink-ui/commit/3122aee57e12c91196ecf0def403928a7c5dcbda), [2963db3](https://github.com/kud/ink-ui/commit/2963db37f04f956cc9ee7ab58d6c13111614ac28))
+
+<details>
+<summary>Internal (1 commit)</summary>
+
+- Stopped tracking a stray `node_modules` symlink and ignored it at any depth. ([68d65b5](https://github.com/kud/ink-ui/commit/68d65b5a03c509c1cb29154dda79b8d0ae5b464c))
+
+</details>
+
+---
+
 ## 0.40.0 — 2026-10-06
 
 ### Highlights
