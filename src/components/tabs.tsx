@@ -83,6 +83,25 @@ export type TabItem<T extends string = string> = {
    * without a divider.
    */
   group?: string
+  /**
+   * How many things in this tab warn, drawn after the count chip as the warning
+   * mark and the number, in the warning colour: `QA 27 ⚠ 1`. Omit it, or pass
+   * 0, for a tab with nothing to warn about.
+   *
+   * A second figure rather than a marker, because the two answer different
+   * questions. A marker is news (something arrived), and it reserves its cell on
+   * every tab so it can come and go without moving the bar. A warning is a
+   * standing fact the host keeps true until somebody acts, so it is priced only
+   * where it is drawn, and the tabs after it move once when it appears, not on
+   * every frame.
+   *
+   * After the chip, never inside it: the chip is how many the tab holds, and
+   * `27/1` would read as a fraction. The mark carries the meaning and the hue
+   * repeats it, so it survives `NO_COLOR` and a reader who cannot tell amber
+   * from the label. It stays when the tab folds, since it is the reason to open
+   * that tab.
+   */
+  warning?: number
 }
 
 type TabsProps<T extends string> = {
@@ -211,7 +230,13 @@ export const tabLabelStyle = (isActive: boolean) => ({
 // for byte what the runs draw. The caps are real glyphs of width one, so the
 // measured width is the drawn width — two caps for two parens.
 const fullTextOf = <T extends string>(item: TabItem<T>): string =>
-  fullPartsOf(item).join("")
+  fullPartsOf(item).join("") + warningTextOf(item)
+
+// The warning drawn after the chip, separating space included, or nothing at
+// all: the mark, a space, the number. The same text in both the full and the
+// folded form, because folding drops the label and the warning is not label.
+const warningTextOf = <T extends string>(item: TabItem<T>): string =>
+  item.warning ? ` ${glyph("warning")} ${item.warning}` : ""
 
 // An inactive icon tab with nowhere to sit, split the same way: the label
 // goes, the icon and the chip stay — one space between icon and chip, the same
@@ -235,7 +260,7 @@ const foldedPartsOf = <T extends string>(
 
 // The folded text, for measuring: the two parts joined.
 const foldedTextOf = <T extends string>(item: TabItem<T>): string =>
-  foldedPartsOf(item).join("")
+  foldedPartsOf(item).join("") + warningTextOf(item)
 
 // The active tab is marked by an underline (border-bottom) under it, in the
 // accent colour; inactive tabs get none. The underline's presence — not its
@@ -265,6 +290,7 @@ export const Tabs = <T extends string>({
       foldedLabel,
       foldedTail,
       countContent: countContentOf(item),
+      warning: item.warning || undefined,
       hasIcon: item.icon !== undefined,
       isActive: item.value === active,
       group: item.group,
@@ -392,6 +418,13 @@ export const Tabs = <T extends string>({
                     </Pill>
                   </Text>
                 )
+              ) : null}
+              {cell.warning ? (
+                <Text color={colors.warning}>
+                  {" "}
+                  <Text bold>{glyph("warning")}</Text>
+                  {` ${cell.warning}`}
+                </Text>
               ) : null}
             </Box>
           )

@@ -917,3 +917,69 @@ describe("Tabs narrow fold", () => {
     expect(labels!.indexOf("▲")).toBe(rules!.indexOf("─"))
   })
 })
+
+/*
+ * A warning is a second figure after the chip: the mark and the number, in the
+ * warning colour. It is a standing fact rather than news, so a tab without one
+ * draws nothing at all where a marker would reserve a blank.
+ */
+describe("Tabs warning", () => {
+  const WARN = glyph("warning")
+  const warned = [
+    { value: "review", label: "Review", count: 2, warning: 1 },
+    { value: "qa", label: "QA", count: 27 },
+  ]
+
+  it("draws the mark and the count after the chip", () => {
+    const frame =
+      render(<Tabs active="qa" items={warned} />).lastFrame() ?? ""
+    expect(frame.split("\n")[0]).toBe(
+      `Review ${chip("2")} ${WARN} 1  QA ${chip("27")}`,
+    )
+  })
+
+  it("draws nothing for a tab with no warning or a zero", () => {
+    const plain =
+      render(<Tabs active="qa" items={[{ ...warned[0]!, warning: 0 }, warned[1]!]} />).lastFrame() ?? ""
+    expect(plain).not.toContain(WARN)
+    expect(plain.split("\n")[0]).toBe(`Review ${chip("2")}  QA ${chip("27")}`)
+  })
+
+  it("paints the warning in the warning colour with a bold mark", () => {
+    render(<Tabs active="qa" items={warned} />)
+    const runs = textCalls()
+    expect(runs).toContainEqual(
+      expect.objectContaining({ color: colors.warning }),
+    )
+    expect(runs).toContainEqual(
+      expect.objectContaining({ children: WARN, bold: true }),
+    )
+  })
+
+  it("keeps the rule under the active label past a warned tab", () => {
+    const frame =
+      render(<Tabs active="qa" items={warned} />).lastFrame() ?? ""
+    const [labels, rules] = frame.split("\n")
+    expect(rules!.indexOf("─")).toBe(labels!.indexOf("QA"))
+    expect(rules!.trim()).toBe("──")
+  })
+
+  it("keeps the warning when the tab folds", () => {
+    const iconed = [
+      { value: "review", label: "Review", icon: "R", count: 2, warning: 1 },
+      { value: "qa", label: "QA", icon: "Q", count: 27 },
+    ]
+    const frame =
+      render(<Tabs active="qa" items={iconed} width={10} />).lastFrame() ?? ""
+    expect(frame.split("\n")[0]).toBe(
+      `R ${chip("2")} ${WARN} 1  Q QA ${chip("27")}`,
+    )
+  })
+
+  it("prices the warning into the strip's width", () => {
+    const full = `Review ${chip("2")} ${WARN} 1  QA ${chip("27")}`
+    const frame =
+      render(<Tabs active="qa" items={warned} width={stringWidth(full)} />).lastFrame() ?? ""
+    expect(frame.split("\n")[0]).toBe(full)
+  })
+})
