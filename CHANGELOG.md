@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.42.0 — 2026-10-23
+
+### Highlights
+
+- **`TabItem` gains an optional `warning` count, drawn after the count chip.** It shows a warning mark and number in the warning colour (for example `QA 27 ⚠ 1`), is hidden when 0 or absent, and survives folding when tabs are narrow. ([532048f](https://github.com/kud/ink-ui/commit/532048fd966ac613759464a16cd8add88422e75a))
+
+---
+
 ## 0.41.0 — 2026-10-06
 
 ### Highlights
