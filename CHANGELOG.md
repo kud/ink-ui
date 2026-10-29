@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.43.0 — 2026-10-29
+
+### Highlights
+
+- **`CommandPalette` gains a `frame` prop.** The default, `"overlay"`, keeps today's look; `"none"` drops the border and fill and spans the full width, for a palette that is the whole screen, such as a full-page launcher. ([72c4d23](https://github.com/kud/ink-ui/commit/72c4d23f5794663b14c54d084c289f3f3c9995bd))
+
+---
+
 ## 0.42.0 — 2026-10-23
 
 ### Highlights
