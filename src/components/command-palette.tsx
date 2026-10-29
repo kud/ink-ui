@@ -73,6 +73,14 @@ type CommandPaletteProps = {
   maxRows?: number
   hints?: Hint[]
   isActive?: boolean
+  /**
+   * `overlay` (the default) is a layer floating over a screen: a round border
+   * and a raised fill. `none` is the palette AS the screen, a full-page
+   * launcher with nothing underneath: no border, no fill, the terminal's own
+   * ground, and every line spans the whole `width`. A frame that only traces
+   * the terminal's edge reads as a dialog over nothing.
+   */
+  frame?: "overlay" | "none"
 }
 
 type Row = { header: string } | { item: PaletteItem; index: number }
@@ -143,6 +151,7 @@ export const CommandPalette = ({
   maxRows = 10,
   hints = DEFAULT_HINTS,
   isActive = true,
+  frame = "overlay",
 }: CommandPaletteProps) => {
   const { cursor, setCursor } = useListCursor(items.length, {
     vimKeys: false,
@@ -163,7 +172,8 @@ export const CommandPalette = ({
   const visible = rows.slice(start, start + budget)
   const scrolls = rows.length > budget
   const hasMarkers = items.some((item) => item.marker)
-  const inner = width - 2
+  const framed = frame === "overlay"
+  const inner = framed ? width - 2 : width
   const headerTrail = (title: string) =>
     Math.max(2, inner - 5 - stringWidth(title))
   // Before the first keystroke there are no rows and no verdict yet: the
@@ -186,9 +196,9 @@ export const CommandPalette = ({
   return (
     <Box
       flexDirection="column"
-      borderStyle="round"
-      borderColor={colors.info}
-      backgroundColor={colors.track}
+      borderStyle={framed ? "round" : undefined}
+      borderColor={framed ? colors.info : undefined}
+      backgroundColor={framed ? colors.track : undefined}
       width={width}
     >
       <Box width={inner}>

@@ -193,6 +193,27 @@ describe("CommandPalette", () => {
     expect(frame).not.toContain("doctor")
   })
 
+  // A full-page launcher has nothing underneath it, so the overlay frame would
+  // only trace the terminal's edge: `none` drops it and spends the full width.
+  it("draws no border with frame none, and every line spans the width", () => {
+    const props = {
+      items: tree,
+      query: "",
+      onQueryChange: () => {},
+      onSelect: () => {},
+      width: 50,
+    }
+    const overlay = plain(render(<CommandPalette {...props} />).lastFrame())
+    const page = plain(
+      render(<CommandPalette {...props} frame="none" />).lastFrame(),
+    )
+    expect(overlay).toMatch(/[╭╰]/)
+    expect(page).not.toMatch(/[╭╮╰╯│]/)
+    const widths = page.split("\n").map((line) => stringWidth(line))
+    expect(Math.max(...widths)).toBe(50)
+    expect(page).toContain("sync")
+  })
+
   it("draws the hint dimmed after the title", () => {
     const frame = plain(render(<StaticHost />).lastFrame())
     expect(frame).toMatch(/sync {2}pull the machine/)
