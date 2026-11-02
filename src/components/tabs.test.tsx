@@ -85,9 +85,7 @@ describe("Tabs", () => {
       ).lastFrame() ?? ""
     expect(frame).toBe(`Open ${chip("3")}\n────`)
     expect(stringWidth(`Open ${chip("3")}`)).toBe("Open (3)".length)
-    expect(stringWidth(`Issues ${chip("20/97")}`)).toBe(
-      "Issues (20/97)".length,
-    )
+    expect(stringWidth(`Issues ${chip("20/97")}`)).toBe("Issues (20/97)".length)
   })
 
   /*
@@ -582,8 +580,7 @@ describe("Tabs count chip", () => {
   })
 
   it("renders the chip as caps around the number run", () => {
-    const frame =
-      render(<Tabs active="open" items={items} />).lastFrame() ?? ""
+    const frame = render(<Tabs active="open" items={items} />).lastFrame() ?? ""
     expect(frame).toBe(`Open ${chip("3")}  Done\n────`)
     const runs = textCalls()
     expect(
@@ -614,9 +611,7 @@ describe("Tabs count chip", () => {
       expect.objectContaining({ children: CAP_R, color: "#5A3816" }),
     )
     expect(
-      runs.filter(
-        (p) => p.color === "#5A3816" && p.children === "",
-      ),
+      runs.filter((p) => p.color === "#5A3816" && p.children === ""),
     ).toHaveLength(0)
   })
 
@@ -639,9 +634,7 @@ describe("Tabs count chip", () => {
       }),
     )
     expect(
-      runs
-        .filter((p) => p.children === "3")
-        .every((p) => !("dimColor" in p)),
+      runs.filter((p) => p.children === "3").every((p) => !("dimColor" in p)),
     ).toBe(true)
   })
 
@@ -662,8 +655,7 @@ describe("Tabs count chip", () => {
     const runs = textCalls()
     expect(
       runs.filter(
-        (p) =>
-          typeof p.children === "string" && p.children.includes("Bravo"),
+        (p) => typeof p.children === "string" && p.children.includes("Bravo"),
       ),
     ).toHaveLength(0)
     expect(runs).toContainEqual(
@@ -724,8 +716,7 @@ describe("Tabs NO_COLOR", () => {
   // can toggle it per render.
   it("falls back to (n) with no caps", () => {
     process.env["NO_COLOR"] = "1"
-    const frame =
-      render(<Tabs active="open" items={items} />).lastFrame() ?? ""
+    const frame = render(<Tabs active="open" items={items} />).lastFrame() ?? ""
     expect(frame).toContain("Open (3)")
     expect(frame).not.toContain(CAP_L)
     expect(frame).not.toContain(CAP_R)
@@ -919,8 +910,8 @@ describe("Tabs narrow fold", () => {
 })
 
 /*
- * A warning is a second figure after the chip: the mark and the number, in the
- * warning colour. It is a standing fact rather than news, so a tab without one
+ * A warning is a second figure inside the chip, after the count: the mark and
+ * the number, in the warning colour. It is a standing fact rather than news, so a tab without one
  * draws nothing at all where a marker would reserve a blank.
  */
 describe("Tabs warning", () => {
@@ -930,17 +921,21 @@ describe("Tabs warning", () => {
     { value: "qa", label: "QA", count: 27 },
   ]
 
-  it("draws the mark and the count after the chip", () => {
-    const frame =
-      render(<Tabs active="qa" items={warned} />).lastFrame() ?? ""
+  it("draws the mark and the count inside the chip", () => {
+    const frame = render(<Tabs active="qa" items={warned} />).lastFrame() ?? ""
     expect(frame.split("\n")[0]).toBe(
-      `Review ${chip("2")} ${WARN} 1  QA ${chip("27")}`,
+      `Review ${chip(`2 ${WARN} 1`)}  QA ${chip("27")}`,
     )
   })
 
   it("draws nothing for a tab with no warning or a zero", () => {
     const plain =
-      render(<Tabs active="qa" items={[{ ...warned[0]!, warning: 0 }, warned[1]!]} />).lastFrame() ?? ""
+      render(
+        <Tabs
+          active="qa"
+          items={[{ ...warned[0]!, warning: 0 }, warned[1]!]}
+        />,
+      ).lastFrame() ?? ""
     expect(plain).not.toContain(WARN)
     expect(plain.split("\n")[0]).toBe(`Review ${chip("2")}  QA ${chip("27")}`)
   })
@@ -957,8 +952,7 @@ describe("Tabs warning", () => {
   })
 
   it("keeps the rule under the active label past a warned tab", () => {
-    const frame =
-      render(<Tabs active="qa" items={warned} />).lastFrame() ?? ""
+    const frame = render(<Tabs active="qa" items={warned} />).lastFrame() ?? ""
     const [labels, rules] = frame.split("\n")
     expect(rules!.indexOf("─")).toBe(labels!.indexOf("QA"))
     expect(rules!.trim()).toBe("──")
@@ -972,14 +966,16 @@ describe("Tabs warning", () => {
     const frame =
       render(<Tabs active="qa" items={iconed} width={10} />).lastFrame() ?? ""
     expect(frame.split("\n")[0]).toBe(
-      `R ${chip("2")} ${WARN} 1  Q QA ${chip("27")}`,
+      `R ${chip(`2 ${WARN} 1`)}  Q QA ${chip("27")}`,
     )
   })
 
   it("prices the warning into the strip's width", () => {
-    const full = `Review ${chip("2")} ${WARN} 1  QA ${chip("27")}`
+    const full = `Review ${chip(`2 ${WARN} 1`)}  QA ${chip("27")}`
     const frame =
-      render(<Tabs active="qa" items={warned} width={stringWidth(full)} />).lastFrame() ?? ""
+      render(
+        <Tabs active="qa" items={warned} width={stringWidth(full)} />,
+      ).lastFrame() ?? ""
     expect(frame.split("\n")[0]).toBe(full)
   })
 })

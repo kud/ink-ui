@@ -84,9 +84,9 @@ export type TabItem<T extends string = string> = {
    */
   group?: string
   /**
-   * How many things in this tab warn, drawn after the count chip as the warning
-   * mark and the number, in the warning colour: `QA 27 ⚠ 1`. Omit it, or pass
-   * 0, for a tab with nothing to warn about.
+   * How many things in this tab warn, drawn inside the count chip after the
+   * count as the warning mark and the number, in the warning colour:
+   * `QA (27 ⚠ 1)`. Omit it, or pass 0, for a tab with nothing to warn about.
    *
    * A second figure rather than a marker, because the two answer different
    * questions. A marker is news (something arrived), and it reserves its cell on
@@ -95,8 +95,9 @@ export type TabItem<T extends string = string> = {
    * where it is drawn, and the tabs after it move once when it appears, not on
    * every frame.
    *
-   * After the chip, never inside it: the chip is how many the tab holds, and
-   * `27/1` would read as a fraction. The mark carries the meaning and the hue
+   * Inside the chip, since 2026-11-02: drawn after it, the bare figure read as
+   * loose text and seemed to belong to the next tab. The mark sits between the
+   * two numbers, so `27 ⚠ 1` never reads as the fraction `27/1`. The mark carries the meaning and the hue
    * repeats it, so it survives `NO_COLOR` and a reader who cannot tell amber
    * from the label. It stays when the tab folds, since it is the reason to open
    * that tab.
@@ -190,7 +191,7 @@ const chipTailOf = (content: string): string =>
 const fullPartsOf = <T extends string>(item: TabItem<T>): [string, string] => {
   const head =
     item.icon === undefined ? item.label : `${item.icon} ${item.label}`
-  const content = countContentOf(item)
+  const content = chipContentOf(item)
   if (content === undefined) return [head, ""]
   if (process.env["NO_COLOR"]) return [head, ` (${content})`]
   return [head, chipTailOf(content)]
@@ -230,13 +231,27 @@ export const tabLabelStyle = (isActive: boolean) => ({
 // for byte what the runs draw. The caps are real glyphs of width one, so the
 // measured width is the drawn width — two caps for two parens.
 const fullTextOf = <T extends string>(item: TabItem<T>): string =>
-  fullPartsOf(item).join("") + warningTextOf(item)
+  fullPartsOf(item).join("")
 
-// The warning drawn after the chip, separating space included, or nothing at
+// The warning's part of the chip, separating space included, or nothing at
 // all: the mark, a space, the number. The same text in both the full and the
 // folded form, because folding drops the label and the warning is not label.
 const warningTextOf = <T extends string>(item: TabItem<T>): string =>
   item.warning ? ` ${glyph("warning")} ${item.warning}` : ""
+
+// What the chip holds: the count, then the warning in the same chip. It sat
+// after the chip until 2026-11-02, where the bare figure read as loose text in
+// a strip made of chips and seemed to belong to the next tab. The mark between
+// the two numbers keeps `13 ⚠ 2` from reading as the fraction `13/2`. A tab
+// with a warning and no count holds the warning alone.
+const chipContentOf = <T extends string>(
+  item: TabItem<T>,
+): string | undefined => {
+  const count = countContentOf(item)
+  const warning = warningTextOf(item)
+  if (!warning) return count
+  return count === undefined ? warning.trimStart() : count + warning
+}
 
 // An inactive icon tab with nowhere to sit, split the same way: the label
 // goes, the icon and the chip stay — one space between icon and chip, the same
@@ -248,19 +263,59 @@ const foldedPartsOf = <T extends string>(
   item: TabItem<T>,
 ): [string, string] => {
   const icon = item.icon ?? ""
-  const content = countContentOf(item)
+  const content = chipContentOf(item)
   if (content === undefined) return [icon, ""]
   if (process.env["NO_COLOR"])
     return [
       icon,
-      item.count === null ? ` ${FOLDED_PENDING_COUNT}` : ` ${content}`,
+      item.count === null
+        ? ` ${FOLDED_PENDING_COUNT}${warningTextOf(item)}`
+        : ` ${content}`,
     ]
   return [icon, chipTailOf(content)]
 }
 
 // The folded text, for measuring: the two parts joined.
 const foldedTextOf = <T extends string>(item: TabItem<T>): string =>
-  foldedPartsOf(item).join("") + warningTextOf(item)
+  foldedPartsOf(item).join("")
+
+// The count chip with the warning inside it: the tab's own tonal fill and caps,
+// exactly as `Pill` draws them, but two inks on the one fill, which `Pill`'s
+// single string child cannot carry. The count keeps the chip's ink; the mark
+// (bold) and its number take the warning colour, so the mark still says it
+// where the hue cannot.
+const WarnedChip = ({
+  count,
+  warning,
+  isActive,
+}: {
+  count: string | undefined
+  warning: number
+  isActive: boolean
+}) => {
+  const style = pillStyle(isActive ? "accent" : "muted", "tonal", isActive)
+  return (
+    <Text>
+      <Text color={style.fill}>{glyph("plCapLeft")}</Text>
+      {count === undefined ? null : (
+        <Text backgroundColor={style.fill} color={style.ink} bold={style.bold}>
+          {`${count} `}
+        </Text>
+      )}
+      <Text backgroundColor={style.fill} color={colors.warning} bold>
+        {glyph("warning")}
+      </Text>
+      <Text
+        backgroundColor={style.fill}
+        color={colors.warning}
+        bold={style.bold}
+      >
+        {` ${warning}`}
+      </Text>
+      <Text color={style.fill}>{glyph("plCapRight")}</Text>
+    </Text>
+  )
+}
 
 // The active tab is marked by an underline (border-bottom) under it, in the
 // accent colour; inactive tabs get none. The underline's presence — not its
@@ -409,22 +464,23 @@ export const Tabs = <T extends string>({
                   // whole strip, while a string inside a `Text` is just text.
                   <Text>
                     {" "}
-                    <Pill
-                      tone="tonal"
-                      variant={cell.isActive ? "accent" : "muted"}
-                      strong={cell.isActive}
-                    >
-                      {cell.countContent ?? ""}
-                    </Pill>
+                    {cell.warning ? (
+                      <WarnedChip
+                        count={cell.countContent}
+                        warning={cell.warning}
+                        isActive={cell.isActive}
+                      />
+                    ) : (
+                      <Pill
+                        tone="tonal"
+                        variant={cell.isActive ? "accent" : "muted"}
+                        strong={cell.isActive}
+                      >
+                        {cell.countContent ?? ""}
+                      </Pill>
+                    )}
                   </Text>
                 )
-              ) : null}
-              {cell.warning ? (
-                <Text color={colors.warning}>
-                  {" "}
-                  <Text bold>{glyph("warning")}</Text>
-                  {` ${cell.warning}`}
-                </Text>
               ) : null}
             </Box>
           )
