@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.44.0 — 2026-11-02
+
+### Highlights
+
+- **`Tabs` now draws the warning count inside the count chip.** It reads `QA (27 ⚠ 1)` rather than loose text after the chip, and is measured with the chip so folding stays accurate. ([834bfbb](https://github.com/kud/ink-ui/commit/834bfbb3a895cf3f954d3032f4fa7f0d249a61db))
+
+---
+
 ## 0.43.0 — 2026-10-29
 
 ### Highlights
