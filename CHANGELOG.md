@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.44.1 — 2026-11-13
+
+### Fixes
+
+- **`FooterHints` and the `CommandPalette` footer keys no longer hardcode white.** They now read properly on light terminal themes. ([d6cef21](https://github.com/kud/ink-ui/commit/d6cef2164110a91e9b3de0433e01a220c9465607))
+
+<details>
+<summary>Internal (2 commits)</summary>
+
+- Added the ink-ui icon asset and updated the package homepage URL. ([8be2bbe](https://github.com/kud/ink-ui/commit/8be2bbe221e2295621092261c4a6bcbb10ee2626), [51ab509](https://github.com/kud/ink-ui/commit/51ab509fc661622f8bb5d965c76e66c105716035))
+
+</details>
+
+---
+
 ## 0.44.0 — 2026-11-02
 
 ### Highlights
