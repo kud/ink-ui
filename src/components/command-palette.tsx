@@ -290,7 +290,7 @@ export const CommandPalette = ({
         {hints.map(([key, label], index) => (
           <React.Fragment key={key}>
             {index > 0 ? "  " : null}
-            <Text color="white">{key}</Text>
+            <Text>{key}</Text>
             <Text dimColor>{" " + label}</Text>
           </React.Fragment>
         ))}

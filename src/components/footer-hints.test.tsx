@@ -1,5 +1,5 @@
 import React from "react"
-import { Box } from "ink"
+import { Box, Text } from "ink"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
 import { FooterHints, type Hint } from "./footer-hints.js"
@@ -17,6 +17,26 @@ describe("FooterHints", () => {
     const frame = lastFrame() ?? ""
     expect(frame).toContain("↑↓ nav")
     expect(frame).toContain("q quit")
+  })
+
+  it("draws keys in the terminal's own foreground, never a named colour", () => {
+    // Regression: keys were `color="white"`, which a light terminal theme
+    // paints near-white on its pale ground, so the keys all but vanished. The
+    // test frame carries no colour codes, so this reads the element tree.
+    const colours: unknown[] = []
+    const walk = (node: React.ReactNode): void => {
+      if (Array.isArray(node)) return node.forEach(walk)
+      if (!React.isValidElement(node)) return
+      const props = node.props as {
+        color?: unknown
+        children?: React.ReactNode
+      }
+      if (node.type === Text) colours.push(props.color)
+      walk(props.children)
+    }
+    walk(FooterHints({ hints, page: "nested" }))
+    expect(colours.length).toBeGreaterThan(0)
+    expect(colours.every((c) => c === undefined)).toBe(true)
   })
 
   it("lays hints out on one row when they fit", () => {

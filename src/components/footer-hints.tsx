@@ -35,7 +35,7 @@ export const FooterHints = ({ hints, page, help = true }: FooterHintsProps) => {
     <Box columnGap={2} rowGap={0} flexWrap="wrap">
       {all.map(([key, label]) => (
         <Box key={key}>
-          <Text color="white">{key}</Text>
+          <Text>{key}</Text>
           <Text dimColor>{" " + label}</Text>
         </Box>
       ))}
