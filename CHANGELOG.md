@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.45.0 — 2026-11-16
+
+### Highlights
+
+- **New `Card` component for status boards.** Share the existing `incidents-cli` design: fixed six-line height, semantic glyph and label with a status-coloured left border, bold border when selected, and optional body, footnote and trailing metadata. Long status and meta text truncate safely on narrow terminals. Exported as `Card`, `CARD_HEIGHT`, `CardProps` and `CardStatus`. ([6e559ca](https://github.com/kud/ink-ui/commit/6e559ca0a94e83a0c587eb1968671979a0b888ea))
+
+---
+
 ## 0.44.1 — 2026-11-13
 
 ### Fixes
