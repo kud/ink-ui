@@ -57,14 +57,18 @@ export const Card = ({
   focused = true,
 }: CardProps) => {
   const inner = width - 4
+  // Reserve room for the title/footnote when a trailing label is unusually long.
+  const trailingWidth = Math.max(1, inner - 6)
   const statusColour = status.color ?? colors.muted
   const borderColor = selected ? (focused ? colors.accent : colors.secondary) : colors.track
 
   return (
     <Box
       width={width}
+      height={CARD_HEIGHT}
       flexShrink={0}
       flexDirection="column"
+      overflow="hidden"
       borderStyle={selected ? "bold" : "round"}
       borderColor={borderColor}
       borderLeftColor={statusColour}
@@ -74,8 +78,8 @@ export const Card = ({
         <Box flexGrow={1} flexShrink={1}>
           <Text bold wrap="truncate-end">{title}</Text>
         </Box>
-        <Box flexShrink={0}>
-          <Text color={statusColour}>{`${status.glyph} ${status.word}`}</Text>
+        <Box flexShrink={0} maxWidth={trailingWidth}>
+          <Text color={statusColour} wrap="truncate-end">{`${status.glyph} ${status.word}`}</Text>
         </Box>
       </Box>
       <Text> </Text>
@@ -85,8 +89,8 @@ export const Card = ({
           <Text wrap="truncate-end">{footnote || " "}</Text>
         </Box>
         {meta ? (
-          <Box flexShrink={0}>
-            <Text color={colors.muted}>{meta}</Text>
+          <Box flexShrink={0} maxWidth={trailingWidth}>
+            <Text color={colors.muted} wrap="truncate-end">{meta}</Text>
           </Box>
         ) : null}
       </Box>
