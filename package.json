@@ -16,7 +16,7 @@
     "AGENTS.md"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsup",
@@ -28,11 +28,17 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
+    "commander": ">=15",
     "ink": ">=7",
     "react": ">=19"
   },
+  "peerDependenciesMeta": {
+    "commander": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "@kud/glyphs": "0.4.0",
+    "@kud/glyphs": "0.6.0",
     "cli-spinners": "3.4.0",
     "figures": "6.1.0",
     "string-width": "8.2.2"
@@ -40,6 +46,7 @@
   "devDependencies": {
     "@types/node": "22.20.1",
     "@types/react": "19.2.17",
+    "commander": "15.1.0",
     "ink": "7.1.0",
     "ink-testing-library": "4.0.0",
     "react": "19.2.7",

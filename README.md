@@ -18,7 +18,7 @@
   - **Lists** — `UnorderedList`, `OrderedList` (both nestable), `Table`
   - **Selection & navigation** — `Select`, `MultiSelect`, `Tabs`, `Switch`, `Toggle`, `SelectableRow`
   - **Status & feedback** — `Spinner`, `ProgressBar`, `SkeletonBar`, `SkeletonRows`, `StatusMessage`, `Alert`, `Badge`, `Toast`
-  - **Layout & chrome** — `Banner`, `Header`, `Panel` (bordered pane, optional focus state), `Card` (six-line status card), `Columns`, `FooterHints`, `KeyValue`, `LoadingScreen`, `ScrollView`
+  - **Layout & chrome** — `Banner`, `Header`, `Panel` (bordered pane, optional focus state), `Card` (six-line status card), `Columns`, `FooterHints`, `KeyValue`, `LoadingScreen`, `ScrollView`, `Help` (the shared `--help` layout, also as `renderHelp()` and a commander adapter)
 - **Behaviour hooks** — `useTabs` and `useListCursor` own the keyboard state that every consumer used to hand-roll, so Tab/Shift+Tab and arrow/vim navigation behave the same everywhere
 - **Full [@inkjs/ui](https://github.com/vadimdemedes/ink-ui) parity** — every upstream component has an equivalent, plus a dozen more the design system adds on top
 - **Colourblind-safe by design** — state is signalled by shape, case, and glyph, never colour alone
@@ -111,6 +111,24 @@ const Inbox = ({ rows }) => {
 ```
 
 Both take `{ isActive }` so a screen with several focus regions can gate them, and `useListCursor` takes `{ wrap }` for genuinely circular lists. `useTabs` wraps by default because a tab bar is a ring; `useListCursor` clamps because a list has ends.
+
+`--help` uses one shared layout across every CLI. `renderHelp()` prints it as a string — colour on a TTY, bold only under `NO_COLOR`, plain when piped — and `helpFromCommander()` maps a commander program onto it; `<Help>` draws the same lines inside an Ink app:
+
+```ts
+import { Command } from "commander"
+import { helpFromCommander, renderHelp } from "@kud/ink-ui"
+
+const program = new Command("deploy").version("2.4.0").description("Ship a build")
+program.configureHelp({
+  formatHelp: (cmd, helper) =>
+    renderHelp({
+      ...helpFromCommander(cmd, helper),
+      examples: [{ comment: "Deploy to staging", command: "deploy staging" }],
+    }),
+})
+```
+
+`commander` is an optional peer dependency, needed only for the adapter. The byte contract, shared with the zsh renderer, is in [`src/components/help.golden`](src/components/help.golden/README.md).
 
 All components accept only the props they need — no theme provider or context required. Design tokens are plain objects:
 

@@ -237,6 +237,7 @@ between apps. `⌫` is shown, `esc` implied.
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |
 | A category label — `epic`, `draft` — that should read as one object | `Pill`, filled and rounded; `Badge` for the bracket form. Never for a reference the reader follows |
 | Transient feedback | `StatusMessage` (inline) · `Alert` (boxed, with title) · `Toast` (self-dismissing) |
+| A `--help` screen | `renderHelp` for a plain CLI, with `helpFromCommander` inside commander's `configureHelp`; `Help` for the same lines in an Ink tree. Never hand-format help — the layout is shared with the zsh renderer byte for byte |
 | App chrome | `Page` as the frame of every screen, with `useAppKeys` once at the root; `Banner` at the top of a non-paged CLI, `Header` per section, `LoadingScreen` while booting |
 
 Composing a domain component on top of these is right and expected — wrapping
@@ -437,7 +438,7 @@ read it at render time, so calling it after mounting does nothing.
 **There is no theme provider and no context.** Components take only the props
 they need. Do not build a provider to pass tokens around — import them.
 
-**ESM only.** `import`, never `require`. Node ≥ 20, with `ink` ≥ 7 and
+**ESM only.** `import`, never `require`. Node ≥ 22, with `ink` ≥ 7 and
 `react` ≥ 19 as peer dependencies the consuming project installs itself.
 
 ## Traps

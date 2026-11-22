@@ -1,0 +1,41 @@
+[1mdeploy[0m [37m2.4.0[0m
+Ship a build to an environment
+
+[1;33mUSAGE[0m
+  deploy [37m[options][0m [37m<target>[0m [37m[files…][0m
+  deploy rollback [37m[release][0m
+
+  A target is a named environment from deploy.toml; files default to everything
+  the build produced.
+
+[1;33mCOMMANDS[0m
+  [1mrollback[0m [37m[release][0m      Return to a previous release, the last one by default
+  [1mstatus[0m                  Show what is live in each environment
+
+[1;33mARGUMENTS[0m
+  [37m<target>[0m                Environment to deploy to
+  [37m[files…][0m                Files to include
+
+[1;33mOPTIONS[0m
+  [1m-p,[0m [1m--port[0m [37m<number>[0m     Port the health check listens on [37m(default: 3000)[0m
+      [1m--dry-run[0m           Print the plan without applying it
+  [1m-v,[0m [1m--verbose[0m           Log every request
+      [1m--region[0m [37m<name>[0m     Cloud region for the deploy, which also decides where
+                          logs and artefacts are kept [37m(default: eu-west-1)[0m
+      [1m--max-parallel-uploads[0m [37m<n>[0m
+                          Upload at most this many files at once [37m(default: 8)[0m
+  [1m-h,[0m [1m--help[0m              Show this help
+
+[1;33mEXAMPLES[0m
+  [37m# Deploy the current build to staging[0m
+  [37m$[0m deploy staging
+  [37m# See what would change in production[0m
+  [37m$[0m deploy production --dry-run
+
+[1;33mENVIRONMENT[0m
+  [1mDEPLOY_TOKEN[0m            Token used to authenticate
+  [1mNO_COLOR[0m                Turn colour off; bold is kept
+
+[1;33mSEE ALSO[0m
+  [4;34mhttps://kud.io/projects/deploy[0m
+  [4;34mdeploy.toml(5)[0m

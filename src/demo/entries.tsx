@@ -14,6 +14,7 @@ import {
   EmailInput,
   FooterHints,
   Header,
+  Help,
   KeyValue,
   LoadingScreen,
   MultiSelect,
@@ -609,6 +610,28 @@ export const entries: DemoEntry[] = [
         <KeyValue label="Commit" value="4eb77fd" />
         <KeyValue label="Author" value="Erwann Mest" />
       </Box>
+    ),
+  },
+  {
+    name: "Help",
+    category: "Layout",
+    interactive: false,
+    render: () => (
+      <Help
+        name="deploy"
+        version="2.4.0"
+        description="Ship a build to an environment"
+        usage="deploy [options] <target> [files…]"
+        commands={[{ name: "rollback [release]", description: "Return to a previous release" }]}
+        options={[
+          { name: "-p, --port <number>", description: "Port the health check listens on", default: "3000" },
+          { name: "--dry-run", description: "Print the plan without applying it" },
+          { name: "-h, --help", description: "Show this help" },
+        ]}
+        examples={[{ comment: "Deploy the current build to staging", command: "deploy staging" }]}
+        seeAlso={["https://kud.io/projects/deploy"]}
+        columns={72}
+      />
     ),
   },
   {
