@@ -1,0 +1,32 @@
+{
+  "name": "deploy",
+  "version": "2.4.0",
+  "description": "Ship a build to an environment",
+  "usage": ["deploy [options] <target> [files…]", "deploy rollback [release]"],
+  "usageNote": "A target is a named environment from deploy.toml; files default to everything the build produced.",
+  "commands": [
+    { "name": "rollback [release]", "description": "Return to a previous release, the last one by default" },
+    { "name": "status", "description": "Show what is live in each environment" }
+  ],
+  "arguments": [
+    { "name": "<target>", "description": "Environment to deploy to" },
+    { "name": "[files…]", "description": "Files to include" }
+  ],
+  "options": [
+    { "name": "-p, --port <number>", "description": "Port the health check listens on", "default": "3000" },
+    { "name": "--dry-run", "description": "Print the plan without applying it" },
+    { "name": "-v, --verbose", "description": "Log every request" },
+    { "name": "--region <name>", "description": "Cloud region for the deploy, which also decides where logs and artefacts are kept", "default": "eu-west-1" },
+    { "name": "--max-parallel-uploads <n>", "description": "Upload at most this many files at once", "default": "8" },
+    { "name": "-h, --help", "description": "Show this help" }
+  ],
+  "examples": [
+    { "comment": "Deploy the current build to staging", "command": "deploy staging" },
+    { "comment": "See what would change in production", "command": "deploy production --dry-run" }
+  ],
+  "environment": [
+    { "name": "DEPLOY_TOKEN", "description": "Token used to authenticate" },
+    { "name": "NO_COLOR", "description": "Turn colour off; bold is kept" }
+  ],
+  "seeAlso": ["https://kud.io/projects/deploy", "deploy.toml(5)"]
+}

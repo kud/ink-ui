@@ -60,3 +60,19 @@ export { notify } from "./notify.js"
 export type { NotifyOptions } from "./notify.js"
 export { colors, softColors, tonalColors, tonalStrongColors, spacing, palette, priorityColors } from "./tokens.js"
 export type { Color, SoftColor, Spacing, Palette, PriorityColor } from "./tokens.js"
+export { Help } from "./components/help.js"
+export type { HelpProps } from "./components/help.js"
+export { renderHelp } from "./components/render-help.js"
+export type { RenderHelpOptions } from "./components/render-help.js"
+export { helpFromCommander } from "./components/help-from-commander.js"
+export { layoutHelp, detectHelpColorMode, HELP_DESCRIPTION_COLUMN, HELP_NARROW_WIDTH } from "./components/help-layout.js"
+export type {
+  HelpSpec,
+  HelpRow,
+  HelpExample,
+  HelpColorMode,
+  HelpLine,
+  HelpSegment,
+  HelpStyle,
+  HelpColor,
+} from "./components/help-layout.js"

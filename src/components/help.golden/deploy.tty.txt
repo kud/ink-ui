@@ -1,0 +1,41 @@
+[1mdeploy[0m [38;2;153;153;153m2.4.0[0m
+Ship a build to an environment
+
+[1;38;2;255;140;0mUSAGE[0m
+  deploy [38;2;153;153;153m[options][0m [38;2;153;153;153m<target>[0m [38;2;153;153;153m[files…][0m
+  deploy rollback [38;2;153;153;153m[release][0m
+
+  A target is a named environment from deploy.toml; files default to everything
+  the build produced.
+
+[1;38;2;255;140;0mCOMMANDS[0m
+  [1mrollback[0m [38;2;153;153;153m[release][0m      Return to a previous release, the last one by default
+  [1mstatus[0m                  Show what is live in each environment
+
+[1;38;2;255;140;0mARGUMENTS[0m
+  [38;2;153;153;153m<target>[0m                Environment to deploy to
+  [38;2;153;153;153m[files…][0m                Files to include
+
+[1;38;2;255;140;0mOPTIONS[0m
+  [1m-p,[0m [1m--port[0m [38;2;153;153;153m<number>[0m     Port the health check listens on [38;2;153;153;153m(default: 3000)[0m
+      [1m--dry-run[0m           Print the plan without applying it
+  [1m-v,[0m [1m--verbose[0m           Log every request
+      [1m--region[0m [38;2;153;153;153m<name>[0m     Cloud region for the deploy, which also decides where
+                          logs and artefacts are kept [38;2;153;153;153m(default: eu-west-1)[0m
+      [1m--max-parallel-uploads[0m [38;2;153;153;153m<n>[0m
+                          Upload at most this many files at once [38;2;153;153;153m(default: 8)[0m
+  [1m-h,[0m [1m--help[0m              Show this help
+
+[1;38;2;255;140;0mEXAMPLES[0m
+  [38;2;153;153;153m# Deploy the current build to staging[0m
+  [38;2;153;153;153m$[0m deploy staging
+  [38;2;153;153;153m# See what would change in production[0m
+  [38;2;153;153;153m$[0m deploy production --dry-run
+
+[1;38;2;255;140;0mENVIRONMENT[0m
+  [1mDEPLOY_TOKEN[0m            Token used to authenticate
+  [1mNO_COLOR[0m                Turn colour off; bold is kept
+
+[1;38;2;255;140;0mSEE ALSO[0m
+  [4;38;2;130;170;255mhttps://kud.io/projects/deploy[0m
+  [4;38;2;130;170;255mdeploy.toml(5)[0m
