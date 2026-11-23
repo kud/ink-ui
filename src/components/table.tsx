@@ -53,7 +53,11 @@ export const Table = <T extends Record<string, unknown>>({
     columns,
     rows,
     gap,
-    maxWidth: maxWidth ?? stdout?.columns ?? FALLBACK_TERMINAL_WIDTH,
+    maxWidth:
+      maxWidth ??
+      // Ink 8 types stdout as a plain stream; only a TTY carries `columns`.
+      (stdout as { columns?: number } | undefined)?.columns ??
+      FALLBACK_TERMINAL_WIDTH,
   })
 
   // flexShrink={0} is what keeps every row's columns lining up: the widths were
