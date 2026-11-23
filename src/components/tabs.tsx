@@ -329,7 +329,10 @@ export const Tabs = <T extends string>({
   width,
 }: TabsProps<T>) => {
   const { stdout } = useStdout()
-  const availableWidth = width ?? stdout?.columns
+  // Ink 8 types stdout as a plain stream; only a TTY carries `columns`, and
+  // anything else must leave the width unknown rather than guess one.
+  const availableWidth =
+    width ?? (stdout as { columns?: number } | undefined)?.columns
 
   const cells = items.map((item) => {
     const [fullLabel, fullTail] = fullPartsOf(item)
