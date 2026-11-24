@@ -120,7 +120,7 @@ Both take `{ isActive }` so a screen with several focus regions can gate them, a
 
 | Mode | What you see | The terminal's secure-input lock |
 | --- | --- | --- |
-| `secure` (default) | Nothing as you type, like `sudo` | Engages (echo off, canonical mode) |
+| `secure` (default) | A dim `(typing hidden)` hint, nothing as you type, like `sudo` | Engages (echo off, canonical mode) |
 | `secure={false}` | A `*` per character | Never (the terminal is in raw mode) |
 
 Secure mode is what lets iTerm2's "engage at password prompts" (and any
@@ -131,6 +131,9 @@ terminal out of raw mode: stand down every other `useInput` (`useAppKeys`, a
 `FocusScope`, your own hotkeys) while it is focused. When something still
 holds raw mode, or stdin is not a terminal, or `stty` is unavailable, it falls
 back to the masked field on its own.
+
+In secure mode `placeholder` replaces the `(typing hidden)` hint and stays dim, and `mask` is
+unused. Nothing is added after submit: the outcome is yours to show.
 
 The terminal is always put back: the settings saved by `stty -g` are restored
 when the field unmounts or loses focus, on Ctrl-C, SIGTERM and SIGHUP, and on

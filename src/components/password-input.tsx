@@ -6,6 +6,7 @@ import { useFocusable } from "./focus.js"
 import { canReadSecurely, readSecureLines, type SecureStdin } from "./secure-line.js"
 
 type PasswordInputProps = {
+  /** Dim text in the field; in secure mode it replaces the "(typing hidden)" hint. */
   placeholder?: string
   /**
    * Read the line the way `sudo` does: echo off, canonical mode on, nothing
@@ -16,7 +17,7 @@ type PasswordInputProps = {
    * draws the masked field.
    */
   secure?: boolean
-  // Single character shown in place of each real one (masked field only).
+  /** Character drawn for each typed one. Masked field only; unused in secure mode. */
   mask?: string
   /** Every keystroke in the masked field; once, with the whole line, in secure mode. */
   onChange?: (value: string) => void
@@ -63,7 +64,6 @@ const SecureField = ({
   onChange,
   onSubmit,
   isFocused,
-  caret,
   onUnavailable,
 }: FieldProps & { onUnavailable: () => void }) => {
   // Ink types stdin as any readable; a secure read needs the terminal behind it.
@@ -103,15 +103,9 @@ const SecureField = ({
     }
   }, [isFocused, stdin])
 
-  // Nothing typed is drawn, not even a count: the dim note says why the
-  // field stays still.
-  return (
-    <Text>
-      <Text inverse={caret}> </Text>
-      {placeholder ? <Text dimColor>{placeholder}</Text> : null}
-      <Text dimColor>{placeholder ? "  · input hidden" : "input hidden"}</Text>
-    </Text>
-  )
+  // Nothing typed is drawn, not even a caret: the dim hint, in the same
+  // token as a placeholder, is the whole field before and after submit.
+  return <Text dimColor>{placeholder || "(typing hidden)"}</Text>
 }
 
 const MaskedField = ({

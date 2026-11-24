@@ -155,7 +155,8 @@ describe("PasswordInput (secure)", () => {
     expect(onChange).toHaveBeenCalledWith("hunter2")
     expect(stdout.lastFrame).not.toContain("hunter2")
     expect(stdout.lastFrame).not.toContain("*")
-    expect(stdout.lastFrame).toContain("input hidden")
+    expect(stdout.lastFrame).toContain("Password")
+    expect(stdout.lastFrame).not.toContain("(typing hidden)")
     instance.unmount()
   })
 
@@ -185,6 +186,15 @@ describe("PasswordInput (secure)", () => {
     expect(sttyCalls()).toEqual(["-g", "-echo", "echo"])
   })
 
+  it("draws only the dim hint: no caret block, no mask", async () => {
+    const { stdout, instance } = mount(<PasswordInput mask="#" />)
+    await delay()
+    expect(stdout.lastFrame).toContain("(typing hidden)")
+    expect(stdout.lastFrame).not.toContain("#")
+    expect(stdout.lastFrame).not.toContain("\u001B[7m")
+    instance.unmount()
+  })
+
   it("leaves the terminal alone while disabled", async () => {
     const { instance } = mount(<PasswordInput isDisabled />)
     await delay()
@@ -205,7 +215,7 @@ describe("PasswordInput (secure)", () => {
     )
     await delay(200)
     expect(spawnSync).not.toHaveBeenCalled()
-    expect(stdout.lastFrame).not.toContain("input hidden")
+    expect(stdout.lastFrame).not.toContain("(typing hidden)")
     instance.unmount()
   })
 
