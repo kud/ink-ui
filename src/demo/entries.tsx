@@ -47,6 +47,7 @@ import {
 } from "../index.js"
 import { ThemeDemo } from "./theme-entry.js"
 import { FocusDemo } from "./focus-entry.js"
+import { LayersDemo } from "./layers-entry.js"
 
 export type DemoEntry = {
   name: string
@@ -418,6 +419,12 @@ export const entries: DemoEntry[] = [
     category: "Inputs",
     interactive: true,
     render: (f) => <FocusDemo focused={f} />,
+  },
+  {
+    name: "LayerHost · KeyHelp",
+    category: "Inputs",
+    interactive: true,
+    render: (f) => <LayersDemo focused={f} />,
   },
   // Lists
   {

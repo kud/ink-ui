@@ -175,6 +175,34 @@ A screen with several things that listen for keys wraps them in one `FocusScope`
 
 Without colour and with the `ascii` glyphs: [assets/screenshots/focus-levels.png](assets/screenshots/focus-levels.png).
 
+### Layers and key help
+
+One `LayerHost` at the root draws the main tree and every open `Layer` above it. A layer is open while it is mounted: a `modal` is centred over a backdrop, an `overlay` takes the whole frame, a `popover` sits at an offset. Tab is trapped in the topmost layer and focus returns when it closes; `esc` / `⌫` close the topmost one, and `useAppKeys` stands down until none is open.
+
+```tsx
+<LayerHost>
+  <App />
+</LayerHost>
+
+// inside App
+useKeyBindings([{ key: "d", label: "delete" }], { group: "List" })
+const { isTop } = useLayer()
+useInput((input) => input === "d" && setConfirming(true), { isActive: isTop })
+
+<KeyHelp />
+{confirming && (
+  <Layer title="Delete SHOP-318?" onClose={() => setConfirming(false)}>
+    <ConfirmBody />
+  </Layer>
+)}
+```
+
+`useKeyBindings` declares the keys a screen or layer answers to; `KeyHelp` draws them as the footer and opens the grouped legend on `?`.
+
+![a modal over its backdrop](assets/screenshots/layers.png)
+
+The legend, at the root and over a dialog: [assets/screenshots/layers-keyhelp.png](assets/screenshots/layers-keyhelp.png). A popover and an overlay: [assets/screenshots/layers-kinds.png](assets/screenshots/layers-kinds.png). Without colour and with the `ascii` glyphs: [assets/screenshots/layers-levels.png](assets/screenshots/layers-levels.png).
+
 The dark-palette constants remain plain objects for code that predates themes:
 
 ```ts

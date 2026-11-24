@@ -42,11 +42,24 @@ const ASCII_KEYS: Record<string, string> = {
   "→": "right",
 }
 
+/**
+ * A key as this terminal can draw it: the symbol, or its spelling under the
+ * ASCII glyph set. A compound key (`esc ⌫`) is spelled part by part.
+ */
+export const keyLabel = (name: string, ascii: boolean): string =>
+  !ascii
+    ? name
+    : (ASCII_KEYS[name] ??
+      name
+        .split(" ")
+        .map((part) => ASCII_KEYS[part] ?? part)
+        .join(" "))
+
 // Its own component so `FooterHints` stays a hook-free function of its props:
 // only the key's spelling depends on the theme.
 const KeyName = ({ name }: { name: string }) => {
   const ascii = useTheme().icons === "ascii"
-  return <>{ascii ? (ASCII_KEYS[name] ?? name) : name}</>
+  return <>{keyLabel(name, ascii)}</>
 }
 
 // columnGap, not gap: `gap` sets both axes, so once the hints wrap — which they
