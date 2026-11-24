@@ -15,11 +15,11 @@
 
 - **27 ready-made components**, pre-styled and ready to drop in:
   - **Inputs** — `TextInput`, `EmailInput` (domain completion), `PasswordInput` (masked), `ConfirmInput`
-  - **Lists** — `UnorderedList`, `OrderedList` (both nestable), `Table`
+  - **Lists** — `UnorderedList`, `OrderedList` (both nestable), `Table` (sortable, selectable, virtualised to ten thousand rows with `useTable`, plus a `statusColumn` helper)
   - **Selection & navigation** — `Select`, `MultiSelect`, `Tabs`, `Switch`, `Toggle`, `SelectableRow`
   - **Status & feedback** — `Spinner`, `ProgressBar`, `SkeletonBar`, `SkeletonRows`, `StatusMessage`, `Alert`, `Badge`, `Toast`
   - **Layout & chrome** — `Banner`, `Header`, `Panel` (bordered pane, optional focus state), `Card` (six-line status card), `Columns`, `FooterHints`, `KeyValue`, `LoadingScreen`, `ScrollView`
-- **Behaviour hooks** — `useTabs` and `useListCursor` own the keyboard state that every consumer used to hand-roll, so Tab/Shift+Tab and arrow/vim navigation behave the same everywhere
+- **Behaviour hooks** — `useTabs`, `useListCursor` and `useTable` own the keyboard state that every consumer used to hand-roll, so Tab/Shift+Tab and arrow/vim navigation behave the same everywhere
 - **Full [@inkjs/ui](https://github.com/vadimdemedes/ink-ui) parity** — every upstream component has an equivalent, plus a dozen more the design system adds on top
 - **Colourblind-safe by design** — state is signalled by shape, case, and glyph, never colour alone
 - **Design tokens included** — a shared colour palette (`colors`) and spacing scale (`spacing`) to keep every screen consistent
@@ -112,7 +112,44 @@ const Inbox = ({ rows }) => {
 
 Both take `{ isActive }` so a screen with several focus regions can gate them, and `useListCursor` takes `{ wrap }` for genuinely circular lists. `useTabs` wraps by default because a tab bar is a ring; `useListCursor` clamps because a list has ends.
 
-All components accept only the props they need — no theme provider or context required. Design tokens are plain objects:
+### Theme and terminal capabilities
+
+One answer for what the terminal can display, read by every component. Probe the terminal **before** Ink's `render()` — Ink takes stdin over as it mounts — then wrap the app in one `ThemeProvider`:
+
+```tsx
+import React from "react"
+import { render } from "ink"
+import { ThemeProvider, probeTerminal } from "@kud/ink-ui"
+
+const capabilities = await probeTerminal() // ~200 ms at most, never throws
+
+render(
+  <ThemeProvider capabilities={capabilities}>
+    <App />
+  </ThemeProvider>,
+)
+```
+
+`probeTerminal()` reads the environment first (TTY, `CI`, `NO_COLOR`, `FORCE_COLOR`, `COLORTERM`, `TERM_PROGRAM`/`_VERSION`, `TERM`, the locale), then — on an interactive terminal outside tmux and CI — sends one batch of queries ending with DA1 (XTVERSION, DECRQM 2026, OSC 11). It returns the colour level, a light or dark background, synchronized output, kitty graphics and hyperlink support. No answer means unsupported.
+
+The provider picks the theme: `default` at the terminal's depth (truecolour, 256 or 16 colours), light or dark from the reported background; `plain` whenever there is no colour. Pass `name="minimal"` for the 16 ANSI colours only, or `background="light"` to override. Every colour derives from `@kud/glyphs`' `colors.json`. Components read the same policy — colour, motion, static output, screen reader, and an `ascii` glyph set on a locale that is not UTF-8 — through `useTheme()`:
+
+```tsx
+const theme = useTheme()
+theme.colors.accent // "#FF8C00", "ansi256(208)", "yellow" or undefined
+theme.glyphs.success // "✓", or "+" in ASCII
+theme.policy.motion // false for NO_MOTION, a pipe, a screen reader
+```
+
+Without a provider, components draw exactly as before and still honour `NO_COLOR`, `NO_MOTION` / `REDUCE_MOTION`, piped output and `INK_SCREEN_READER`.
+
+| Dark terminal | Light terminal |
+| --- | --- |
+| ![default theme on a dark terminal](assets/screenshots/theme-dark.png) | ![default theme on a light terminal](assets/screenshots/theme-light.png) |
+
+`minimal`, `plain` and the `ascii` glyphs: [assets/screenshots/theme-levels.png](assets/screenshots/theme-levels.png).
+
+The dark-palette constants remain plain objects for code that predates themes:
 
 ```ts
 import { colors, spacing } from "@kud/ink-ui"

@@ -35,9 +35,10 @@ per focus region, and gate the rest with `isDisabled` / `isActive`:
 render. They never listen for keys, so they compose freely and you drive them
 from your own state.
 
-**The two hooks supply that state.** `useTabs(items)` and
-`useListCursor(length)` own the keyboard so you don't hand-roll it — and both
-take `{ isActive }` so a screen with several focus regions can gate them.
+**The hooks supply that state.** `useTabs(items)`,
+`useListCursor(length)` and `useTable({ data, columns })` own the keyboard so
+you don't hand-roll it — and all three take `{ isActive }` so a screen with
+several focus regions can gate them.
 `useTabs` binds Tab / Shift+Tab and ←→ alike, wrapping (a tab bar is a ring),
 and takes `{ arrows: false }` where ←→ mean something else on that screen;
 `useListCursor` clamps (a list has ends) and takes `{ wrap }` when you
@@ -193,7 +194,7 @@ count's width. `SkeletonBar` is the single bar they are made of, for a
 value in a detail row. A soft highlight band sweeps each bar left to right on
 one shared clock, staggered per row so the wave travels diagonally, then loops
 after a short pause — a first load with nothing on screen reads as frozen
-without motion. `animate={false}` stills them; piped output and `NO_MOTION` /
+without motion. `animate={false}` stills them; the theme's motion policy — piped output, `NO_MOTION` /
 `REDUCE_MOTION` are still automatically.
 **Once anything is known, never go back to skeletons:**
 a refresh keeps the stale rows and counts on screen and says busy in `Page`'s
@@ -227,6 +228,8 @@ between apps. `⌫` is shown, `esc` implied.
 | A long scrollable text/log region | `ScrollView` with `StyledLine[]` — it owns its own scroll keys |
 | A tab bar | `useTabs` + `Tabs` — the hook holds `active`, the component renders it; a tab takes an optional `icon` before its label, and the strip folds inactive icon tabs to `icon count` when it does not fit its `width` |
 | Tabular data with aligned columns | `Table` with a `Column[]` spec — do not lay out columns by hand |
+| A table you move through, sort and pick rows from | `useTable` + `Table`, spreading `tableProps` — the hook owns ↑↓ ←→ `s` `␣` `a`, the table draws the window; give it `height` and only that many rows render, however many there are |
+| A column whose cell is a state | `statusColumn` — glyph, word and token together, sorted by severity |
 | Two or more side-by-side regions | `Columns`, and `Panel` for each region that needs a border |
 | A focusable bordered region | `Panel` with `focused` — the border brightens and the title gains a ● marker |
 | One-off prompt for a value | `TextInput` / `EmailInput` / `PasswordInput` / `ConfirmInput` |
@@ -237,7 +240,14 @@ between apps. `⌫` is shown, `esc` implied.
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |
 | A category label — `epic`, `draft` — that should read as one object | `Pill`, filled and rounded; `Badge` for the bracket form. Never for a reference the reader follows |
 | Transient feedback | `StatusMessage` (inline) · `Alert` (boxed, with title) · `Toast` (self-dismissing) |
+| Work heading for done | `ProgressBar` — the edge moves in eighths of a cell; `indeterminate` when there is no known end, `label`, `showValue` and `eta` around it |
+| A bounded measurement — disk, quota, a score | `Meter`, quiet `secondary` until `warning` / `critical` is crossed, then the hue *and* `⚠` / `✗` |
+| The same progress in the terminal's tab or taskbar | `useTerminalProgress({ value, state })` beside the bar — OSC 9;4 on Ink's side channel, a no-op where unsupported, cleared on unmount and exit |
+| Busy with nothing to measure | `Spinner` with `type` (`dots` · `line` · `arc` · `pulse` · `bounce`) — one shared Ink clock, a still frame when piped or under `NO_MOTION` / `REDUCE_MOTION` |
+| A URL the reader can open | `Link` — OSC 8 where the terminal draws it, `text (url)` where it cannot; never print a raw escape yourself |
+| A rule between sections | `Divider`, optionally labelled, `light` / `heavy` / `double` / `dashed`; `Spacer size` for a fixed gap, bare `Spacer` to push siblings apart |
 | App chrome | `Page` as the frame of every screen, with `useAppKeys` once at the root; `Banner` at the top of a non-paged CLI, `Header` per section, `LoadingScreen` while booting |
+| Colour, motion and glyphs that fit the terminal | `probeTerminal()` before `render()`, one `ThemeProvider` at the root, `useTheme()` in anything you draw — never `process.env` |
 
 Composing a domain component on top of these is right and expected — wrapping
 `Table` to render your own row shape is the system working. Reimplementing
@@ -333,13 +343,23 @@ picks a foreground.
 
 ## Colour system
 
-Tuned to #1a1b27; dark-only; truecolour assumed, chalk downsamples. `palette`
-holds the raw hexes (`Palette` is their union), `colors` maps roles onto them,
-`priorityColors` (`PriorityColor`) is the priority tier. There is no light
-theme and no provider.
+Every hue comes from `@kud/glyphs`' `colors.json` — `ansi16`, `ansi256` and
+a dark `hex` per token, plus its state map — and is never re-typed here.
+`palette` holds the dark truecolour hexes (`Palette` is their union), `colors`
+maps roles onto them, `priorityColors` (`PriorityColor`) is the priority tier:
+plain constants, tuned to #1a1b27, for code that predates themes.
 
-1. **Hex only, never ANSI names.** The terminal theme repaints `cyan`,
-   `magenta` and `gray`; every token is a hex.
+A component reads `useTheme()` instead, which resolves the same roles for the
+terminal in front of it. Three levels, named and contracted like shui's:
+`default` (the full palette at the terminal's depth — truecolour, the 256
+layer or the 16-colour floor — dark, or light with `background: "light"`),
+`minimal` (the 16 ANSI colours by name) and `plain` (no colour; forced
+whenever the terminal has none). `validateTheme` names any missing token.
+
+1. **Hex or a glyphs layer, never an ad-hoc ANSI name.** The terminal theme
+   repaints `cyan`, `magenta` and `gray`; a token is a hex, a glyphs 256
+   index, or — only at the `minimal` level, where the user's palette is the
+   point — the glyphs `ansi16` slot.
 2. **Red is for errors and failures only.** Not priority, not brand.
 3. **Status always carries a glyph or a word** (`✓` `⚠` `✗` `ℹ` `◌`); the hue
    only reinforces it. `pending` has no hue: waiting is not news.
@@ -434,8 +454,30 @@ row it counts.
 swaps in Nerd Font glyphs; the default `"text"` is safe everywhere. Components
 read it at render time, so calling it after mounting does nothing.
 
-**There is no theme provider and no context.** Components take only the props
-they need. Do not build a provider to pass tokens around — import them.
+**One `ThemeProvider`, at the root, fed by `probeTerminal()`.** Probe before
+Ink's `render()` — Ink takes stdin the moment it mounts, and a late reply is
+read as keystrokes — then wrap the app once:
+
+```tsx
+const capabilities = await probeTerminal()
+render(
+  <ThemeProvider capabilities={capabilities}>
+    <App />
+  </ThemeProvider>,
+)
+```
+
+The theme carries the policy every component reads — `color`, `motion`,
+`static`, `screenReader`, `unicode` — so no component, and no component you
+write, asks `process.env` for `NO_COLOR`, `NO_MOTION` or `isTTY` itself.
+Without a provider, `useTheme()` returns the ambient theme: today's dark
+palette and unicode glyphs, still honouring `NO_COLOR`, `NO_MOTION` /
+`REDUCE_MOTION`, a pipe and `INK_SCREEN_READER`. A colour that arrives as a
+prop goes through `paint(theme, color)` so `NO_COLOR` reaches it too. In a
+component of your own, take colours and glyphs from `useTheme()` rather than
+importing `colors`: `theme.glyphs` is the `ascii` set on a locale that is not
+UTF-8, mirroring shui's, and a `✓` on such a terminal is a box nobody can
+read.
 
 **ESM only.** `import`, never `require`. Node ≥ 20, with `ink` ≥ 7 and
 `react` ≥ 19 as peer dependencies the consuming project installs itself.
@@ -458,6 +500,13 @@ they need. Do not build a provider to pass tokens around — import them.
   works on one keyboard and not another.
 - **`Table` needs `maxWidth`** when it sits inside a bordered `Panel` or
   `Page`, or the columns size against the terminal rather than the pane.
+- **Pass `Table` the same `columns` and `data` objects between renders.**
+  Every cell is formatted and measured once and memoised on those two
+  references; a `columns` array rebuilt inline re-measures every row on every
+  keystroke, which is invisible at twelve rows and a stall at ten thousand.
+- **A table's `esc` belongs to the peel.** `useTable` never binds `q`, `esc`
+  or `backspace`; to let `esc` drop a selection, add an arm to the host's
+  peel — `if (table.selected.length) return (table.clearSelection(), true)`.
 - **`Toast` returns `null` once it has expired** — it unmounts itself, so don't
   rely on it holding layout space.
 - **`useTabs` returns `active` as possibly `undefined`** when the item list is

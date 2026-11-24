@@ -11,11 +11,14 @@ import {
   Banner,
   Columns,
   ConfirmInput,
+  Divider,
   EmailInput,
   FooterHints,
   Header,
   KeyValue,
+  Link,
   LoadingScreen,
+  Meter,
   MultiSelect,
   OrderedList,
   Panel,
@@ -24,10 +27,14 @@ import {
   ScrollView,
   Select,
   SelectableRow,
+  Spacer,
   Spinner,
   StatusMessage,
   Switch,
   Table,
+  statusColumn,
+  useTable,
+  type Column,
   Tabs,
   TextInput,
   Toast,
@@ -35,8 +42,10 @@ import {
   ToggleSwitch,
   UnorderedList,
   colors,
+  useTerminalProgress,
   type SwitchValue,
 } from "../index.js"
+import { ThemeDemo } from "./theme-entry.js"
 
 export type DemoEntry = {
   name: string
@@ -133,6 +142,62 @@ const SelectDemo = ({ focused }: { focused: boolean }) => {
         isDisabled={!focused}
       />
       <Text dimColor>selected: {value}</Text>
+    </Box>
+  )
+}
+
+type JobRow = {
+  id: string
+  name: string
+  owner: string
+  duration: number
+  state: "success" | "error" | "warning" | "pending" | "info"
+}
+
+const jobStates = ["success", "success", "pending", "error", "success", "warning", "info"] as const
+const jobNames = ["build", "lint", "test · unit", "test · e2e", "publish", "deploy 日本", "audit"]
+
+// Ten thousand rows, so the gallery shows the window doing its job.
+const jobs: JobRow[] = Array.from({ length: 10_000 }, (_, i) => ({
+  id: `JOB-${String(i + 1).padStart(5, "0")}`,
+  name: `${jobNames[i % jobNames.length]} — pipeline ${(i * 7) % 113}`,
+  owner: `@user${(i * 13) % 37}`,
+  duration: (i * 7919) % 3600,
+  state: jobStates[(i * 5) % jobStates.length]!,
+}))
+
+const jobColumns: Column<JobRow>[] = [
+  { key: "id", header: "Job" },
+  { key: "name", header: "Name", flex: 1, maxWidth: 28 },
+  { key: "owner", header: "Owner", sortable: false },
+  {
+    key: "duration",
+    header: "Took",
+    align: "right",
+    format: (value) => `${Math.floor(Number(value) / 60)}m ${Number(value) % 60}s`,
+  },
+  statusColumn<JobRow>({ key: "state", header: "State", status: (row) => row.state }),
+]
+
+const TableV2Demo = ({ focused }: { focused: boolean }) => {
+  const table = useTable({
+    data: jobs,
+    columns: jobColumns,
+    rowKey: (row) => row.id,
+    selection: "multiple",
+    defaultSort: { key: "state", direction: "asc" },
+    height: 8,
+    isActive: focused,
+  })
+  const counter = `${table.cursor + 1} of ${jobs.length.toLocaleString("en-GB")}`
+  const picked = table.selected.length ? ` · ${table.selected.length} selected` : ""
+  return (
+    <Box flexDirection="column">
+      <Table maxWidth={78} {...table.tableProps} />
+      <Box justifyContent="flex-end" width={78}>
+        <Text color={colors.muted}>{counter + picked}</Text>
+      </Box>
+      <FooterHints hints={table.hints} help={false} />
     </Box>
   )
 }
@@ -304,6 +369,23 @@ const ToggleSwitchDemo = ({ focused }: { focused: boolean }) => {
 
 // ── registry ──────────────────────────────────────────────────────────
 
+// Climbs to 100 and starts over, mirroring itself into the terminal's tab or
+// taskbar where the terminal draws OSC 9;4 — and doing nothing where not.
+const TerminalProgressDemo = () => {
+  const [value, setValue] = useState(0)
+  useEffect(() => {
+    const timer = setInterval(() => setValue((v) => (v >= 100 ? 0 : v + 1)), 120)
+    return () => clearInterval(timer)
+  }, [])
+  useTerminalProgress({ value })
+  return (
+    <Box flexDirection="column">
+      <ProgressBar value={value} width={30} label="Syncing" showValue />
+      <Text dimColor>also shown in the tab / taskbar (iTerm2 ≥ 3.6, Ghostty, Windows Terminal, kitty ≥ 0.47)</Text>
+    </Box>
+  )
+}
+
 export const entries: DemoEntry[] = [
   // Inputs
   {
@@ -399,6 +481,12 @@ export const entries: DemoEntry[] = [
       />
     ),
   },
+  {
+    name: "Table · interactive",
+    category: "Lists",
+    interactive: true,
+    render: (f) => <TableV2Demo focused={f} />,
+  },
   // Selection & navigation
   {
     name: "Select",
@@ -462,7 +550,15 @@ export const entries: DemoEntry[] = [
     name: "Spinner",
     category: "Status",
     interactive: false,
-    render: () => <Spinner label="Working…" />,
+    render: () => (
+      <Box flexDirection="column">
+        <Spinner type="dots" label="dots" />
+        <Spinner type="line" label="line" />
+        <Spinner type="arc" label="arc" />
+        <Spinner type="pulse" label="pulse" />
+        <Spinner type="bounce" label="bounce" />
+      </Box>
+    ),
   },
   {
     name: "ProgressBar",
@@ -471,10 +567,31 @@ export const entries: DemoEntry[] = [
     render: () => (
       <Box flexDirection="column">
         <ProgressBar value={38} />
-        <ProgressBar value={72} />
-        <ProgressBar value={100} />
+        <ProgressBar value={72.3} showValue />
+        <ProgressBar value={100} showValue />
+        <ProgressBar value={41.7} label="Uploading" showValue eta={185} />
+        <ProgressBar indeterminate label="Resolving" />
       </Box>
     ),
+  },
+  {
+    name: "Meter",
+    category: "Status",
+    interactive: false,
+    render: () => (
+      <Box flexDirection="column">
+        <Meter label="CPU " value={23} warning={70} critical={90} />
+        <Meter label="Disk" value={78} warning={70} critical={90} />
+        <Meter label="Swap" value={96} warning={70} critical={90} />
+        <Meter label="Heap" value={612} max={1024} format={(v, _, m) => `${v} / ${m} MB`} />
+      </Box>
+    ),
+  },
+  {
+    name: "useTerminalProgress",
+    category: "Status",
+    interactive: false,
+    render: () => <TerminalProgressDemo />,
   },
   {
     name: "StatusMessage",
@@ -612,6 +729,40 @@ export const entries: DemoEntry[] = [
     ),
   },
   {
+    name: "Divider",
+    category: "Layout",
+    interactive: false,
+    render: () => (
+      <Box flexDirection="column" width={44}>
+        <Divider />
+        <Divider label="Today" />
+        <Divider label="heavy" variant="heavy" align="left" />
+        <Divider label="double" variant="double" align="right" />
+        <Divider label="dashed" variant="dashed" />
+        <Spacer size="xs" />
+        <Box>
+          <Text>left</Text>
+          <Spacer />
+          <Text>right</Text>
+        </Box>
+      </Box>
+    ),
+  },
+  {
+    name: "Link",
+    category: "Layout",
+    interactive: false,
+    render: () => (
+      <Box flexDirection="column">
+        <Link url="https://github.com/kud/ink-ui">kud/ink-ui</Link>
+        <Link url="https://kud.io" />
+        <Link url="https://kud.io/projects/ink-ui" hyperlink={false}>
+          forced fallback
+        </Link>
+      </Box>
+    ),
+  },
+  {
     name: "LoadingScreen",
     category: "Layout",
     interactive: false,
@@ -622,5 +773,11 @@ export const entries: DemoEntry[] = [
     category: "Layout",
     interactive: true,
     render: (f) => <ScrollViewDemo focused={f} />,
+  },
+  {
+    name: "Theme",
+    category: "Foundations",
+    interactive: false,
+    render: () => <ThemeDemo />,
   },
 ]

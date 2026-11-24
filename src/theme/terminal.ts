@@ -165,6 +165,58 @@ const hyperlinksFor = (env: Env, name: string | undefined): boolean => {
   return !Number.isNaN(vte) && vte >= 5000
 }
 
+const parseVersion = (version: string | undefined): number[] =>
+  (version ?? "").split(".").map((part) => Number.parseInt(part, 10) || 0)
+
+const atLeast = (version: string | undefined, ...min: number[]): boolean => {
+  const have = parseVersion(version)
+  for (let i = 0; i < min.length; i++) {
+    const a = have[i] ?? 0
+    const b = min[i]!
+    if (a !== b) return a > b
+  }
+  return true
+}
+
+/**
+ * Whether the terminal behind `isTTY` draws OSC 8 hyperlinks. Piped output and
+ * CI never do; `FORCE_HYPERLINK=1` / `=0` override everything, which is the
+ * same switch `supports-hyperlinks` reads, so a user who has set it once for
+ * another tool is not asked again.
+ */
+export const supportsHyperlinks = (
+  isTTY: boolean,
+  env: Env = process.env,
+): boolean => {
+  const force = env["FORCE_HYPERLINK"]
+  if (force !== undefined) return force !== "0" && force !== "false"
+  if (!isTTY) return false
+  if (env["CI"] || env["TEAMCITY_VERSION"]) return false
+  if (env["WT_SESSION"] || env["DOMTERM"] || env["KONSOLE_VERSION"])
+    return true
+  if (env["KITTY_WINDOW_ID"] || env["GHOSTTY_RESOURCES_DIR"]) return true
+  const vte = Number.parseInt(env["VTE_VERSION"] ?? "", 10)
+  if (vte >= 5000) return true
+  const term = env["TERM"] ?? ""
+  if (/^(xterm-kitty|xterm-ghostty|alacritty|foot|wezterm)/.test(term))
+    return true
+  const version = env["TERM_PROGRAM_VERSION"]
+  switch (env["TERM_PROGRAM"]) {
+    case "iTerm.app":
+      return atLeast(version, 3, 1)
+    case "WezTerm":
+      return atLeast(version, 20200620)
+    case "vscode":
+      return atLeast(version, 1, 72)
+    case "ghostty":
+    case "Hyper":
+    case "rio":
+      return true
+    default:
+      return false
+  }
+}
+
 /**
  * Everything the environment alone can say, synchronously. Precedence for
  * colour follows the conventions the rest of the ecosystem uses: `FORCE_COLOR`
@@ -191,7 +243,7 @@ export const detectEnvironment = (
     // is still a frame, only less smooth.
     synchronizedOutput: false,
     kittyGraphics: interactive && !multiplexer && kittyGraphicsFor(name, version),
-    hyperlinks: interactive && hyperlinksFor(env, name),
+    hyperlinks: supportsHyperlinks(isTTY, env),
     unicode: isUtf8(env),
     isTTY,
     ci,

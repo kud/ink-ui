@@ -511,7 +511,11 @@ export const Tabs = <T extends string>({
               <Text {...tabLabelStyle(cell.isActive, theme)}>{labelText}</Text>
               {tailText ? (
                 !chips ? (
-                  <Text {...tabCountStyle(cell.isActive, theme)}>
+                  // Parentheses, not a chip: the ink without the fill.
+                  <Text
+                    bold={tabCountStyle(cell.isActive, theme).bold}
+                    color={tabCountStyle(cell.isActive, theme).color}
+                  >
                     {tailText}
                   </Text>
                 ) : (

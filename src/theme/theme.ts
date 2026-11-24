@@ -121,6 +121,8 @@ export type ThemePolicy = {
   screenReader: boolean
   /** The terminal can draw beyond 7-bit ASCII. */
   unicode: boolean
+  /** OSC 8 hyperlinks are drawn (`FORCE_HYPERLINK` overrides detection). */
+  hyperlinks: boolean
 }
 
 export type Theme = {
@@ -136,6 +138,12 @@ export type Theme = {
   icons: GlyphSetName
   glyphs: GlyphSet
   policy: ThemePolicy
+  /**
+   * True for a theme resolved from capabilities (`createTheme`, a
+   * `ThemeProvider`); false for the ambient theme a component falls back to
+   * without a provider, where it keeps checking the stream Ink draws to.
+   */
+  provided: boolean
 }
 
 type Spec = { ansi16: number; ansi256: number | undefined; dark: string }
@@ -275,6 +283,7 @@ export const policyFor = (capabilities: TerminalCapabilities): ThemePolicy => ({
   static: !capabilities.isTTY,
   screenReader: capabilities.screenReader,
   unicode: capabilities.unicode,
+  hyperlinks: capabilities.hyperlinks,
 })
 
 const resolveColor = (
@@ -408,6 +417,7 @@ export const createTheme = (options: CreateThemeOptions = {}): Theme => {
     icons,
     glyphs,
     policy,
+    provided: true,
   }
 }
 
@@ -438,6 +448,7 @@ export const validateTheme = (theme: Partial<Theme>): string[] => {
     "static",
     "screenReader",
     "unicode",
+    "hyperlinks",
   ])
   if (theme.name !== undefined && !THEME_NAMES.includes(theme.name))
     missing.push(`name (${String(theme.name)})`)

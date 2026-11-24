@@ -90,7 +90,7 @@ export const ambientTheme = (
   ].join("|")
   const cached = cache.get(key)
   if (cached) return cached
-  const theme = createTheme({ capabilities })
+  const theme = { ...createTheme({ capabilities }), provided: false }
   cache.set(key, theme)
   return theme
 }

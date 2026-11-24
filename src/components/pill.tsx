@@ -218,8 +218,14 @@ export const Pill = ({
   const fill = explicit ?? style.fill
   const ink =
     explicit && tone !== "tonal" ? inkFor(explicit) : style.ink
+  // Brackets carry no fill, so they take the variant's hue as ink — a soft
+  // fill is too dark to read as text on the ground it was made to sit on.
   if (fill === undefined || ascii)
-    return <Text color={ascii ? fill : style.ink}>[{children}]</Text>
+    return (
+      <Text color={explicit ?? (tone === "tonal" ? style.ink : theme.colors[variant])}>
+        [{children}]
+      </Text>
+    )
   return (
     <Text>
       <Text color={fill}>{glyph("plCapLeft")}</Text>

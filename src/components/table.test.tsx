@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "ink-testing-library"
 import { describe, it, expect } from "vitest"
-import { Table } from "./table.js"
+import { Table, scrollWindow } from "./table.js"
 
 const lines = (frame: string | undefined) => (frame ?? "").split("\n")
 
@@ -128,5 +128,179 @@ describe("Table", () => {
       />,
     )
     expect(lastFrame()).not.toContain("undefined")
+  })
+
+  it("keeps the existing look when none of the new props are passed", () => {
+    const { lastFrame } = render(
+      <Table
+        maxWidth={20}
+        columns={[{ key: "name", header: "Name" }]}
+        data={[{ name: "api" }]}
+      />,
+    )
+    expect(lines(lastFrame())).toEqual(["Name", "api"])
+  })
+
+  it("draws the sort indicator on the sorted header and sorts the rows", () => {
+    const { lastFrame } = render(
+      <Table
+        maxWidth={40}
+        sort={{ key: "size", direction: "desc" }}
+        columns={[
+          { key: "name", header: "Name" },
+          { key: "size", header: "Size", align: "right" },
+        ]}
+        data={[
+          { name: "small", size: 1 },
+          { name: "large", size: 30 },
+          { name: "mid", size: 7 },
+        ]}
+      />,
+    )
+    const [header, ...body] = lines(lastFrame())
+    expect(header).toContain("Size ↓")
+    expect(body.map((line) => line.trim().split(/\s+/)[0])).toEqual([
+      "large",
+      "mid",
+      "small",
+    ])
+  })
+
+  it("does not move a column when the sort indicator appears", () => {
+    const props = {
+      maxWidth: 40,
+      columns: [
+        { key: "name", header: "Name" },
+        { key: "size", header: "Size" },
+      ] as const,
+      data: [{ name: "api", size: 1 }],
+    }
+    const unsorted = render(<Table {...props} columns={[...props.columns]} sort={null} />)
+    const sorted = render(
+      <Table {...props} columns={[...props.columns]} sort={{ key: "name", direction: "asc" }} />,
+    )
+    const at = (frame: string | undefined) => lines(frame)[0]!.indexOf("Size")
+    expect(at(sorted.lastFrame())).toBe(at(unsorted.lastFrame()))
+  })
+
+  it("marks the cursor row with ❯ and the selection column with ■ and □", () => {
+    const { lastFrame } = render(
+      <Table
+        maxWidth={40}
+        cursor={1}
+        selection="multiple"
+        selected={["0"]}
+        columns={[{ key: "name", header: "Name" }]}
+        data={[{ name: "api" }, { name: "db" }, { name: "web" }]}
+      />,
+    )
+    const [header, first, second, third] = lines(lastFrame())
+    expect(header).toBe("    Name")
+    expect(first).toBe("  ■ api")
+    expect(second).toBe("❯ □ db")
+    expect(third).toBe("  □ web")
+  })
+
+  it("draws single selection as a radio column", () => {
+    const { lastFrame } = render(
+      <Table
+        maxWidth={40}
+        selection="single"
+        selected={["1"]}
+        columns={[{ key: "name", header: "Name" }]}
+        data={[{ name: "api" }, { name: "db" }]}
+      />,
+    )
+    expect(lines(lastFrame()).slice(1)).toEqual(["○ api", "● db"])
+  })
+
+  it("selects by rowKey, so a selection survives a re-sort", () => {
+    const { lastFrame } = render(
+      <Table
+        maxWidth={40}
+        selection="multiple"
+        selected={["db"]}
+        rowKey={(row) => row.name}
+        sort={{ key: "name", direction: "desc" }}
+        columns={[{ key: "name", header: "Name" }]}
+        data={[{ name: "api" }, { name: "db" }]}
+      />,
+    )
+    expect(lines(lastFrame()).slice(1)).toEqual(["■ db", "□ api"])
+  })
+
+  it("renders only the visible window and keeps the header above it", () => {
+    const data = Array.from({ length: 10_000 }, (_, i) => ({ id: `row-${i}` }))
+    const { lastFrame } = render(
+      <Table
+        maxWidth={40}
+        height={5}
+        cursor={5_000}
+        columns={[{ key: "id", header: "Id" }]}
+        data={data}
+      />,
+    )
+    const frame = lines(lastFrame())
+    expect(frame).toHaveLength(6)
+    expect(frame[0]).toContain("Id")
+    expect(frame.at(-1)).toContain("❯ row-5000")
+    expect(frame[1]).toContain("row-4996")
+  })
+
+  it("shows the empty state under the header when there are no rows", () => {
+    const { lastFrame } = render(
+      <Table maxWidth={40} columns={[{ key: "name", header: "Name" }]} data={[]} />,
+    )
+    expect(lines(lastFrame())).toEqual(["Name", "No rows"])
+  })
+
+  it("takes a custom empty message", () => {
+    const { lastFrame } = render(
+      <Table
+        maxWidth={40}
+        empty="Nothing matches the filter"
+        columns={[{ key: "name", header: "Name" }]}
+        data={[]}
+      />,
+    )
+    expect(lastFrame()).toContain("Nothing matches the filter")
+  })
+
+  it("draws a column through its format and truncates by display width", () => {
+    const { lastFrame } = render(
+      <Table
+        maxWidth={40}
+        columns={[
+          {
+            key: "title",
+            header: "Title",
+            width: 7,
+            format: (value) => `${String(value)}!`,
+          },
+        ]}
+        data={[{ title: "日本語テキスト" }]}
+      />,
+    )
+    const row = lines(lastFrame())[1]!
+    expect(row.trimEnd()).toBe("日本語…")
+  })
+})
+
+describe("scrollWindow", () => {
+  it("does not move while the cursor stays inside the window", () => {
+    expect(scrollWindow({ total: 100, height: 10, cursor: 15, previous: 10 })).toBe(10)
+  })
+
+  it("moves just enough to bring the cursor back in", () => {
+    expect(scrollWindow({ total: 100, height: 10, cursor: 20, previous: 10 })).toBe(11)
+    expect(scrollWindow({ total: 100, height: 10, cursor: 4, previous: 10 })).toBe(4)
+  })
+
+  it("never scrolls past the last full page", () => {
+    expect(scrollWindow({ total: 100, height: 10, cursor: 99, previous: 95 })).toBe(90)
+  })
+
+  it("starts at the top when everything fits", () => {
+    expect(scrollWindow({ total: 3, height: 10, cursor: 2, previous: 5 })).toBe(0)
   })
 })

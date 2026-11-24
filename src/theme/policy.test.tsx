@@ -25,6 +25,11 @@ import { FooterHints } from "../components/footer-hints.js"
 import { UnorderedList } from "../components/unordered-list.js"
 import { UpdateBanner } from "../components/update-banner.js"
 import { Select } from "../components/select.js"
+import { Divider } from "../components/divider.js"
+import { Meter } from "../components/meter.js"
+import { Link } from "../components/link.js"
+import { Table } from "../components/table.js"
+import { statusColumn } from "../components/table-status.js"
 
 const wait = (ms = 60) => new Promise((r) => setTimeout(r, ms))
 
@@ -258,6 +263,52 @@ describe("ascii, for a locale that is not UTF-8", () => {
     expect(frame).toContain("* item")
     expect(frame).toContain("up/down move")
     expect(frame).toContain("bksp back")
+  })
+})
+
+describe("the components that joined with main", () => {
+  it("Divider, Meter and Table draw 7-bit in ASCII", () => {
+    const { lastFrame } = within(
+      ascii,
+      <>
+        <Divider label="Today" width={20} />
+        <Meter value={95} width={10} critical={90} />
+        <Table
+          data={[{ name: "api", state: "down" }]}
+          columns={[
+            { key: "name", header: "Name" },
+            statusColumn({ key: "state", header: "State", status: () => "error" }),
+          ]}
+          cursor={0}
+          maxWidth={40}
+        />
+      </>,
+    )
+    const frame = lastFrame() ?? ""
+    expect(/^[\x20-\x7e\n]*$/.test(frame), frame).toBe(true)
+    expect(frame).toContain("Today")
+    expect(frame).toContain(" x")
+    expect(frame).toContain("> api")
+    expect(frame).toContain("x down")
+  })
+
+  it("Link follows the provided policy for hyperlinks", () => {
+    const plainLink = within(
+      caps({ hyperlinks: false }),
+      <Link url="https://kud.io">kud</Link>,
+    ).lastFrame()
+    expect(plainLink).toBe("kud (https://kud.io)")
+    const live = within(
+      caps({ hyperlinks: true }),
+      <Link url="https://kud.io">kud</Link>,
+    ).lastFrame()
+    expect(live).toContain("\u001b]8;;https://kud.io")
+  })
+
+  it("an indeterminate ProgressBar rests when the policy says no motion", async () => {
+    const { frames } = within(still, <ProgressBar indeterminate width={12} />)
+    await wait(200)
+    expect(new Set(frames).size).toBe(1)
   })
 })
 

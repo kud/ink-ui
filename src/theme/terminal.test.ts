@@ -101,7 +101,7 @@ describe("detectEnvironment", () => {
   })
 
   it("names hyperlink-capable terminals, never when piped", () => {
-    expect(detectEnvironment({ TERM_PROGRAM: "WezTerm" }, tty).hyperlinks).toBe(
+    expect(detectEnvironment({ TERM_PROGRAM: "ghostty" }, tty).hyperlinks).toBe(
       true,
     )
     expect(detectEnvironment({ VTE_VERSION: "7600" }, tty).hyperlinks).toBe(true)
@@ -109,7 +109,7 @@ describe("detectEnvironment", () => {
       false,
     )
     expect(
-      detectEnvironment({ TERM_PROGRAM: "WezTerm" }, { isTTY: false }).hyperlinks,
+      detectEnvironment({ TERM_PROGRAM: "ghostty" }, { isTTY: false }).hyperlinks,
     ).toBe(false)
   })
 })
