@@ -5,6 +5,7 @@ export { Pill, pillWidth } from "./components/pill.js"
 export type { PillVariant, PillTone } from "./components/pill.js"
 export { Header } from "./components/header.js"
 export { Spinner } from "./components/spinner.js"
+export type { SpinnerType } from "./components/spinner.js"
 export { Table } from "./components/table.js"
 export type {
   Column,
@@ -55,7 +56,21 @@ export type { SwitchValue } from "./components/switch.js"
 export { Toggle } from "./components/toggle.js"
 export { ToggleSwitch } from "./components/toggle-switch.js"
 export { UpdateBanner } from "./components/update-banner.js"
-export { ProgressBar } from "./components/progress-bar.js"
+export { ProgressBar, formatEta } from "./components/progress-bar.js"
+export { Meter } from "./components/meter.js"
+export type { MeterLevel } from "./components/meter.js"
+export { Link, hyperlink, supportsHyperlinks } from "./components/link.js"
+export { Divider, Spacer } from "./components/divider.js"
+export type { DividerVariant, DividerAlign } from "./components/divider.js"
+export {
+  useTerminalProgress,
+  terminalProgressSequence,
+  terminalProgressSupported,
+} from "./components/use-terminal-progress.js"
+export type {
+  TerminalProgress,
+  TerminalProgressState,
+} from "./components/use-terminal-progress.js"
 export { SkeletonBar, SkeletonRows } from "./components/skeleton.js"
 export { StatusMessage } from "./components/status-message.js"
 export { Alert } from "./components/alert.js"
