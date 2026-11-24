@@ -32,6 +32,18 @@ per focus region, and gate the rest with `isDisabled` / `isActive`:
 `ConfirmInput` · `ScrollView` · `UpdateBanner` · `CommandPalette` ·
 `LayerHost` (`esc` / `backspace` while a layer is open) · `KeyHelp` (`?`)
 
+**`PasswordInput` is the exception: by default it does not call `useInput`.**
+Its `secure` mode (the default) reads the line the way `sudo` does, with echo
+off and canonical mode on, so the terminal's own secure-input lock engages
+(iTerm2's "engage at password prompts") and nothing is drawn as you type. That
+needs the terminal out of raw mode, so **every other `useInput` — `useAppKeys`,
+a `FocusScope`, your own hotkeys — must be inactive while it is focused**; if
+one still holds raw mode it falls back to the masked field, quietly. In secure
+mode `esc` and arrow keys are part of the line, not keys: give the screen
+another way back, and expect `onChange` only once, with the whole line, on
+Enter. Ctrl-C still quits. `secure={false}` is the masked field (`*` per
+character, `useInput`, no lock) and behaves like the other inputs.
+
 **Presentational — everything else.** They take `active` / `value` / `on` and
 render. They never listen for keys, so they compose freely and you drive them
 from your own state.
@@ -274,7 +286,7 @@ between apps. `⌫` is shown, `esc` implied.
 | A column whose cell is a state | `statusColumn` — glyph, word and token together, sorted by severity |
 | Two or more side-by-side regions | `Columns`, and `Panel` for each region that needs a border |
 | A focusable bordered region | `Panel` with `focused` — the border brightens and the title gains a ● marker |
-| One-off prompt for a value | `TextInput` / `EmailInput` / `PasswordInput` / `ConfirmInput` |
+| One-off prompt for a value | `TextInput` / `EmailInput` / `PasswordInput` / `ConfirmInput` — a secret goes in `PasswordInput`, secure by default, with every other `useInput` stood down while it is focused |
 | Pick one / pick many from a list | `Select` / `MultiSelect` — these own their keyboard, unlike `SelectableRow` |
 | A list you can narrow by typing, then act on with hotkeys | `useFilterMode` + `FilterBar` in `Page`'s `filter` slot — see the filter under the keys contract |
 | Several fields or regions that each take keys, Tab between them | `FocusScope` around them, `FocusRing` per stop; `FocusScope trap` for a dialog over them |
