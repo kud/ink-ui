@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ## 0.46.0 — 2026-11-24
 
+### Changed
+
+- **`PasswordInput` reads like `sudo` by default.** The new `secure` mode (on by default) turns echo off and keeps the terminal in line mode, which is what macOS terminals look for to engage Secure Keyboard Entry. Nothing typed is drawn; a dim `(typing hidden)` hint stands in the field, and `onChange` fires once, on Enter. The terminal is restored on submit, unmount, signals and exit. Where it cannot engage (no TTY, no `stty`, another `useInput` holding raw mode) it falls back to the masked field. Pass `secure={false}` to keep the per-key `*` behaviour. ([32a9bca](https://github.com/kud/ink-ui/commit/32a9bca7f93a237697e94a63996ef3b30170ceb2))
+
 ### Highlights
 
 - **Layers: modals, overlays and popovers above the screen.** Mount one `LayerHost` at the root and open a `Layer` by mounting it. A `modal` is centred over a backdrop, an `overlay` takes the whole frame, a `popover` sits at an offset. Tab is trapped in the topmost layer and focus returns when it closes; `esc` / `⌫` close the topmost one, and `useAppKeys` leaves them to the host while a layer is open. `useLayer().isTop` gates a screen's own hotkeys. The backdrop veils in the `track` ground, or a dim `░` (`.` on ASCII) without colour. ([8c28e5f](https://github.com/kud/ink-ui/commit/8c28e5fa713e8093f43ddc3e1e1842f2d0ac5cd6))
