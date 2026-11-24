@@ -1,6 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Box, Text, measureElement, useWindowSize, type DOMElement } from "ink"
-import { colors } from "../tokens.js"
+import { ambientTheme, useTheme } from "../theme/theme-provider.js"
+import type { Theme } from "../theme/theme.js"
+import { isHex } from "../theme/color-math.js"
 
 // One cell per frame: fast enough to read as motion, slow enough that the eye
 // can follow the band rather than seeing a flicker.
@@ -55,7 +57,9 @@ export const skeletonCellColor = (
   frame: number,
   width: number,
   rowOffset = 0,
-): string => {
+  theme: Theme = ambientTheme(),
+): string | undefined => {
+  const colors = theme.colors
   const cells = Math.max(0, Math.floor(width))
   const travel = cells + LEAD * 2
   const cycle = travel + PAUSE_FRAMES
@@ -63,7 +67,13 @@ export const skeletonCellColor = (
   if (phase >= travel) return colors.track
   const distance = Math.abs(cell - (phase - LEAD))
   if (distance <= CREST_HALF) return colors.trackHighlight
-  if (distance <= CREST_HALF + FALLOFF)
+  // The falloff blends two hexes; at 256 or 16 colours there is nothing
+  // between the two steps to blend to, so the band is its crest alone.
+  if (
+    distance <= CREST_HALF + FALLOFF &&
+    isHex(colors.track) &&
+    isHex(colors.trackHighlight)
+  )
     return blendHex(
       colors.track,
       colors.trackHighlight,
@@ -73,18 +83,17 @@ export const skeletonCellColor = (
 }
 
 /**
- * Whether a skeleton may animate: the caller asked for it, the output is a
- * terminal that can show it, and the user has not opted out of motion.
+ * Whether a skeleton may animate: the caller asked for it and the theme's
+ * policy allows motion — a terminal that can show it, no `NO_MOTION` /
+ * `REDUCE_MOTION`, no screen reader.
  *
  * Exported for its own test alongside `skeletonCellColor`, and internal for
- * the same reason. `NO_MOTION` / `REDUCE_MOTION` are read the way `Pill`
- * reads `NO_COLOR` — plain env checks, no config surface.
+ * the same reason.
  */
-export const skeletonMotionEnabled = (animate: boolean): boolean => {
-  if (!animate) return false
-  if (process.env["NO_MOTION"] || process.env["REDUCE_MOTION"]) return false
-  return process.stdout?.isTTY === true
-}
+export const skeletonMotionEnabled = (
+  animate: boolean,
+  theme: Theme = ambientTheme(),
+): boolean => animate && theme.policy.motion
 
 type SkeletonBarProps = {
   /** Cells to draw. */
@@ -126,9 +135,13 @@ export const SkeletonBar = ({
   frame,
   rowOffset = 0,
 }: SkeletonBarProps) => {
+  const theme = useTheme()
   const cells = Math.max(0, Math.floor(width))
   const controlled = frame !== undefined
-  const active = !controlled && skeletonMotionEnabled(animate)
+  const active = !controlled && skeletonMotionEnabled(animate, theme)
+  // Without colour a run of solid blocks is the loudest thing on screen, so
+  // the placeholder takes the light shade (or `.` in ASCII) instead.
+  const cell = theme.policy.color ? theme.glyphs.bar : theme.glyphs.barEmpty
   const [ownFrame, setOwnFrame] = useState(0)
 
   useEffect(() => {
@@ -141,13 +154,17 @@ export const SkeletonBar = ({
   }, [active])
 
   if (!controlled && !active)
-    return <Text color={colors.track}>{"█".repeat(cells)}</Text>
+    return (
+      <Text color={theme.colors.track} aria-label="loading">
+        {cell.repeat(cells)}
+      </Text>
+    )
   const at = controlled ? frame : ownFrame
   return (
-    <Text>
+    <Text aria-label="loading">
       {Array.from({ length: cells }, (_, i) => (
-        <Text key={i} color={skeletonCellColor(i, at, cells, rowOffset)}>
-          █
+        <Text key={i} color={skeletonCellColor(i, at, cells, rowOffset, theme)}>
+          {cell}
         </Text>
       ))}
     </Text>
@@ -197,6 +214,7 @@ export const SkeletonRows = ({
   width,
   animate = true,
 }: SkeletonRowsProps) => {
+  const theme = useTheme()
   const ref = useRef<DOMElement | null>(null)
   const [measured, setMeasured] = useState(0)
   useWindowSize()
@@ -207,7 +225,7 @@ export const SkeletonRows = ({
     if (w !== measured) setMeasured(w)
   })
 
-  const active = skeletonMotionEnabled(animate)
+  const active = skeletonMotionEnabled(animate, theme)
   const [frame, setFrame] = useState(0)
 
   useEffect(() => {

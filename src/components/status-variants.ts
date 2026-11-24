@@ -1,37 +1,19 @@
-import { glyph } from "@kud/glyphs"
-import { colors } from "../tokens.js"
-import { getIconMode } from "../icon-mode.js"
+import type { Theme } from "../theme/theme.js"
 
 export type StatusVariant = "success" | "error" | "warning" | "info"
 
-// Unicode glyphs (the safe default — render on any terminal) and their Nerd Font
-// counterparts from @kud/glyphs. Each variant is distinguished by shape, not
-// colour, so status reads for colourblind users; colour only reinforces.
-const UNICODE: Record<StatusVariant, string> = {
-  success: "✓",
-  error: "✗",
-  warning: "⚠",
-  info: "ℹ",
-}
-
-const NERD: Record<StatusVariant, string> = {
-  success: glyph("check"),
-  error: glyph("cross"),
-  warning: glyph("warning"),
-  info: glyph("info"),
-}
-
-const COLOR: Record<StatusVariant, string> = {
-  success: colors.success,
-  error: colors.error,
-  warning: colors.warning,
-  info: colors.info,
-}
-
-// Resolved at render time so it honours the current icon mode.
+/**
+ * A status variant's mark and colour, from the theme. Each variant is
+ * distinguished by shape, not colour, so status reads for colourblind users;
+ * colour only reinforces. The mark follows the theme's glyph set — unicode
+ * (`✓ ✗ ⚠ ℹ`), the Nerd Font forms from `@kud/glyphs` in `nerd` icon mode,
+ * or shui's 7-bit `+ x ! i` where the locale cannot draw either — and the
+ * colour is `undefined` when the theme draws none.
+ */
 export const statusVariant = (
+  theme: Theme,
   variant: StatusVariant,
-): { icon: string; color: string } => ({
-  icon: (getIconMode() === "nerd" ? NERD : UNICODE)[variant],
-  color: COLOR[variant],
+): { icon: string; color: string | undefined } => ({
+  icon: theme.glyphs[variant],
+  color: theme.colors[variant],
 })

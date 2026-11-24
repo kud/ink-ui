@@ -1,6 +1,7 @@
 import React from "react"
 import { Box, Text } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
 
 type ToggleSwitchProps = {
   on: boolean
@@ -26,21 +27,31 @@ const CAP_RIGHT = "\u{e0b4}"
 export const ToggleSwitch = ({
   on,
   label,
-  onColor = colors.success,
-  offColor = "gray",
+  onColor,
+  offColor,
 }: ToggleSwitchProps) => {
-  const track = on ? onColor : offColor
+  const theme = useTheme()
+  const onTint = paint(theme, onColor) ?? theme.colors.success
+  const track = on ? onTint : (paint(theme, offColor) ?? theme.colors.muted)
+  const knob = theme.glyphs.dot
   return (
-    <Box columnGap={1}>
-      <Text>
-        <Text color={track}>{CAP_LEFT}</Text>
-        <Text backgroundColor={track} color="black">
-          {on ? " ●" : "● "}
+    <Box columnGap={1} aria-role="checkbox" aria-state={{ checked: on }}>
+      {theme.policy.color ? (
+        <Text>
+          <Text color={track}>{CAP_LEFT}</Text>
+          <Text backgroundColor={track} color="black">
+            {on ? ` ${knob}` : `${knob} `}
+          </Text>
+          <Text color={track}>{CAP_RIGHT}</Text>
         </Text>
-        <Text color={track}>{CAP_RIGHT}</Text>
-      </Text>
+      ) : (
+        // No colour, no track: the caps would outline a fill that is not
+        // there. The knob's position in brackets still says on or off, in the
+        // same four cells.
+        <Text>{on ? `[ ${knob}]` : `[${knob} ]`}</Text>
+      )}
       {label !== undefined && (
-        <Text color={on ? onColor : undefined} dimColor={!on}>
+        <Text color={on ? onTint : undefined} dimColor={!on}>
           {label}
         </Text>
       )}

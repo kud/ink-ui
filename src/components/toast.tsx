@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { Box, Text } from "ink"
 import { statusVariant, type StatusVariant } from "./status-variants.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 type ToastProps = {
   message: string
@@ -19,6 +20,7 @@ export const Toast = ({
   duration = 2000,
   onDone,
 }: ToastProps) => {
+  const theme = useTheme()
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
@@ -31,10 +33,12 @@ export const Toast = ({
 
   if (!visible) return null
 
-  const { icon, color } = statusVariant(variant)
+  const { icon, color } = statusVariant(theme, variant)
   return (
     <Box gap={1}>
-      <Text color={color}>{icon}</Text>
+      <Text color={color} aria-label={`${variant}:`}>
+        {icon}
+      </Text>
       <Text>{message}</Text>
     </Box>
   )

@@ -1,6 +1,6 @@
 import React from "react"
 import { Box, Text } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 type FilterBarProps = {
   /** From `useFilterMode`. `null` draws nothing. */
@@ -23,6 +23,8 @@ type FilterBarProps = {
  * so every app draws its filter in the same place.
  */
 export const FilterBar = ({ term, typing, caret, matches }: FilterBarProps) => {
+  const theme = useTheme()
+  const colors = theme.colors
   if (term === null) return null
   const at = Math.max(0, Math.min(caret ?? term.length, term.length))
   return (
@@ -39,7 +41,7 @@ export const FilterBar = ({ term, typing, caret, matches }: FilterBarProps) => {
         </>
       ) : (
         <>
-          {typing ? <Text color={colors.info}>▏</Text> : null}
+          {typing ? <Text color={colors.info}>{theme.icons === "ascii" ? "|" : "▏"}</Text> : null}
           <Text>{term.slice(at)}</Text>
         </>
       )}

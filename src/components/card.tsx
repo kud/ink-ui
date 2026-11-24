@@ -1,6 +1,7 @@
 import React from "react"
 import { Box, Text } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
 
 export type CardStatus = {
   /** The glyph that leads the status, e.g. "●". */
@@ -34,6 +35,20 @@ export type CardProps = {
 // so a grid of cards lines up whatever each one has to say.
 export const CARD_HEIGHT = 6
 
+// Selection is a heavier border, never a colour. Box drawing has no 7-bit
+// form, so in ASCII the heavy border is drawn in `#` and `=` against the
+// light `+-|` of an unselected card — still a shape you can see without hue.
+const ASCII_SELECTED = {
+  topLeft: "#",
+  top: "=",
+  topRight: "#",
+  left: "#",
+  right: "#",
+  bottomLeft: "#",
+  bottom: "=",
+  bottomRight: "#",
+}
+
 /**
  * A bordered card for one item with a state: a title with its status on the
  * right, a body line, and a footnote with an optional right-aligned meta.
@@ -56,10 +71,12 @@ export const Card = ({
   selected = false,
   focused = true,
 }: CardProps) => {
+  const theme = useTheme()
+  const colors = theme.colors
   const inner = width - 4
   // Reserve room for the title/footnote when a trailing label is unusually long.
   const trailingWidth = Math.max(1, inner - 6)
-  const statusColour = status.color ?? colors.muted
+  const statusColour = paint(theme, status.color) ?? colors.muted
   const borderColor = selected ? (focused ? colors.accent : colors.secondary) : colors.track
 
   return (
@@ -69,7 +86,13 @@ export const Card = ({
       flexShrink={0}
       flexDirection="column"
       overflow="hidden"
-      borderStyle={selected ? "bold" : "round"}
+      borderStyle={
+        selected
+          ? theme.icons === "ascii"
+            ? ASCII_SELECTED
+            : "bold"
+          : theme.glyphs.border
+      }
       borderColor={borderColor}
       borderLeftColor={statusColour}
       paddingX={1}

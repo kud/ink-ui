@@ -1,6 +1,7 @@
 import React from "react"
 import { Box, Text, useStdout } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
 import {
   resolveColumnWidths,
   type ColumnAlign,
@@ -43,8 +44,10 @@ export const Table = <T extends Record<string, unknown>>({
   columns,
   gap = 2,
   maxWidth,
-  headerColor = colors.muted,
+  headerColor,
 }: TableProps<T>) => {
+  const theme = useTheme()
+  const headerTint = paint(theme, headerColor) ?? theme.colors.muted
   const { stdout } = useStdout()
   const rows = data.map((row) =>
     columns.map((column) => cellText(row[column.key])),
@@ -76,13 +79,13 @@ export const Table = <T extends Record<string, unknown>>({
   )
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" aria-role="table">
       <Box gap={gap}>
         {columns.map((column, index) =>
           cell(
             column,
             index,
-            <Text bold color={headerColor} wrap="truncate-end">
+            <Text bold color={headerTint} wrap="truncate-end">
               {column.header}
             </Text>,
           ),

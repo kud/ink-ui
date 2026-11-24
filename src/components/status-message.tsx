@@ -3,6 +3,7 @@
 import React from "react"
 import { Box, Text } from "ink"
 import { statusVariant, type StatusVariant } from "./status-variants.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 type StatusMessageProps = {
   variant?: StatusVariant
@@ -13,10 +14,14 @@ export const StatusMessage = ({
   variant = "info",
   children,
 }: StatusMessageProps) => {
-  const { icon, color } = statusVariant(variant)
+  const theme = useTheme()
+  const { icon, color } = statusVariant(theme, variant)
   return (
     <Box gap={1}>
-      <Text color={color}>{icon}</Text>
+      {/* A screen reader says the word the mark stands for. */}
+      <Text color={color} aria-label={`${variant}:`}>
+        {icon}
+      </Text>
       <Text>{children}</Text>
     </Box>
   )

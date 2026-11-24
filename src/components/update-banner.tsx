@@ -1,6 +1,6 @@
 import React from "react"
 import { Box, Text, useInput } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 type UpdateBannerProps = {
   name: string
@@ -28,6 +28,9 @@ export const UpdateBanner = ({
   onDecline,
   focused = true,
 }: UpdateBannerProps) => {
+  const theme = useTheme()
+  const colors = theme.colors
+  const color = theme.policy.color
   useInput(
     (input, key) => {
       if (key.return || /^y$/i.test(input)) onConfirm()
@@ -39,7 +42,7 @@ export const UpdateBanner = ({
   return (
     <Box
       flexDirection="column"
-      borderStyle="round"
+      borderStyle={theme.glyphs.border}
       borderColor={colors.accent}
       paddingX={2}
       paddingY={1}
@@ -58,22 +61,30 @@ export const UpdateBanner = ({
 
       <Box columnGap={1}>
         <Text dimColor>{current}</Text>
-        <Text dimColor>→</Text>
+        <Text dimColor>{theme.icons === "ascii" ? "->" : "→"}</Text>
         <Text bold color={colors.success}>
           {latest}
         </Text>
       </Box>
 
       <Box columnGap={1}>
-        <Text backgroundColor={colors.accent} color="black" bold>
-          {" Y "}
+        {/* Keycaps are fills; without colour they are brackets, so the
+            letter never lands as black ink on a ground it cannot be read on. */}
+        <Text
+          backgroundColor={colors.accent}
+          color={color ? "black" : undefined}
+          bold
+        >
+          {color ? " Y " : "[Y]"}
         </Text>
         <Text>upgrade now</Text>
         <Text dimColor>·</Text>
-        <Text backgroundColor="#2b323d" color="#8fa3ad">
-          {" N "}
+        <Text backgroundColor={colors.track} color={colors.secondary}>
+          {color ? " N " : "[N]"}
         </Text>
-        <Text dimColor>later — run {command} yourself</Text>
+        <Text dimColor>
+          later {theme.icons === "ascii" ? "-" : "—"} run {command} yourself
+        </Text>
       </Box>
     </Box>
   )

@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { Box, Text, useInput } from "ink"
 import { SelectableRow } from "./selectable-row.js"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 export type SelectOption<T extends string = string> = {
   label: string
@@ -54,6 +54,8 @@ export const Select = <T extends string>({
     { isActive: !isDisabled && options.length > 0 },
   )
 
+  const theme = useTheme()
+  const colors = theme.colors
   const count = visibleOptionCount ?? options.length
   const start = windowStart(cursor, options.length, count)
   const visible = options.slice(start, start + count)
@@ -67,12 +69,12 @@ export const Select = <T extends string>({
             <Text bold={active} color={active ? colors.info : undefined}>
               {option.label}
             </Text>
-            {active ? <Text color={colors.success}>{" ✓"}</Text> : null}
+            {active ? <Text color={colors.success}>{` ${theme.glyphs.success}`}</Text> : null}
           </SelectableRow>
         )
       })}
       {options.length > count && (
-        <Text dimColor>{`  … ${options.length} total`}</Text>
+        <Text dimColor>{`  ${theme.glyphs.ellipsis} ${options.length} total`}</Text>
       )}
     </Box>
   )

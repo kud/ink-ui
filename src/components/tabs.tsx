@@ -2,7 +2,8 @@ import React from "react"
 import { Box, Text, useStdout } from "ink"
 import stringWidth from "string-width"
 import { glyph } from "@kud/glyphs"
-import { colors } from "../tokens.js"
+import { ambientTheme, useTheme } from "../theme/theme-provider.js"
+import type { Theme } from "../theme/theme.js"
 import { Pill, pillStyle } from "./pill.js"
 
 export type TabItem<T extends string = string> = {
@@ -125,12 +126,24 @@ type TabsProps<T extends string> = {
 /** Columns between one tab and the next, on both rows. They must agree. */
 const GAP = 2
 
-/** A count not yet known, folded under NO_COLOR: the dash alone, without the pending width. */
-const FOLDED_PENDING_COUNT = "–"
+/** A count not yet known, folded without chips: the dash alone, without the pending width. */
+const pendingDash = (theme: Theme) => (theme.icons === "ascii" ? "-" : "–")
 
 /** Divider rendered between groups: a single pipe. The Box gap={GAP} adds 2 spaces on each side. */
-const DIVIDER = "│"
 const DIVIDER_WIDTH = 1
+
+/**
+ * Whether counts draw as chips. Not without colour (`NO_COLOR`, `plain`), not
+ * on sixteen colours (a tonal chip has no tint there), not in ASCII (the caps
+ * are Nerd Font glyphs): each falls back to the parenthesised form, priced the
+ * same two columns.
+ */
+const chipsFor = (theme: Theme): boolean =>
+  theme.icons !== "ascii" && theme.tonalColors.muted.fill !== undefined
+
+/** The warning mark inside a chip: the Nerd Font glyph, or `!` in ASCII. */
+const warningMark = (theme: Theme): string =>
+  theme.icons === "ascii" ? theme.glyphs.warning : glyph("warning")
 
 /**
  * The count chip's fill for `isActive` — the tonal pill's own fill, rest
@@ -138,8 +151,11 @@ const DIVIDER_WIDTH = 1
  * strong beside the active one. Exported for its own test and nothing else,
  * for the same reason as `shouldFoldTabs`: the runner never sees a hue.
  */
-export const tabCountChipFill = (isActive: boolean): string =>
-  pillStyle(isActive ? "accent" : "muted", "tonal", isActive).fill
+export const tabCountChipFill = (
+  isActive: boolean,
+  theme: Theme = ambientTheme(),
+): string | undefined =>
+  pillStyle(isActive ? "accent" : "muted", "tonal", isActive, theme).fill
 
 /**
  * The count run's style for `isActive`: the number inked on its chip fill —
@@ -148,8 +164,16 @@ export const tabCountChipFill = (isActive: boolean): string =>
  * nothing else, for the same reason as `shouldFoldTabs`: the runner never
  * sees a hue.
  */
-export const tabCountStyle = (isActive: boolean) => {
-  const style = pillStyle(isActive ? "accent" : "muted", "tonal", isActive)
+export const tabCountStyle = (
+  isActive: boolean,
+  theme: Theme = ambientTheme(),
+) => {
+  const style = pillStyle(
+    isActive ? "accent" : "muted",
+    "tonal",
+    isActive,
+    theme,
+  )
   return {
     bold: style.bold,
     color: style.ink,
@@ -161,14 +185,15 @@ export const tabCountStyle = (isActive: boolean) => {
 // without caps, parens or the separating space. A fraction stays ONE chip:
 // `count/total` never splits into two. An unknown count is a dash padded in
 // front to the width of a two-digit count, as `Page` pads its own count, so the
-// bar does not shift when the real numbers land; under NO_COLOR the padding is
+// bar does not shift when the real numbers land; without chips the padding is
 // the parens' own, and the dash stands alone.
 const countContentOf = <T extends string>(
   item: TabItem<T>,
+  theme: Theme,
 ): string | undefined => {
   if (item.count === undefined) return undefined
   if (item.count === null)
-    return process.env["NO_COLOR"] ? FOLDED_PENDING_COUNT : " –"
+    return chipsFor(theme) ? " –" : pendingDash(theme)
   if (item.total === undefined) return String(item.count)
   return `${item.count}/${item.total}`
 }
@@ -188,12 +213,15 @@ const chipTailOf = (content: string): string =>
 // The separating space goes with the tail, so the label run never carries a
 // trailing blank. A Nerd Font glyph is one cell but a caller could pass
 // anything, so widths are measured at render time, never counted.
-const fullPartsOf = <T extends string>(item: TabItem<T>): [string, string] => {
+const fullPartsOf = <T extends string>(
+  item: TabItem<T>,
+  theme: Theme,
+): [string, string] => {
   const head =
     item.icon === undefined ? item.label : `${item.icon} ${item.label}`
-  const content = chipContentOf(item)
+  const content = chipContentOf(item, theme)
   if (content === undefined) return [head, ""]
-  if (process.env["NO_COLOR"]) return [head, ` (${content})`]
+  if (!chipsFor(theme)) return [head, ` (${content})`]
   return [head, chipTailOf(content)]
 }
 
@@ -221,23 +249,28 @@ export const shouldFoldTabs = (
  * same treatment, nothing to drift. Exported for its own test and nothing
  * else, for the same reason as `shouldFoldTabs`: the runner never sees a hue.
  */
-export const tabLabelStyle = (isActive: boolean) => ({
+export const tabLabelStyle = (
+  isActive: boolean,
+  theme: Theme = ambientTheme(),
+) => ({
   bold: isActive,
-  color: isActive ? colors.accent : undefined,
+  color: isActive ? theme.colors.accent : undefined,
   dimColor: !isActive,
 })
 
 // The full text of a tab, for measuring the strip: the two parts joined, byte
 // for byte what the runs draw. The caps are real glyphs of width one, so the
 // measured width is the drawn width — two caps for two parens.
-const fullTextOf = <T extends string>(item: TabItem<T>): string =>
-  fullPartsOf(item).join("")
+const fullTextOf = <T extends string>(item: TabItem<T>, theme: Theme): string =>
+  fullPartsOf(item, theme).join("")
 
 // The warning's part of the chip, separating space included, or nothing at
 // all: the mark, a space, the number. The same text in both the full and the
 // folded form, because folding drops the label and the warning is not label.
-const warningTextOf = <T extends string>(item: TabItem<T>): string =>
-  item.warning ? ` ${glyph("warning")} ${item.warning}` : ""
+const warningTextOf = <T extends string>(
+  item: TabItem<T>,
+  theme: Theme,
+): string => (item.warning ? ` ${warningMark(theme)} ${item.warning}` : "")
 
 // What the chip holds: the count, then the warning in the same chip. It sat
 // after the chip until 2026-11-02, where the bare figure read as loose text in
@@ -246,9 +279,10 @@ const warningTextOf = <T extends string>(item: TabItem<T>): string =>
 // with a warning and no count holds the warning alone.
 const chipContentOf = <T extends string>(
   item: TabItem<T>,
+  theme: Theme,
 ): string | undefined => {
-  const count = countContentOf(item)
-  const warning = warningTextOf(item)
+  const count = countContentOf(item, theme)
+  const warning = warningTextOf(item, theme)
   if (!warning) return count
   return count === undefined ? warning.trimStart() : count + warning
 }
@@ -256,28 +290,31 @@ const chipContentOf = <T extends string>(
 // An inactive icon tab with nowhere to sit, split the same way: the label
 // goes, the icon and the chip stay — one space between icon and chip, the same
 // tail as the full form. A tab with no count at all is its icon alone. Only
-// ever read for a tab with an icon: those are the only ones that fold. Under
-// NO_COLOR the tail is the plain form it replaces, parens included only where
-// the full form has them.
+// ever read for a tab with an icon: those are the only ones that fold.
+// Without chips the tail is the plain form it replaces, parens included only
+// where the full form has them.
 const foldedPartsOf = <T extends string>(
   item: TabItem<T>,
+  theme: Theme,
 ): [string, string] => {
   const icon = item.icon ?? ""
-  const content = chipContentOf(item)
+  const content = chipContentOf(item, theme)
   if (content === undefined) return [icon, ""]
-  if (process.env["NO_COLOR"])
+  if (!chipsFor(theme))
     return [
       icon,
       item.count === null
-        ? ` ${FOLDED_PENDING_COUNT}${warningTextOf(item)}`
+        ? ` ${pendingDash(theme)}${warningTextOf(item, theme)}`
         : ` ${content}`,
     ]
   return [icon, chipTailOf(content)]
 }
 
 // The folded text, for measuring: the two parts joined.
-const foldedTextOf = <T extends string>(item: TabItem<T>): string =>
-  foldedPartsOf(item).join("")
+const foldedTextOf = <T extends string>(
+  item: TabItem<T>,
+  theme: Theme,
+): string => foldedPartsOf(item, theme).join("")
 
 // The count chip with the warning inside it: the tab's own tonal fill and caps,
 // exactly as `Pill` draws them, but two inks on the one fill, which `Pill`'s
@@ -293,7 +330,14 @@ const WarnedChip = ({
   warning: number
   isActive: boolean
 }) => {
-  const style = pillStyle(isActive ? "accent" : "muted", "tonal", isActive)
+  const theme = useTheme()
+  const colors = theme.colors
+  const style = pillStyle(
+    isActive ? "accent" : "muted",
+    "tonal",
+    isActive,
+    theme,
+  )
   return (
     <Text>
       <Text color={style.fill}>{glyph("plCapLeft")}</Text>
@@ -328,6 +372,9 @@ export const Tabs = <T extends string>({
   items,
   width,
 }: TabsProps<T>) => {
+  const theme = useTheme()
+  const colors = theme.colors
+  const chips = chipsFor(theme)
   const { stdout } = useStdout()
   // Ink 8 types stdout as a plain stream; only a TTY carries `columns`, and
   // anything else must leave the width unknown rather than guess one.
@@ -335,19 +382,19 @@ export const Tabs = <T extends string>({
     width ?? (stdout as { columns?: number } | undefined)?.columns
 
   const cells = items.map((item) => {
-    const [fullLabel, fullTail] = fullPartsOf(item)
-    const [foldedLabel, foldedTail] = foldedPartsOf(item)
+    const [fullLabel, fullTail] = fullPartsOf(item, theme)
+    const [foldedLabel, foldedTail] = foldedPartsOf(item, theme)
     return {
       key: item.value,
       marker: item.marker ?? "",
       markerColor: item.markerColor,
-      fullText: fullTextOf(item),
-      foldedText: foldedTextOf(item),
+      fullText: fullTextOf(item, theme),
+      foldedText: foldedTextOf(item, theme),
       fullLabel,
       fullTail,
       foldedLabel,
       foldedTail,
-      countContent: countContentOf(item),
+      countContent: countContentOf(item, theme),
       warning: item.warning || undefined,
       hasIcon: item.icon !== undefined,
       isActive: item.value === active,
@@ -436,14 +483,14 @@ export const Tabs = <T extends string>({
   }
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" aria-role="tablist">
       <Box gap={GAP}>
         {renderItems.map((item, idx) => {
           if (item.type === "divider") {
             return (
               <Box key={`divider-${idx}`}>
-                <Text color={colors.muted} dimColor>
-                  {DIVIDER}
+                <Text color={colors.muted} dimColor aria-hidden>
+                  {theme.glyphs.divider}
                 </Text>
               </Box>
             )
@@ -453,14 +500,20 @@ export const Tabs = <T extends string>({
           const labelText = isFolded ? cell.foldedLabel : cell.fullLabel
           const tailText = isFolded ? cell.foldedTail : cell.fullTail
           return (
-            <Box key={cell.key}>
+            <Box
+              key={cell.key}
+              aria-role="tab"
+              aria-state={{ selected: cell.isActive }}
+            >
               {cell.marker ? (
                 <Text color={cell.markerColor}>{cell.marker}</Text>
               ) : null}
-              <Text {...tabLabelStyle(cell.isActive)}>{labelText}</Text>
+              <Text {...tabLabelStyle(cell.isActive, theme)}>{labelText}</Text>
               {tailText ? (
-                process.env["NO_COLOR"] ? (
-                  <Text {...tabCountStyle(cell.isActive)}>{tailText}</Text>
+                !chips ? (
+                  <Text {...tabCountStyle(cell.isActive, theme)}>
+                    {tailText}
+                  </Text>
                 ) : (
                   // The separating space lives inside this run, not beside
                   // it: a bare string child of the row's `Box` blanks the
@@ -494,8 +547,8 @@ export const Tabs = <T extends string>({
           is also what a travelling rule would need — that work is unfinished and
           parked on feat/tabs-underline-animation. */}
       <Box>
-        <Text color={colors.accent}>
-          {" ".repeat(rule.start) + "─".repeat(rule.width)}
+        <Text color={colors.accent} aria-hidden>
+          {" ".repeat(rule.start) + theme.glyphs.rule.repeat(rule.width)}
         </Text>
       </Box>
     </Box>

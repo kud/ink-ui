@@ -60,3 +60,31 @@ export { notify } from "./notify.js"
 export type { NotifyOptions } from "./notify.js"
 export { colors, softColors, tonalColors, tonalStrongColors, spacing, palette, priorityColors } from "./tokens.js"
 export type { Color, SoftColor, Spacing, Palette, PriorityColor } from "./tokens.js"
+export { ThemeProvider, useTheme } from "./theme/theme-provider.js"
+export type { ThemeProviderProps } from "./theme/theme-provider.js"
+export { createTheme, validateTheme, paint, THEME_NAMES, COLOR_ROLES } from "./theme/theme.js"
+export type {
+  Theme,
+  ThemeName,
+  ThemePolicy,
+  ThemeColor,
+  ThemeState,
+  ColorRole,
+  CreateThemeOptions,
+} from "./theme/theme.js"
+export {
+  probeTerminal,
+  detectEnvironment,
+  detectTheme,
+  parseProbeReplies,
+  PROBE_QUERY,
+} from "./theme/terminal.js"
+export type {
+  TerminalCapabilities,
+  TerminalBackground,
+  ColorLevel,
+  ProbeOptions,
+  ProbeReplies,
+} from "./theme/terminal.js"
+export { glyphSets } from "./theme/glyph-set.js"
+export type { GlyphSet, GlyphSetName } from "./theme/glyph-set.js"
