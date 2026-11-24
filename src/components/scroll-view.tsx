@@ -1,5 +1,6 @@
 import React, { useState, useRef, useLayoutEffect, useEffect } from "react"
 import { Box, Text, useInput, measureElement, type DOMElement } from "ink"
+import { useFocusable } from "./focus.js"
 
 // An inline run within a line — lets a single line mix styles (e.g. bold words,
 // coloured `code`) the way glow renders markdown.
@@ -33,6 +34,10 @@ type ScrollViewProps = {
   // Whether the scroll keys are live. Set false to render the view inert while
   // another element owns input (e.g. a gallery previewing it unfocused).
   isActive?: boolean
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
 }
 
 export const ScrollView = ({
@@ -40,7 +45,10 @@ export const ScrollView = ({
   showIndicator = true,
   initialStart = 0,
   isActive = true,
+  focusId,
+  autoFocus,
 }: ScrollViewProps) => {
+  const { isFocused } = useFocusable({ id: focusId, disabled: !isActive, autoFocus })
   const ref = useRef<DOMElement | null>(null)
   const [height, setHeight] = useState(1)
   const [start, setStart] = useState(initialStart)
@@ -72,7 +80,7 @@ export const ScrollView = ({
       if (input === "g") setStart(0)
       if (input === "G") setStart(maxStart)
     },
-    { isActive },
+    { isActive: isFocused },
   )
 
   const visible = lines.slice(clamped, clamped + height)

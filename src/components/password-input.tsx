@@ -2,6 +2,7 @@
 // and adapted to @kud/ink-ui tokens and conventions.
 import React, { useState } from "react"
 import { Text, useInput } from "ink"
+import { useFocusable } from "./focus.js"
 
 type PasswordInputProps = {
   placeholder?: string
@@ -10,6 +11,10 @@ type PasswordInputProps = {
   onChange?: (value: string) => void
   onSubmit?: (value: string) => void
   isDisabled?: boolean
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
 }
 
 export const PasswordInput = ({
@@ -18,7 +23,14 @@ export const PasswordInput = ({
   onChange,
   onSubmit,
   isDisabled = false,
+  focusId,
+  autoFocus,
 }: PasswordInputProps) => {
+  const { isFocused, inScope } = useFocusable({ id: focusId, disabled: isDisabled, autoFocus })
+  // In a scope and not focused, the field draws no caret: the block is how
+  // a reader sees which field their typing lands in.
+  const caret = !inScope || isFocused
+
   const [value, setValue] = useState("")
   const [cursor, setCursor] = useState(0)
 
@@ -54,14 +66,14 @@ export const PasswordInput = ({
         )
       }
     },
-    { isActive: !isDisabled },
+    { isActive: isFocused },
   )
 
   // Empty: a cursor block followed by the dim placeholder.
   if (value.length === 0) {
     return (
       <Text>
-        <Text inverse> </Text>
+        <Text inverse={caret}> </Text>
         {placeholder ? <Text dimColor>{placeholder}</Text> : null}
       </Text>
     )
@@ -75,7 +87,7 @@ export const PasswordInput = ({
   return (
     <Text>
       {before}
-      <Text inverse>{at}</Text>
+      <Text inverse={caret}>{at}</Text>
       {after}
     </Text>
   )

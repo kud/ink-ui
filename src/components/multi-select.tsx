@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { Box, Text, useInput } from "ink"
 import { SelectableRow } from "./selectable-row.js"
 import { useTheme } from "../theme/theme-provider.js"
+import { useFocusable } from "./focus.js"
 import type { SelectOption } from "./select.js"
 
 type MultiSelectProps<T extends string> = {
@@ -15,6 +16,10 @@ type MultiSelectProps<T extends string> = {
   defaultValue?: T[]
   isDisabled?: boolean
   visibleOptionCount?: number
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
 }
 
 const windowStart = (cursor: number, total: number, count: number): number => {
@@ -32,7 +37,10 @@ export const MultiSelect = <T extends string>({
   defaultValue = [],
   isDisabled = false,
   visibleOptionCount,
+  focusId,
+  autoFocus,
 }: MultiSelectProps<T>) => {
+  const { isFocused } = useFocusable({ id: focusId, disabled: isDisabled, autoFocus })
   const [cursor, setCursor] = useState(0)
   const [selected, setSelected] = useState<Set<T>>(new Set(defaultValue))
 
@@ -51,7 +59,7 @@ export const MultiSelect = <T extends string>({
       }
       if (key.return) onSubmit?.([...selected])
     },
-    { isActive: !isDisabled && options.length > 0 },
+    { isActive: isFocused && options.length > 0 },
   )
 
   const theme = useTheme()

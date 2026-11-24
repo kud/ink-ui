@@ -2,6 +2,7 @@
 // and adapted to @kud/ink-ui tokens and conventions.
 import React from "react"
 import { Text, useInput } from "ink"
+import { useFocusable } from "./focus.js"
 
 type ConfirmInputProps = {
   // Which choice Enter selects, and which letter is shown capitalised.
@@ -9,6 +10,10 @@ type ConfirmInputProps = {
   onConfirm?: () => void
   onCancel?: () => void
   isDisabled?: boolean
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
 }
 
 export const ConfirmInput = ({
@@ -16,7 +21,10 @@ export const ConfirmInput = ({
   onConfirm,
   onCancel,
   isDisabled = false,
+  focusId,
+  autoFocus,
 }: ConfirmInputProps) => {
+  const { isFocused } = useFocusable({ id: focusId, disabled: isDisabled, autoFocus })
   useInput(
     (input, key) => {
       if (input.toLowerCase() === "y") {
@@ -32,7 +40,7 @@ export const ConfirmInput = ({
         else onCancel?.()
       }
     },
-    { isActive: !isDisabled },
+    { isActive: isFocused },
   )
 
   // The default choice is capitalised — a shape/case cue, not a colour one.

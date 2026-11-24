@@ -1,6 +1,7 @@
 import React from "react"
 import { Box, Text, useInput } from "ink"
 import { useTheme } from "../theme/theme-provider.js"
+import { useFocusable } from "./focus.js"
 
 type UpdateBannerProps = {
   name: string
@@ -13,6 +14,10 @@ type UpdateBannerProps = {
   onDecline: () => void
   // Set false while another component owns the keyboard.
   focused?: boolean
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
 }
 
 // Deliberately takes plain props rather than importing @kud/cli-update's
@@ -27,7 +32,10 @@ export const UpdateBanner = ({
   onConfirm,
   onDecline,
   focused = true,
+  focusId,
+  autoFocus,
 }: UpdateBannerProps) => {
+  const focus = useFocusable({ id: focusId, disabled: !focused, autoFocus })
   const theme = useTheme()
   const colors = theme.colors
   const color = theme.policy.color
@@ -36,7 +44,7 @@ export const UpdateBanner = ({
       if (key.return || /^y$/i.test(input)) onConfirm()
       else if (key.escape || /^n$/i.test(input)) onDecline()
     },
-    { isActive: focused },
+    { isActive: focus.isFocused },
   )
 
   return (
