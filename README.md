@@ -14,7 +14,7 @@
 ## Features
 
 - **Ready-made components**, pre-styled and ready to drop in:
-  - **Inputs** — `TextInput`, `EmailInput` (domain completion), `PasswordInput` (masked), `ConfirmInput`
+  - **Inputs** — `TextInput`, `EmailInput` (domain completion), `PasswordInput` (secure input by default, or masked), `ConfirmInput`
   - **Lists** — `UnorderedList`, `OrderedList` (both nestable), `Table` (sortable, selectable, virtualised to ten thousand rows with `useTable`, plus a `statusColumn` helper)
   - **Selection & navigation** — `Select`, `MultiSelect`, `Tabs`, `Switch`, `Toggle`, `SelectableRow`
   - **Status & feedback** — `Spinner`, `ProgressBar`, `Meter`, `SkeletonBar`, `SkeletonRows`, `StatusMessage`, `Alert`, `Badge`, `Toast`
@@ -113,6 +113,36 @@ const Inbox = ({ rows }) => {
 ```
 
 Both take `{ isActive }` so a screen with several focus regions can gate them, and `useListCursor` takes `{ wrap }` for genuinely circular lists. `useTabs` wraps by default because a tab bar is a ring; `useListCursor` clamps because a list has ends.
+
+### Password input
+
+`PasswordInput` reads a secret in one of two ways, and you choose the trade-off:
+
+| Mode | What you see | The terminal's secure-input lock |
+| --- | --- | --- |
+| `secure` (default) | A dim `(typing hidden)` hint, nothing as you type, like `sudo` | Engages (echo off, canonical mode) |
+| `secure={false}` | A `*` per character | Never (the terminal is in raw mode) |
+
+Secure mode is what lets iTerm2's "engage at password prompts" (and any
+terminal that watches for the same state) lock keyboard input to the prompt.
+It reads the whole line at once, so `onChange` fires once, on Enter, and
+`esc` or the arrow keys are part of the line rather than keys. It needs the
+terminal out of raw mode: stand down every other `useInput` (`useAppKeys`, a
+`FocusScope`, your own hotkeys) while it is focused. When something still
+holds raw mode, or stdin is not a terminal, or `stty` is unavailable, it falls
+back to the masked field on its own.
+
+In secure mode `placeholder` replaces the `(typing hidden)` hint and stays dim, and `mask` is
+unused. Nothing is added after submit: the outcome is yours to show.
+
+The terminal is always put back: the settings saved by `stty -g` are restored
+when the field unmounts or loses focus, on Ctrl-C, SIGTERM and SIGHUP, and on
+process exit.
+
+```tsx
+<PasswordInput placeholder="Password" onSubmit={login} />
+<PasswordInput secure={false} placeholder="Password" onSubmit={login} />
+```
 
 ### Theme and terminal capabilities
 

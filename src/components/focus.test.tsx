@@ -454,7 +454,7 @@ describe("wired components listen only while focused", () => {
       <FocusScope>
         <TextInput onChange={name} />
         <EmailInput onChange={email} />
-        <PasswordInput onChange={secret} />
+        <PasswordInput secure={false} onChange={secret} />
       </FocusScope>,
     )
     await delay()

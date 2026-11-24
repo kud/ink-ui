@@ -1,13 +1,25 @@
 // Ported from @inkjs/ui (MIT, Vadim Demedes — https://github.com/vadimdemedes/ink-ui)
 // and adapted to @kud/ink-ui tokens and conventions.
-import React, { useState } from "react"
-import { Text, useInput } from "ink"
+import React, { useEffect, useRef, useState } from "react"
+import { Text, useInput, useStdin } from "ink"
 import { useFocusable } from "./focus.js"
+import { canReadSecurely, readSecureLines, type SecureStdin } from "./secure-line.js"
 
 type PasswordInputProps = {
+  /** Dim text in the field; in secure mode it replaces the "(typing hidden)" hint. */
   placeholder?: string
-  // Single character shown in place of each real one.
+  /**
+   * Read the line the way `sudo` does: echo off, canonical mode on, nothing
+   * drawn as you type. That is the state a terminal's secure input detection
+   * looks for (iTerm2's "engage at password prompts" lock). Defaults to
+   * `true`. Needs a terminal on stdin and no other active `useInput` while
+   * focused; without them it falls back to the masked field. `false` always
+   * draws the masked field.
+   */
+  secure?: boolean
+  /** Character drawn for each typed one. Masked field only; unused in secure mode. */
   mask?: string
+  /** Every keystroke in the masked field; once, with the whole line, in secure mode. */
   onChange?: (value: string) => void
   onSubmit?: (value: string) => void
   isDisabled?: boolean
@@ -17,20 +29,93 @@ type PasswordInputProps = {
   autoFocus?: boolean
 }
 
+type FieldProps = Omit<PasswordInputProps, "secure" | "isDisabled" | "focusId" | "autoFocus"> & {
+  isFocused: boolean
+  // In a scope and not focused, the field draws no caret: the block is how
+  // a reader sees which field their typing lands in.
+  caret: boolean
+}
+
+// A sibling releasing raw mode in the same update lets go on a microtask, so
+// a secure read gives it a few frames before settling for the masked field.
+const ENGAGE_ATTEMPTS = 3
+const ENGAGE_RETRY_MS = 16
+
 export const PasswordInput = ({
+  secure = true,
+  isDisabled = false,
+  focusId,
+  autoFocus,
+  ...props
+}: PasswordInputProps) => {
+  // One focus stop whichever field is drawn, so falling back never adds a second.
+  const { isFocused, inScope } = useFocusable({ id: focusId, disabled: isDisabled, autoFocus })
+  const [unavailable, setUnavailable] = useState(false)
+  const field = { ...props, isFocused, caret: !inScope || isFocused }
+  return secure && !unavailable ? (
+    <SecureField {...field} onUnavailable={() => setUnavailable(true)} />
+  ) : (
+    <MaskedField {...field} />
+  )
+}
+
+const SecureField = ({
+  placeholder = "",
+  onChange,
+  onSubmit,
+  isFocused,
+  onUnavailable,
+}: FieldProps & { onUnavailable: () => void }) => {
+  // Ink types stdin as any readable; a secure read needs the terminal behind it.
+  const stdin = useStdin().stdin as SecureStdin
+  const handlers = useRef({ onChange, onSubmit, onUnavailable })
+  handlers.current = { onChange, onSubmit, onUnavailable }
+
+  useEffect(() => {
+    if (!isFocused) return
+    let release: (() => void) | undefined
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let attempts = 0
+    const isTerminal = Boolean(stdin.isTTY) && typeof stdin.fd === "number"
+
+    const engage = () => {
+      attempts++
+      if (canReadSecurely(stdin)) {
+        release = readSecureLines(stdin, (line) => {
+          handlers.current.onChange?.(line)
+          handlers.current.onSubmit?.(line)
+        })
+        if (!release) handlers.current.onUnavailable()
+        return
+      }
+      if (isTerminal && attempts < ENGAGE_ATTEMPTS) {
+        timer = setTimeout(engage, ENGAGE_RETRY_MS)
+        return
+      }
+      handlers.current.onUnavailable()
+    }
+
+    const first = setImmediate(engage)
+    return () => {
+      clearImmediate(first)
+      if (timer) clearTimeout(timer)
+      release?.()
+    }
+  }, [isFocused, stdin])
+
+  // Nothing typed is drawn, not even a caret: the dim hint, in the same
+  // token as a placeholder, is the whole field before and after submit.
+  return <Text dimColor>{placeholder || "(typing hidden)"}</Text>
+}
+
+const MaskedField = ({
   placeholder = "",
   mask = "*",
   onChange,
   onSubmit,
-  isDisabled = false,
-  focusId,
-  autoFocus,
-}: PasswordInputProps) => {
-  const { isFocused, inScope } = useFocusable({ id: focusId, disabled: isDisabled, autoFocus })
-  // In a scope and not focused, the field draws no caret: the block is how
-  // a reader sees which field their typing lands in.
-  const caret = !inScope || isFocused
-
+  isFocused,
+  caret,
+}: FieldProps) => {
   const [value, setValue] = useState("")
   const [cursor, setCursor] = useState(0)
 

@@ -2,7 +2,7 @@
 // Interactive components render live but inert until focused (isActive/isDisabled
 // gated on `focused`); parent-controlled ones (Tabs/Switch/Toggle) wire their
 // own input in focus mode.
-import React, { useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { Box, Text, useInput } from "ink"
 import {
   Alert,
@@ -47,7 +47,7 @@ import {
 } from "../index.js"
 import { ThemeDemo } from "./theme-entry.js"
 import { FocusDemo } from "./focus-entry.js"
-import { LayersDemo } from "./layers-entry.js"
+import { EscClaim, LayersDemo } from "./layers-entry.js"
 
 export type DemoEntry = {
   name: string
@@ -106,12 +106,39 @@ const PasswordInputDemo = ({ focused }: { focused: boolean }) => {
       <Box>
         <Text dimColor>{"› "}</Text>
         <PasswordInput
+          secure={false}
           placeholder="Password"
           onChange={setValue}
           isDisabled={!focused}
         />
       </Box>
       <Text dimColor>length: {value.length}</Text>
+    </Box>
+  )
+}
+
+// Secure mode reads with the terminal out of raw mode, so the gallery's own
+// `esc` listener stands down while the field is open: Enter submits, and
+// only then does `esc` go back.
+const SecurePasswordInputDemo = ({ focused }: { focused: boolean }) => {
+  const claimEsc = useContext(EscClaim)
+  const [submitted, setSubmitted] = useState<string | null>(null)
+  const reading = focused && submitted === null
+  useEffect(() => claimEsc(reading), [claimEsc, reading])
+  useEffect(() => {
+    if (!focused) setSubmitted(null)
+  }, [focused])
+  return (
+    <Box flexDirection="column">
+      <Box>
+        <Text dimColor>{"› "}</Text>
+        <PasswordInput placeholder="Password" onSubmit={setSubmitted} isDisabled={!reading} />
+      </Box>
+      <Text dimColor>
+        {submitted === null
+          ? "⏎ submits · the terminal's secure-input lock engages while it reads"
+          : `submitted ${submitted.length} characters · esc back`}
+      </Text>
     </Box>
   )
 }
@@ -404,6 +431,12 @@ export const entries: DemoEntry[] = [
   },
   {
     name: "PasswordInput",
+    category: "Inputs",
+    interactive: true,
+    render: (f) => <SecurePasswordInputDemo focused={f} />,
+  },
+  {
+    name: "Masked password",
     category: "Inputs",
     interactive: true,
     render: (f) => <PasswordInputDemo focused={f} />,
