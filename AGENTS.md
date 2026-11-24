@@ -29,7 +29,8 @@ that swallows keystrokes or responds twice.
 per focus region, and gate the rest with `isDisabled` / `isActive`:
 
 `Select` · `MultiSelect` · `TextInput` · `EmailInput` · `PasswordInput` ·
-`ConfirmInput` · `ScrollView` · `UpdateBanner` · `CommandPalette`
+`ConfirmInput` · `ScrollView` · `UpdateBanner` · `CommandPalette` ·
+`LayerHost` (`esc` / `backspace` while a layer is open) · `KeyHelp` (`?`)
 
 **Presentational — everything else.** They take `active` / `value` / `on` and
 render. They never listen for keys, so they compose freely and you drive them
@@ -57,6 +58,33 @@ mounted and hands focus back when it goes. `useFocusManager` moves focus
 from code; `useFocusable` joins a component of your own. The scope binds Tab
 and nothing else: never `esc`, which stays the peel's. On a screen whose Tab
 already belongs to `useTabs`, pass `keys={false}` and drive focus from code.
+
+**What floats above a screen is a `Layer`, drawn by one `LayerHost`.**
+Mount the host once at the root, inside the providers your layers read —
+a layer's content is drawn at the host, not where its `Layer` stands — and
+open a layer by mounting it: `{confirming && <Layer title onClose>…</Layer>}`.
+`kind="modal"` (the default) is centred over a backdrop, `overlay` takes the
+host's whole frame, `popover` sits at `top` / `left` with nothing veiled. Each
+layer is a `FocusScope trap`, so Tab stays inside the topmost and focus goes
+back where it was when it closes; the host mounts the root `FocusScope` if
+there is none. While anything is open the host is the one claimant of `esc`
+and `backspace`, closing the topmost through its `onClose`, and `useAppKeys`
+stands its peel down until the stack is empty — so mount `useAppKeys` inside
+the host. A layer holding a text field passes `dismissible={false}` and closes
+from the field's `onCancel`, since `backspace` deletes there. Your own hotkeys
+gate on `useLayer().isTop`, or the screen under a dialog keeps answering.
+The backdrop veils rather than dims — Ink cannot dim a cell it does not own —
+in the `track` ground, or a dim `░` (`.` on ASCII) without colour.
+
+**Keys are declared once and drawn twice.** `useKeyBindings(bindings, {
+group })` registers what a screen answers to on the layer it sits on — so
+declare a dialog's keys from inside its content, not where its `Layer` is
+mounted — and binds nothing. `KeyHelp`, mounted once in the main tree, draws
+the topmost layer's footer bindings then the fixed tail, and `?` opens the
+grouped legend as a layer over whatever is on top; `?`, `esc` or `backspace`
+closes it. Pass it `isActive: false` while a text field has focus. Each
+layer's frame draws its own footer from the same registry, because a modal's
+backdrop covers the page footer.
 
 **Three keys belong to the app, never to a screen: `q`, `esc`, `backspace`.**
 `useAppKeys({ onBack, onQuit, atRoot, isActive })` binds them, and it is
@@ -250,6 +278,8 @@ between apps. `⌫` is shown, `esc` implied.
 | Pick one / pick many from a list | `Select` / `MultiSelect` — these own their keyboard, unlike `SelectableRow` |
 | A list you can narrow by typing, then act on with hotkeys | `useFilterMode` + `FilterBar` in `Page`'s `filter` slot — see the filter under the keys contract |
 | Several fields or regions that each take keys, Tab between them | `FocusScope` around them, `FocusRing` per stop; `FocusScope trap` for a dialog over them |
+| A dialog, sheet or menu above the screen | `Layer` (`modal` · `overlay` · `popover`) under one `LayerHost`; gate the screen's own keys on `useLayer` |
+| A footer and a `?` legend from the keys screens declare | `useKeyBindings` on each screen and layer, `KeyHelp` once in the main tree; `KeyLegend` to draw a legend yourself |
 | A launcher — type, pick a row, Enter runs it | `CommandPalette`, mounted as the topmost layer with `useAppKeys` stood down; hand `fuzzyFilter` to `onQueryChange` for a fixed command tree, or derive `items` from the query yourself |
 | A persistent key-hints footer | `FooterHints` with `Hint` tuples: `[["↑↓", "move"], ["q", "quit"]]` |
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |
@@ -522,6 +552,10 @@ read.
 - **A table's `esc` belongs to the peel.** `useTable` never binds `q`, `esc`
   or `backspace`; to let `esc` drop a selection, add an arm to the host's
   peel — `if (table.selected.length) return (table.clearSelection(), true)`.
+- **A `Layer` re-renders its own slot, not the host.** Its content follows
+  the `Layer`'s props on every render, but context is read at the host: a
+  provider mounted between the host and the `Layer` does not reach the
+  layer's content.
 - **`Toast` returns `null` once it has expired** — it unmounts itself, so don't
   rely on it holding layout space.
 - **`useTabs` returns `active` as possibly `undefined`** when the item list is

@@ -1,12 +1,17 @@
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
 import { Box, Text, useApp, useInput } from "ink"
 import { Header, FooterHints, SelectableRow, type Hint } from "../index.js"
 import { entries } from "./entries.js"
+import { EscClaim } from "./layers-entry.js"
 
 export const Gallery = () => {
   const { exit } = useApp()
   const [index, setIndex] = useState(0)
   const [focused, setFocused] = useState(false)
+  // An entry with its own layers owns `esc` while one is open: it closes the
+  // layer, and only an `esc` with nothing open leaves the entry.
+  const [escClaimed, setEscClaimed] = useState(false)
+  const claimEsc = useCallback((claimed: boolean) => setEscClaimed(claimed), [])
   const current = entries[index]!
 
   // Navigation owns input only while nothing is focused, so the previewed
@@ -28,7 +33,7 @@ export const Gallery = () => {
     (_input, key) => {
       if (key.escape) setFocused(false)
     },
-    { isActive: focused },
+    { isActive: focused && !escClaimed },
   )
 
   const navHints: Hint[] = [
@@ -75,7 +80,7 @@ export const Gallery = () => {
                 : ""}
           </Text>
           <Box marginTop={1} flexDirection="column">
-            {current.render(focused)}
+            <EscClaim.Provider value={claimEsc}>{current.render(focused)}</EscClaim.Provider>
           </Box>
         </Box>
       </Box>

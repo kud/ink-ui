@@ -1,4 +1,6 @@
+import { useContext } from "react"
 import { useApp, useInput } from "ink"
+import { LayerDepthContext } from "./layer-context.js"
 
 type UseAppKeysOptions = {
   /**
@@ -24,6 +26,10 @@ type UseAppKeysOptions = {
  * claimant. Not a back stack: a host's layers are a priority order over its
  * own booleans, and that order stays in the host as `onBack`.
  *
+ * Inside a `LayerHost` with a layer open, `esc` and `backspace` belong to the
+ * host, which closes the topmost layer; the peel resumes once the stack is
+ * empty. `q` quits regardless.
+ *
  * `esc` at the root does nothing by default. A key that sometimes quits is a
  * key you flinch from; quitting has its own key.
  */
@@ -35,10 +41,12 @@ export const useAppKeys = ({
 }: UseAppKeysOptions = {}) => {
   const { exit } = useApp()
   const quit = onQuit ?? exit
+  const layers = useContext(LayerDepthContext)
 
   useInput(
     (input, key) => {
       if (input === "q") return quit()
+      if (layers > 0) return
       if (key.escape || key.backspace || key.delete) {
         const handled = onBack ? onBack() !== false : false
         if (!handled && atRoot === "quit") quit()
