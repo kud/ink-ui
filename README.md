@@ -149,6 +149,32 @@ Without a provider, components draw exactly as before and still honour `NO_COLOR
 
 `minimal`, `plain` and the `ascii` glyphs: [assets/screenshots/theme-levels.png](assets/screenshots/theme-levels.png).
 
+### Focus
+
+A screen with several things that listen for keys wraps them in one `FocusScope`. It binds Tab / Shift+Tab, skips anything disabled, and lets only the focused component hear keys. A nested `FocusScope trap` keeps Tab inside a dialog and gives focus back when it closes. `FocusRing` draws a stop: the pointer, a bold label and a heavy border, with the accent as reinforcement only.
+
+```tsx
+<FocusScope>
+  <FocusRing label="Name">
+    <TextInput />
+  </FocusRing>
+  <FocusRing label="Plan">
+    <Select options={plans} />
+  </FocusRing>
+  {confirming && (
+    <FocusScope trap>
+      <ConfirmInput onConfirm={remove} onCancel={close} />
+    </FocusScope>
+  )}
+</FocusScope>
+```
+
+`useFocusManager()` moves focus from code (`focus(id)`, `focusNext()`, `blur()`), and `useFocusable()` lets your own component join. Outside a scope, every component behaves exactly as before.
+
+![focus traversal and trapping](assets/screenshots/focus.png)
+
+Without colour and with the `ascii` glyphs: [assets/screenshots/focus-levels.png](assets/screenshots/focus-levels.png).
+
 The dark-palette constants remain plain objects for code that predates themes:
 
 ```ts

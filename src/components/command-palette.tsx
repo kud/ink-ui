@@ -5,6 +5,7 @@ import { TextInput } from "./text-input.js"
 import { type Hint } from "./footer-hints.js"
 import { useListCursor } from "./use-list-cursor.js"
 import { useTheme } from "../theme/theme-provider.js"
+import { FocusItem, useFocusable } from "./focus.js"
 import { statusVariant } from "./status-variants.js"
 
 export type PaletteItem = {
@@ -73,6 +74,10 @@ type CommandPaletteProps = {
   maxRows?: number
   hints?: Hint[]
   isActive?: boolean
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
   /**
    * `overlay` (the default) is a layer floating over a screen: a round border
    * and a raised fill. `none` is the palette AS the screen, a full-page
@@ -152,13 +157,19 @@ export const CommandPalette = ({
   hints = DEFAULT_HINTS,
   isActive = true,
   frame = "overlay",
+  focusId,
+  autoFocus,
 }: CommandPaletteProps) => {
+  // One Tab stop for the whole palette: its query field inherits this focus
+  // through FocusItem rather than registering a second stop of its own.
+  const focusable = useFocusable({ id: focusId, disabled: !isActive, autoFocus })
+  const live = focusable.isFocused
   const theme = useTheme()
   const colors = theme.colors
   const rule = theme.glyphs.rule
   const { cursor, setCursor } = useListCursor(items.length, {
     vimKeys: false,
-    isActive,
+    isActive: live,
   })
   // A new query is a new list: the cursor goes back to the first hit rather
   // than sitting on whatever index it held in the old one.
@@ -206,6 +217,7 @@ export const CommandPalette = ({
     >
       <Box width={inner}>
         <Text color={colors.info}>{theme.icons === "ascii" ? " > " : " › "}</Text>
+        <FocusItem focusable={focusable}>
         <TextInput
           defaultValue={query}
           placeholder={placeholder}
@@ -216,8 +228,9 @@ export const CommandPalette = ({
             else note?.onSubmit?.()
           }}
           onCancel={onClose}
-          isDisabled={!isActive}
+          isDisabled={!live}
         />
+        </FocusItem>
         {/* The filler takes whatever width the query leaves and its text
             stretches across it, so the cells after the query are spaces,
             not the host — whatever the query length or caret position. */}

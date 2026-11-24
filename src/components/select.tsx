@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { Box, Text, useInput } from "ink"
 import { SelectableRow } from "./selectable-row.js"
 import { useTheme } from "../theme/theme-provider.js"
+import { useFocusable } from "./focus.js"
 
 export type SelectOption<T extends string = string> = {
   label: string
@@ -19,6 +20,10 @@ type SelectProps<T extends string> = {
   defaultValue?: T
   isDisabled?: boolean
   visibleOptionCount?: number
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
 }
 
 // A window of `count` options centred on the cursor, clamped to the ends — the
@@ -35,7 +40,10 @@ export const Select = <T extends string>({
   defaultValue,
   isDisabled = false,
   visibleOptionCount,
+  focusId,
+  autoFocus,
 }: SelectProps<T>) => {
+  const { isFocused } = useFocusable({ id: focusId, disabled: isDisabled, autoFocus })
   const initial = options.findIndex((o) => o.value === defaultValue)
   const [cursor, setCursor] = useState(initial === -1 ? 0 : initial)
 
@@ -51,7 +59,7 @@ export const Select = <T extends string>({
       if (key.downArrow) move(1)
       if (key.return) onSubmit?.(options[cursor]!.value)
     },
-    { isActive: !isDisabled && options.length > 0 },
+    { isActive: isFocused && options.length > 0 },
   )
 
   const theme = useTheme()

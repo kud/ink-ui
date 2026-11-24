@@ -2,6 +2,7 @@
 // and adapted to @kud/ink-ui tokens and conventions.
 import React, { useState } from "react"
 import { Text, useInput } from "ink"
+import { useFocusable } from "./focus.js"
 
 const defaultDomains = [
   "gmail.com",
@@ -19,6 +20,10 @@ type EmailInputProps = {
   onChange?: (value: string) => void
   onSubmit?: (value: string) => void
   isDisabled?: boolean
+  /** Id for `useFocusManager().focus(id)` when inside a `FocusScope`. */
+  focusId?: string
+  /** Take focus first when inside a `FocusScope`. */
+  autoFocus?: boolean
 }
 
 export const EmailInput = ({
@@ -28,7 +33,14 @@ export const EmailInput = ({
   onChange,
   onSubmit,
   isDisabled = false,
+  focusId,
+  autoFocus,
 }: EmailInputProps) => {
+  const { isFocused, inScope } = useFocusable({ id: focusId, disabled: isDisabled, autoFocus })
+  // In a scope and not focused, the field draws no caret: the block is how
+  // a reader sees which field their typing lands in.
+  const caret = !inScope || isFocused
+
   const [value, setValue] = useState(defaultValue)
   const [cursor, setCursor] = useState(defaultValue.length)
 
@@ -82,14 +94,14 @@ export const EmailInput = ({
         )
       }
     },
-    { isActive: !isDisabled },
+    { isActive: isFocused },
   )
 
   // Empty: a cursor block followed by the dim placeholder.
   if (value.length === 0) {
     return (
       <Text>
-        <Text inverse> </Text>
+        <Text inverse={caret}> </Text>
         {placeholder ? <Text dimColor>{placeholder}</Text> : null}
       </Text>
     )
@@ -102,7 +114,7 @@ export const EmailInput = ({
     return (
       <Text>
         {value}
-        <Text inverse>{suggestion.slice(0, 1)}</Text>
+        <Text inverse={caret}>{suggestion.slice(0, 1)}</Text>
         <Text dimColor>{suggestion.slice(1)}</Text>
       </Text>
     )
@@ -114,7 +126,7 @@ export const EmailInput = ({
   return (
     <Text>
       {before}
-      <Text inverse>{atChar}</Text>
+      <Text inverse={caret}>{atChar}</Text>
       {after}
     </Text>
   )

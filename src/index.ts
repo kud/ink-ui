@@ -49,6 +49,19 @@ export type { PaletteItem, PaletteMessage } from "./components/command-palette.j
 export { fuzzyFilter } from "./components/fuzzy-filter.js"
 export { useListCursor } from "./components/use-list-cursor.js"
 export { useAppKeys } from "./components/use-app-keys.js"
+export {
+  FocusScope,
+  FocusItem,
+  useFocusable,
+  useFocusManager,
+} from "./components/focus.js"
+export type {
+  Focusable,
+  FocusManager,
+  UseFocusableOptions,
+} from "./components/focus.js"
+export { FocusRing, focusRingStyle } from "./components/focus-ring.js"
+export type { FocusRingStyle } from "./components/focus-ring.js"
 export { useFilterMode } from "./components/use-filter-mode.js"
 export { FilterBar } from "./components/filter-bar.js"
 export { Switch } from "./components/switch.js"

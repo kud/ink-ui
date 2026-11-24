@@ -44,6 +44,20 @@ and takes `{ arrows: false }` where ←→ mean something else on that screen;
 `useListCursor` clamps (a list has ends) and takes `{ wrap }` when you
 genuinely want circular.
 
+**Several uncontrolled components on one screen share a `FocusScope`.**
+Rather than threading `isDisabled` through each by hand, wrap the region in
+one `FocusScope`: it binds Tab / Shift+Tab (wrapping, skipping disabled
+stops), and every uncontrolled component above joins it and listens only
+while focused. Each takes optional `focusId` and `autoFocus`; outside a scope
+they behave exactly as before. `FocusRing` is one stop drawn from the theme —
+the pointer, a bold label and a heavy border, the accent only as
+reinforcement — and whatever it wraps inherits its focus instead of adding a
+second stop. A nested `FocusScope trap` keeps Tab inside a dialog while it is
+mounted and hands focus back when it goes. `useFocusManager` moves focus
+from code; `useFocusable` joins a component of your own. The scope binds Tab
+and nothing else: never `esc`, which stays the peel's. On a screen whose Tab
+already belongs to `useTabs`, pass `keys={false}` and drive focus from code.
+
 **Three keys belong to the app, never to a screen: `q`, `esc`, `backspace`.**
 `useAppKeys({ onBack, onQuit, atRoot, isActive })` binds them, and it is
 mounted **once, at the root**. Ink runs every active `useInput` on every key
@@ -235,6 +249,7 @@ between apps. `⌫` is shown, `esc` implied.
 | One-off prompt for a value | `TextInput` / `EmailInput` / `PasswordInput` / `ConfirmInput` |
 | Pick one / pick many from a list | `Select` / `MultiSelect` — these own their keyboard, unlike `SelectableRow` |
 | A list you can narrow by typing, then act on with hotkeys | `useFilterMode` + `FilterBar` in `Page`'s `filter` slot — see the filter under the keys contract |
+| Several fields or regions that each take keys, Tab between them | `FocusScope` around them, `FocusRing` per stop; `FocusScope trap` for a dialog over them |
 | A launcher — type, pick a row, Enter runs it | `CommandPalette`, mounted as the topmost layer with `useAppKeys` stood down; hand `fuzzyFilter` to `onQueryChange` for a fixed command tree, or derive `items` from the query yourself |
 | A persistent key-hints footer | `FooterHints` with `Hint` tuples: `[["↑↓", "move"], ["q", "quit"]]` |
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |
