@@ -28,6 +28,9 @@ import {
   StatusMessage,
   Switch,
   Table,
+  statusColumn,
+  useTable,
+  type Column,
   Tabs,
   TextInput,
   Toast,
@@ -133,6 +136,62 @@ const SelectDemo = ({ focused }: { focused: boolean }) => {
         isDisabled={!focused}
       />
       <Text dimColor>selected: {value}</Text>
+    </Box>
+  )
+}
+
+type JobRow = {
+  id: string
+  name: string
+  owner: string
+  duration: number
+  state: "success" | "error" | "warning" | "pending" | "info"
+}
+
+const jobStates = ["success", "success", "pending", "error", "success", "warning", "info"] as const
+const jobNames = ["build", "lint", "test · unit", "test · e2e", "publish", "deploy 日本", "audit"]
+
+// Ten thousand rows, so the gallery shows the window doing its job.
+const jobs: JobRow[] = Array.from({ length: 10_000 }, (_, i) => ({
+  id: `JOB-${String(i + 1).padStart(5, "0")}`,
+  name: `${jobNames[i % jobNames.length]} — pipeline ${(i * 7) % 113}`,
+  owner: `@user${(i * 13) % 37}`,
+  duration: (i * 7919) % 3600,
+  state: jobStates[(i * 5) % jobStates.length]!,
+}))
+
+const jobColumns: Column<JobRow>[] = [
+  { key: "id", header: "Job" },
+  { key: "name", header: "Name", flex: 1, maxWidth: 28 },
+  { key: "owner", header: "Owner", sortable: false },
+  {
+    key: "duration",
+    header: "Took",
+    align: "right",
+    format: (value) => `${Math.floor(Number(value) / 60)}m ${Number(value) % 60}s`,
+  },
+  statusColumn<JobRow>({ key: "state", header: "State", status: (row) => row.state }),
+]
+
+const TableV2Demo = ({ focused }: { focused: boolean }) => {
+  const table = useTable({
+    data: jobs,
+    columns: jobColumns,
+    rowKey: (row) => row.id,
+    selection: "multiple",
+    defaultSort: { key: "state", direction: "asc" },
+    height: 8,
+    isActive: focused,
+  })
+  const counter = `${table.cursor + 1} of ${jobs.length.toLocaleString("en-GB")}`
+  const picked = table.selected.length ? ` · ${table.selected.length} selected` : ""
+  return (
+    <Box flexDirection="column">
+      <Table maxWidth={78} {...table.tableProps} />
+      <Box justifyContent="flex-end" width={78}>
+        <Text color={colors.muted}>{counter + picked}</Text>
+      </Box>
+      <FooterHints hints={table.hints} help={false} />
     </Box>
   )
 }
@@ -398,6 +457,12 @@ export const entries: DemoEntry[] = [
         ]}
       />
     ),
+  },
+  {
+    name: "Table · interactive",
+    category: "Lists",
+    interactive: true,
+    render: (f) => <TableV2Demo focused={f} />,
   },
   // Selection & navigation
   {

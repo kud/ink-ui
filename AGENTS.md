@@ -35,9 +35,10 @@ per focus region, and gate the rest with `isDisabled` / `isActive`:
 render. They never listen for keys, so they compose freely and you drive them
 from your own state.
 
-**The two hooks supply that state.** `useTabs(items)` and
-`useListCursor(length)` own the keyboard so you don't hand-roll it — and both
-take `{ isActive }` so a screen with several focus regions can gate them.
+**The hooks supply that state.** `useTabs(items)`,
+`useListCursor(length)` and `useTable({ data, columns })` own the keyboard so
+you don't hand-roll it — and all three take `{ isActive }` so a screen with
+several focus regions can gate them.
 `useTabs` binds Tab / Shift+Tab and ←→ alike, wrapping (a tab bar is a ring),
 and takes `{ arrows: false }` where ←→ mean something else on that screen;
 `useListCursor` clamps (a list has ends) and takes `{ wrap }` when you
@@ -227,6 +228,8 @@ between apps. `⌫` is shown, `esc` implied.
 | A long scrollable text/log region | `ScrollView` with `StyledLine[]` — it owns its own scroll keys |
 | A tab bar | `useTabs` + `Tabs` — the hook holds `active`, the component renders it; a tab takes an optional `icon` before its label, and the strip folds inactive icon tabs to `icon count` when it does not fit its `width` |
 | Tabular data with aligned columns | `Table` with a `Column[]` spec — do not lay out columns by hand |
+| A table you move through, sort and pick rows from | `useTable` + `Table`, spreading `tableProps` — the hook owns ↑↓ ←→ `s` `␣` `a`, the table draws the window; give it `height` and only that many rows render, however many there are |
+| A column whose cell is a state | `statusColumn` — glyph, word and token together, sorted by severity |
 | Two or more side-by-side regions | `Columns`, and `Panel` for each region that needs a border |
 | A focusable bordered region | `Panel` with `focused` — the border brightens and the title gains a ● marker |
 | One-off prompt for a value | `TextInput` / `EmailInput` / `PasswordInput` / `ConfirmInput` |
@@ -458,6 +461,13 @@ they need. Do not build a provider to pass tokens around — import them.
   works on one keyboard and not another.
 - **`Table` needs `maxWidth`** when it sits inside a bordered `Panel` or
   `Page`, or the columns size against the terminal rather than the pane.
+- **Pass `Table` the same `columns` and `data` objects between renders.**
+  Every cell is formatted and measured once and memoised on those two
+  references; a `columns` array rebuilt inline re-measures every row on every
+  keystroke, which is invisible at twelve rows and a stall at ten thousand.
+- **A table's `esc` belongs to the peel.** `useTable` never binds `q`, `esc`
+  or `backspace`; to let `esc` drop a selection, add an arm to the host's
+  peel — `if (table.selected.length) return (table.clearSelection(), true)`.
 - **`Toast` returns `null` once it has expired** — it unmounts itself, so don't
   rely on it holding layout space.
 - **`useTabs` returns `active` as possibly `undefined`** when the item list is

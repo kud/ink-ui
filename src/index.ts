@@ -10,7 +10,14 @@ export type {
   Column,
   ColumnAlign,
   ColumnOverflow,
+  SortDirection,
+  SortState,
+  TableSelection,
 } from "./components/table.js"
+export { useTable } from "./components/use-table.js"
+export { statusColumn } from "./components/table-status.js"
+export type { TableStatus } from "./components/table-status.js"
+export { sortRows } from "./components/table-sort.js"
 export { FooterHints, tailHints } from "./components/footer-hints.js"
 export type { Hint } from "./components/footer-hints.js"
 export { Page, PAGE_CHROME } from "./components/page.js"
