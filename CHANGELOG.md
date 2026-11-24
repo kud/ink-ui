@@ -4,6 +4,31 @@ All notable changes to this project are documented here.
 
 ---
 
+## 0.46.0 — 2026-11-24
+
+### Highlights
+
+- **Layers: modals, overlays and popovers above the screen.** Mount one `LayerHost` at the root and open a `Layer` by mounting it. A `modal` is centred over a backdrop, an `overlay` takes the whole frame, a `popover` sits at an offset. Tab is trapped in the topmost layer and focus returns when it closes; `esc` / `⌫` close the topmost one, and `useAppKeys` leaves them to the host while a layer is open. `useLayer().isTop` gates a screen's own hotkeys. The backdrop veils in the `track` ground, or a dim `░` (`.` on ASCII) without colour. ([8c28e5f](https://github.com/kud/ink-ui/commit/8c28e5fa713e8093f43ddc3e1e1842f2d0ac5cd6))
+- **Key help from declared bindings.** `useKeyBindings` declares the keys a screen or layer answers to; `KeyHelp` draws them as the footer and opens a grouped legend on `?`. `KeyLegend` draws a legend on its own. ([8c28e5f](https://github.com/kud/ink-ui/commit/8c28e5fa713e8093f43ddc3e1e1842f2d0ac5cd6))
+- **Focus scopes.** `FocusScope` binds Tab / Shift+Tab across the interactive components, skips disabled stops, and with `trap` keeps focus inside a dialog and restores it on close. `FocusRing` draws a stop with the pointer, a bold label and a heavy border; `useFocusable` and `useFocusManager` join and drive it from code. The nine uncontrolled components gain optional `focusId` and `autoFocus`, and behave as before outside a scope. ([2c934b3](https://github.com/kud/ink-ui/commit/2c934b31229c6d682ce7231730f04d1c46da2718))
+- **Themes and terminal capabilities.** `probeTerminal()` before `render()`, one `ThemeProvider` at the root, and `useTheme()` in components give one policy for colour, motion and glyphs: `default`, `minimal` and `plain` themes, a light variant, and an ASCII glyph set when the locale is not UTF-8. `NO_COLOR`, `NO_MOTION` / `REDUCE_MOTION`, a pipe and `INK_SCREEN_READER` are honoured everywhere, including without a provider. ([51305bf](https://github.com/kud/ink-ui/commit/51305bf86082337cd21f24c5b3023465bf58268f))
+- **`Table` v2.** `useTable` adds sorting, row selection and virtualised rendering to ten thousand rows; `statusColumn` draws a state as glyph, word and colour, sorted by severity. ([80c19dd](https://github.com/kud/ink-ui/commit/80c19dd49e003add44da7b3f0ba56d1ac0108687))
+- **New components: `Link`, `Divider`, `Spacer`, `Meter` and `useTerminalProgress`.** `Link` draws OSC 8 hyperlinks with a `text (url)` fallback; `Divider` comes in four weights with an optional label; `Meter` shows a bounded measurement that turns to `⚠` / `✗` past its thresholds; `useTerminalProgress` mirrors progress in the terminal's tab or taskbar. `Spinner` gains `type` styles on one shared clock, and `ProgressBar` moves in eighths of a cell. ([9586fda](https://github.com/kud/ink-ui/commit/9586fda69f3e7f9b1b8d05db34625939f6207f36))
+
+### Documentation
+
+- **`AGENTS.md` covers themes, focus, layers and key help.** It says who owns `esc` while a layer is open, where to declare a dialog's keys, and why a layer's content does not see providers mounted between it and the host. ([8c28e5f](https://github.com/kud/ink-ui/commit/8c28e5fa713e8093f43ddc3e1e1842f2d0ac5cd6))
+
+<details>
+<summary>Internal (2 commits)</summary>
+
+- Upgraded the development dependency to Ink 8; the peer range stays `ink ≥ 7`. ([0c1f948](https://github.com/kud/ink-ui/commit/0c1f9483ed1183677afbeb72771e4f5da9b63bb8))
+- Moved CI and release workflows to Node `lts/*`. ([510ba71](https://github.com/kud/ink-ui/commit/510ba71db40dd6346d0e98f109be3f9fea172d58))
+
+</details>
+
+---
+
 ## 0.45.0 — 2026-11-16
 
 ### Highlights
