@@ -1,15 +1,29 @@
-import { colors } from "../tokens.js"
 import { statusVariant, type StatusVariant } from "./status-variants.js"
 import type { Column } from "./table.js"
+import type { Theme } from "../theme/theme.js"
+import { ambientTheme } from "../theme/theme-provider.js"
 
 export type TableStatus = StatusVariant | "pending"
 
 // Waiting is not news: `pending` takes the hollow ring and no hue, so a board
 // full of queued rows stays quiet and the one failure stands out.
-const PENDING = { icon: "◌", color: colors.pending }
+//
+// A column spec is built outside any render, so it cannot read the theme
+// itself: `Table` hands it the theme it is drawing with, just before it
+// formats a cell, and a column used on its own falls back to the ambient one.
+let drawingTheme: Theme | undefined
 
-const glyphFor = (status: TableStatus) =>
-  status === "pending" ? PENDING : statusVariant(status)
+/** Internal: `Table` sets the theme its status cells are formatted in. */
+export const setStatusTheme = (theme: Theme | undefined): void => {
+  drawingTheme = theme
+}
+
+const glyphFor = (status: TableStatus) => {
+  const theme = drawingTheme ?? ambientTheme()
+  return status === "pending"
+    ? { icon: theme.glyphs.pending, color: theme.colors.pending }
+    : statusVariant(theme, status)
+}
 
 // Ascending puts what needs attention first: a failure outranks a warning,
 // which outranks work still running, then information, then done.

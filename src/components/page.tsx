@@ -1,7 +1,7 @@
 import React, { type ReactNode } from "react"
 import { Box, Text, useWindowSize } from "ink"
 import stringWidth from "string-width"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 import { FooterHints, type Hint } from "./footer-hints.js"
 
 /**
@@ -66,9 +66,9 @@ type PageProps = {
   children: ReactNode
 }
 
-const STATUS_COLOR: Record<PageStatus["tone"], string | undefined> = {
-  news: colors.accent,
-  busy: colors.info,
+const STATUS_ROLE: Record<PageStatus["tone"], "accent" | "info" | undefined> = {
+  news: "accent",
+  busy: "info",
   quiet: undefined,
 }
 
@@ -114,6 +114,8 @@ export const Page = ({
   height,
   children,
 }: PageProps) => {
+  const theme = useTheme()
+  const colors = theme.colors
   const terminal = useWindowSize()
   const frameWidth = width ?? (fill ? terminal.columns : undefined)
   const frameHeight = height ?? (fill ? terminal.rows : undefined)
@@ -123,7 +125,7 @@ export const Page = ({
       ? facts
         ? `   ${facts}  `
         : "  "
-      : `  ${String(count).padStart(3)} ${noun}${count !== 1 ? "s" : ""}  ·  `
+      : `  ${String(count).padStart(3)} ${noun}${count !== 1 ? "s" : ""}  ${theme.icons === "ascii" ? "-" : "·"}  `
   const userSeg = user ? `@${user}  ` : ""
   const scopeSeg = scope ? `${scope}  ` : ""
   const alertSeg = alert ? `${alert}  ` : ""
@@ -140,7 +142,7 @@ export const Page = ({
       flexDirection="column"
       width={frameWidth}
       height={frameHeight}
-      borderStyle="round"
+      borderStyle={theme.glyphs.border}
       borderColor={colors.muted}
       overflow="hidden"
     >
@@ -158,15 +160,17 @@ export const Page = ({
         ) : null}
         {statusSeg && status ? (
           <Text
-            color={STATUS_COLOR[status.tone]}
+            color={
+              STATUS_ROLE[status.tone] && colors[STATUS_ROLE[status.tone]!]
+            }
             dimColor={status.tone === "quiet"}
             bold={status.tone === "news"}
           >
             {statusSeg}
           </Text>
         ) : null}
-        <Text color={colors.info} dimColor>
-          {"╌".repeat(ruleWidth)}
+        <Text color={colors.info} dimColor aria-hidden>
+          {theme.glyphs.ruleDotted.repeat(ruleWidth)}
         </Text>
       </Box>
       {filter ? <Box paddingLeft={2}>{filter}</Box> : null}

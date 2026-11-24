@@ -2,8 +2,9 @@
 // and adapted to @kud/ink-ui tokens and conventions.
 import React from "react"
 import { Text, useAnimation, useStdout } from "ink"
-import { colors } from "../tokens.js"
-import { motionAllowed, streamIsTTY } from "./motion.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
+import { themedMotion } from "./motion.js"
 
 /** Left-anchored partial blocks, one per eighth of a cell: index 1 is ▏. */
 export const EIGHTHS = ["", "▏", "▎", "▍", "▌", "▋", "▊", "▉"] as const
@@ -58,16 +59,34 @@ const INDETERMINATE_MS = 80
 type BarProps = {
   fraction: number
   width: number
-  color: string
-  trackColor: string
+  color: string | undefined
+  trackColor: string | undefined
 }
 
-/** The strip itself, shared by `ProgressBar` and `Meter`. */
+/**
+ * The strip itself, shared by `ProgressBar` and `Meter`. Where the theme
+ * draws no colour the track loses the lightness that told it from the fill,
+ * so it takes the shape back (`░`, `.` in ASCII); in ASCII the eighths have
+ * no 7-bit form and the edge rounds to whole cells.
+ */
 export const Bar = ({ fraction, width, color, trackColor }: BarProps) => {
-  const { full, partial, empty } = barCells(fraction, width)
+  const theme = useTheme()
+  const ascii = theme.icons === "ascii"
+  const cellsOf = barCells(fraction, width)
+  const { full, partial, empty } = ascii
+    ? (() => {
+        const filled = Math.round(
+          Math.max(0, Math.min(1, Number.isFinite(fraction) ? fraction : 0)) *
+            Math.max(0, Math.floor(width)),
+        )
+        return { full: filled, partial: 0, empty: Math.max(0, Math.floor(width)) - filled }
+      })()
+    : cellsOf
+  const fillChar = theme.glyphs.bar
+  const trackChar = theme.policy.color ? theme.glyphs.bar : theme.glyphs.barEmpty
   return (
     <Text>
-      <Text color={color}>{"█".repeat(full)}</Text>
+      <Text color={color}>{fillChar.repeat(full)}</Text>
       {partial ? (
         // The partial glyph covers only its left eighths; the background
         // paints the rest of the cell as track so the strip stays one piece.
@@ -75,7 +94,7 @@ export const Bar = ({ fraction, width, color, trackColor }: BarProps) => {
           {EIGHTHS[partial]}
         </Text>
       ) : null}
-      <Text color={trackColor}>{"█".repeat(empty)}</Text>
+      <Text color={trackColor}>{trackChar.repeat(empty)}</Text>
     </Text>
   )
 }
@@ -121,8 +140,8 @@ type ProgressBarProps = {
 export const ProgressBar = ({
   value = 0,
   width = 20,
-  color = colors.accent,
-  trackColor = colors.track,
+  color: colorProp,
+  trackColor: trackColorProp,
   indeterminate = false,
   label,
   showValue = false,
@@ -130,8 +149,13 @@ export const ProgressBar = ({
   animate = true,
 }: ProgressBarProps) => {
   const { stdout } = useStdout()
-  const moving =
-    indeterminate && motionAllowed(animate, streamIsTTY(stdout))
+  const theme = useTheme()
+  const colors = theme.colors
+  const color = paint(theme, colorProp) ?? colors.accent
+  const trackColor = paint(theme, trackColorProp) ?? colors.track
+  const fillChar = theme.glyphs.bar
+  const trackChar = theme.policy.color ? theme.glyphs.bar : theme.glyphs.barEmpty
+  const moving = indeterminate && themedMotion(theme, animate, stdout)
   const { frame } = useAnimation({
     interval: INDETERMINATE_MS,
     isActive: moving,
@@ -146,9 +170,11 @@ export const ProgressBar = ({
     const fill = Math.min(band, cells)
     bar = (
       <Text>
-        <Text color={trackColor}>{"█".repeat(at)}</Text>
-        <Text color={color}>{"█".repeat(fill)}</Text>
-        <Text color={trackColor}>{"█".repeat(Math.max(0, cells - at - fill))}</Text>
+        <Text color={trackColor}>{trackChar.repeat(at)}</Text>
+        <Text color={color}>{fillChar.repeat(fill)}</Text>
+        <Text color={trackColor}>
+          {trackChar.repeat(Math.max(0, cells - at - fill))}
+        </Text>
       </Text>
     )
   } else {
@@ -164,7 +190,7 @@ export const ProgressBar = ({
 
   const etaText = typeof eta === "number" ? formatEta(eta) : eta
   return (
-    <Text>
+    <Text aria-label={indeterminate ? `${label ?? ""} working`.trim() : `${label ? `${label} ` : ""}${Math.round(clamped)}%`}>
       {label ? <Text color={colors.secondary}>{label} </Text> : null}
       {bar}
       {showValue && !indeterminate ? (

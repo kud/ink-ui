@@ -1,8 +1,8 @@
 import React from "react"
 import { Box, Text, useAnimation, useStdout } from "ink"
 import cliSpinners from "cli-spinners"
-import { colors } from "../tokens.js"
-import { motionAllowed, streamIsTTY } from "./motion.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { themedMotion } from "./motion.js"
 
 export type SpinnerType = "dots" | "line" | "arc" | "pulse" | "bounce"
 
@@ -49,23 +49,29 @@ type SpinnerProps = {
 }
 
 /**
- * Work in progress with no measurable end. Ticks on Ink's shared animation
+ * Work in progress with no measurable end. Holds still wherever the
+ * theme's policy says no motion — reduced motion, piped output, a screen
+ * reader, which would otherwise re-read it on every tick. Ticks on Ink's shared animation
  * clock (`useAnimation`), so any number of spinners cost one timer and one
  * render per tick, and holds a still frame where motion cannot or should not
  * show.
  */
 export const Spinner = ({ label, type = "dots", animate = true }: SpinnerProps) => {
   const { stdout } = useStdout()
-  const moving = motionAllowed(animate, streamIsTTY(stdout))
+  const theme = useTheme()
+  const moving = themedMotion(theme, animate, stdout)
+  // `line` is the one style made of 7-bit characters, so a terminal that
+  // cannot draw the others gets it whatever style was asked for.
+  const style: SpinnerType = theme.icons === "ascii" ? "line" : type
   const { frame } = useAnimation({
-    interval: SPINNERS[type].interval,
+    interval: SPINNERS[style].interval,
     isActive: moving,
   })
 
   return (
     <Box gap={1}>
-      <Text color={colors.accent}>
-        {spinnerFrame(type, moving ? frame : undefined)}
+      <Text color={theme.colors.accent} aria-hidden>
+        {spinnerFrame(style, moving ? frame : undefined)}
       </Text>
       {label && <Text dimColor>{label}</Text>}
     </Box>

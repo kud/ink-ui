@@ -45,6 +45,7 @@ import {
   useTerminalProgress,
   type SwitchValue,
 } from "../index.js"
+import { ThemeDemo } from "./theme-entry.js"
 
 export type DemoEntry = {
   name: string
@@ -772,5 +773,11 @@ export const entries: DemoEntry[] = [
     category: "Layout",
     interactive: true,
     render: (f) => <ScrollViewDemo focused={f} />,
+  },
+  {
+    name: "Theme",
+    category: "Foundations",
+    interactive: false,
+    render: () => <ThemeDemo />,
   },
 ]

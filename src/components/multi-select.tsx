@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { Box, Text, useInput } from "ink"
 import { SelectableRow } from "./selectable-row.js"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 import type { SelectOption } from "./select.js"
 
 type MultiSelectProps<T extends string> = {
@@ -54,6 +54,8 @@ export const MultiSelect = <T extends string>({
     { isActive: !isDisabled && options.length > 0 },
   )
 
+  const theme = useTheme()
+  const colors = theme.colors
   const count = visibleOptionCount ?? options.length
   const start = windowStart(cursor, options.length, count)
   const visible = options.slice(start, start + count)
@@ -68,12 +70,12 @@ export const MultiSelect = <T extends string>({
             <Text bold={active} color={active ? colors.info : undefined}>
               {option.label}
             </Text>
-            {on ? <Text color={colors.success}>{" ✓"}</Text> : null}
+            {on ? <Text color={colors.success}>{` ${theme.glyphs.success}`}</Text> : null}
           </SelectableRow>
         )
       })}
       {options.length > count && (
-        <Text dimColor>{`  … ${options.length} total`}</Text>
+        <Text dimColor>{`  ${theme.glyphs.ellipsis} ${options.length} total`}</Text>
       )}
     </Box>
   )

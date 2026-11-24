@@ -1,7 +1,9 @@
 import React from "react"
 import { Text } from "ink"
 import { glyph } from "@kud/glyphs"
-import { colors, softColors, tonalColors, tonalStrongColors } from "../tokens.js"
+import { ambientTheme, useTheme } from "../theme/theme-provider.js"
+import { paint, type Theme } from "../theme/theme.js"
+import { isHex } from "../theme/color-math.js"
 
 export type PillVariant =
   "success" | "error" | "warning" | "info" | "accent" | "muted" | "group"
@@ -41,16 +43,6 @@ type PillProps = {
    * merely decorates a category the tokens can already say.
    */
   color?: string
-}
-
-const FILL: Record<PillVariant, string> = {
-  success: colors.success,
-  error: colors.error,
-  warning: colors.warning,
-  info: colors.info,
-  accent: colors.accent,
-  muted: colors.muted,
-  group: colors.group,
 }
 
 // Chosen against each fill rather than derived, because a terminal's idea of
@@ -104,11 +96,15 @@ export const inkFor = (fill: string): string => {
 }
 
 /**
- * Which fill and ink a variant takes in a tone — and whether the label bolds.
- * Tonal reads its pair from `tonalColors` (or `tonalStrongColors` with
- * `strong`, which also bolds); solid and outline read the hand-written
- * tables, soft the measured fill with whatever ink reads on it. Outline has
- * no ink to pick, so it reports its fill as both: it draws a hue-only ring.
+ * Which fill and ink a variant takes in a tone — and whether the label bolds —
+ * under a theme. Tonal reads its pair from the theme's tonal families (strong
+ * also bolds); solid and outline read the variant's hue, soft its measured
+ * fill. The ink is measured against a hex fill and read from the hand-written
+ * table against a named or 256-colour one, except on a light ground, where
+ * every solid hue is dark enough to carry white. Outline has no ink to pick,
+ * so it reports its fill as both: it draws a hue-only ring. A `fill` of
+ * `undefined` means the theme draws no fill at all — `plain`, or a tonal chip
+ * on sixteen colours — and the pill falls back to brackets.
  *
  * Exported for its own test and nothing else — `src/index.ts` does not
  * re-export it, which is this package's definition of internal. The frame a
@@ -120,20 +116,37 @@ export const pillStyle = (
   variant: PillVariant,
   tone: PillTone,
   strong = false,
-): { fill: string; ink: string; bold: boolean } => {
+  theme: Theme = ambientTheme(),
+): { fill: string | undefined; ink: string | undefined; bold: boolean } => {
   if (tone === "tonal") {
-    const pair = strong ? tonalStrongColors[variant] : tonalColors[variant]
+    const pair = strong
+      ? theme.tonalStrongColors[variant]
+      : theme.tonalColors[variant]
     return { fill: pair.fill, ink: pair.ink, bold: strong }
   }
-  if (tone === "soft")
-    return {
-      fill: softColors[variant],
-      ink: inkFor(softColors[variant]),
-      bold: false,
-    }
-  if (tone === "outline")
-    return { fill: FILL[variant], ink: FILL[variant], bold: false }
-  return { fill: FILL[variant], ink: INK[variant], bold: false }
+  const hue = theme.colors[variant]
+  if (tone === "outline") return { fill: hue, ink: hue, bold: false }
+  if (tone === "soft") {
+    const fill = theme.softColors[variant]
+    const ink =
+      fill === undefined
+        ? undefined
+        : isHex(fill)
+          ? inkFor(fill)
+          : theme.name === "minimal" || theme.colorLevel === "ansi16"
+            ? INK[variant]
+            : theme.background === "light"
+              ? "black"
+              : "white"
+    return { fill, ink, bold: false }
+  }
+  const ink =
+    hue === undefined
+      ? undefined
+      : theme.background === "light" && theme.name === "default"
+        ? "white"
+        : INK[variant]
+  return { fill: hue, ink, bold: false }
 }
 
 /**
@@ -169,7 +182,8 @@ export const pillStyle = (
  * two glyph SETS, and this is one glyph with a graceful absence. Solid and soft take
  * the filled caps, outline the thin ones from the same Powerline Extra block.
  *
- * `NO_COLOR` sends solid, soft and tonal to brackets: with the fill stripped,
+ * No colour (`NO_COLOR`, the `plain` theme) sends solid, soft and tonal to
+ * brackets — as does a tonal pill on sixteen colours, which has no tint: with the fill stripped,
  * the caps would be drawing the outline of a pill that is not there. Outline
  * keeps its caps — they ARE the outline, and there was never a fill for them
  * to be missing.
@@ -181,8 +195,15 @@ export const Pill = ({
   strong = false,
   color,
 }: PillProps) => {
+  const theme = useTheme()
+  const style = pillStyle(variant, tone, strong, theme)
+  const explicit = paint(theme, color)
+  // Powerline caps are Nerd Font glyphs, which a 7-bit terminal cannot
+  // draw: there the pill is its word in brackets, the same two columns.
+  const ascii = theme.icons === "ascii"
   if (tone === "outline") {
-    const fill = color ?? FILL[variant]
+    const fill = explicit ?? style.fill
+    if (ascii) return <Text color={fill}>({children})</Text>
     return (
       <Text color={fill}>
         {glyph("plCapLeftThin")}
@@ -191,32 +212,24 @@ export const Pill = ({
       </Text>
     )
   }
-  if (tone === "tonal") {
-    // A caller mirroring an external palette may override the fill; the ink
-    // stays the variant's tonal ink either way — a tint is already the
-    // quietest form, and measuring a second ink for it would invent a tier.
-    const style = pillStyle(variant, tone, strong)
-    const fill = color ?? style.fill
-    if (process.env["NO_COLOR"]) return <Text color={fill}>[{children}]</Text>
+  // A caller mirroring an external palette may override the fill. On a tonal
+  // pill the ink stays the variant's tonal ink either way — a tint is already
+  // the quietest form, and measuring a second ink for it would invent a tier.
+  const fill = explicit ?? style.fill
+  const ink =
+    explicit && tone !== "tonal" ? inkFor(explicit) : style.ink
+  // Brackets carry no fill, so they take the variant's hue as ink — a soft
+  // fill is too dark to read as text on the ground it was made to sit on.
+  if (fill === undefined || ascii)
     return (
-      <Text>
-        <Text color={fill}>{glyph("plCapLeft")}</Text>
-        <Text backgroundColor={fill} color={style.ink} bold={style.bold}>
-          {children}
-        </Text>
-        <Text color={fill}>{glyph("plCapRight")}</Text>
+      <Text color={explicit ?? (tone === "tonal" ? style.ink : theme.colors[variant])}>
+        [{children}]
       </Text>
     )
-  }
-  const fill =
-    color ?? (tone === "soft" ? softColors[variant] : FILL[variant])
-  const ink =
-    tone === "soft" || color ? inkFor(fill) : INK[variant]
-  if (process.env["NO_COLOR"]) return <Text color={fill}>[{children}]</Text>
   return (
     <Text>
       <Text color={fill}>{glyph("plCapLeft")}</Text>
-      <Text backgroundColor={fill} color={ink}>
+      <Text backgroundColor={fill} color={ink} bold={style.bold}>
         {children}
       </Text>
       <Text color={fill}>{glyph("plCapRight")}</Text>

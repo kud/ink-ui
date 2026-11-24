@@ -1,7 +1,9 @@
 import React from "react"
 import { Box, Text } from "ink"
 import stringWidth from "string-width"
-import { colors, spacing } from "../tokens.js"
+import { spacing } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
 
 export type DividerVariant = "light" | "heavy" | "double" | "dashed"
 export type DividerAlign = "left" | "center" | "right"
@@ -59,7 +61,15 @@ type DividerProps = {
   color?: string
 }
 
-const rule = (ch: string, color: string, grow: number | undefined, basis?: number) => (
+// The four weights in 7-bit, for a locale that cannot draw box drawing.
+const ASCII_DIVIDER_CHARS: Record<DividerVariant, string> = {
+  light: "-",
+  heavy: "=",
+  double: "=",
+  dashed: ".",
+}
+
+const rule = (ch: string, color: string | undefined, grow: number | undefined, basis?: number) => (
   <Box
     flexGrow={grow}
     flexShrink={grow ? 1 : 0}
@@ -94,11 +104,18 @@ export const Divider = ({
   variant = "light",
   align = "center",
   width,
-  color = colors.dim,
+  color: colorProp,
 }: DividerProps) => {
-  const ch = DIVIDER_CHARS[variant]
+  const theme = useTheme()
+  const colors = theme.colors
+  const color = paint(theme, colorProp) ?? colors.dim
+  const ascii = theme.icons === "ascii"
+  const ch = (ascii ? ASCII_DIVIDER_CHARS : DIVIDER_CHARS)[variant]
   if (width !== undefined) {
-    const line = dividerLine(width, { label, variant, align })
+    const drawn = dividerLine(width, { label, variant, align })
+    const line = ascii
+      ? drawn.split(DIVIDER_CHARS[variant]).join(ch)
+      : drawn
     if (!label || !line.includes(` ${label} `))
       return <Text color={color}>{line}</Text>
     const at = line.indexOf(` ${label} `)

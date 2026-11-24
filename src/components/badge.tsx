@@ -1,6 +1,6 @@
 import React from "react"
 import { Text } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 export type BadgeVariant = "success" | "error" | "warning" | "info"
 
@@ -9,13 +9,7 @@ type BadgeProps = {
   variant?: BadgeVariant
 }
 
-const variantColor: Record<BadgeVariant, string> = {
-  success: colors.success,
-  error: colors.error,
-  warning: colors.warning,
-  info: colors.info,
+export const Badge = ({ children, variant = "info" }: BadgeProps) => {
+  const theme = useTheme()
+  return <Text color={theme.colors[variant]}>[{children}]</Text>
 }
-
-export const Badge = ({ children, variant = "info" }: BadgeProps) => (
-  <Text color={variantColor[variant]}>[{children}]</Text>
-)

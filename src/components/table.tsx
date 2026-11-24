@@ -1,7 +1,9 @@
 import React, { useMemo, useRef } from "react"
 import { Box, Text, useStdout } from "ink"
 import { glyph } from "@kud/glyphs"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
+import { setStatusTheme } from "./table-status.js"
 import {
   resolveColumnWidths,
   truncateCell,
@@ -101,6 +103,12 @@ const selectionGlyphs = {
   },
 } as const
 
+// The same marks in 7-bit, one cell each, after shui's ascii set.
+const asciiSelectionGlyphs = {
+  multiple: { on: "#", off: "." },
+  single: { on: "*", off: "o" },
+} as const
+
 // Keep the cursor inside the window while moving the window as little as
 // possible: a list that recentres on every keystroke makes the eye chase it.
 // The previous offset is the starting point; it only moves when the cursor
@@ -129,7 +137,7 @@ export const Table = <T extends Record<string, unknown>>({
   columns,
   gap = 2,
   maxWidth,
-  headerColor = colors.muted,
+  headerColor: headerColorProp,
   sort,
   cursor,
   focusedColumn,
@@ -141,6 +149,12 @@ export const Table = <T extends Record<string, unknown>>({
   empty = "No rows",
 }: TableProps<T>) => {
   const { stdout } = useStdout()
+  const theme = useTheme()
+  const colors = theme.colors
+  const headerColor = paint(theme, headerColorProp) ?? colors.muted
+  const ascii = theme.icons === "ascii"
+  // Status cells format against this table's theme, not the ambient one.
+  setStatusTheme(theme)
   const sortable = sort !== undefined
   const hasCursor = cursor !== undefined
   const gutters = (hasCursor ? GUTTER_WIDTH : 0) + (selection ? GUTTER_WIDTH : 0)
@@ -162,7 +176,7 @@ export const Table = <T extends Record<string, unknown>>({
           return column.format ? column.format(value, row) : cellText(value)
         }),
       ),
-    [data, columns],
+    [data, columns, theme],
   )
   const widths = useMemo(
     () =>
@@ -226,12 +240,12 @@ export const Table = <T extends Record<string, unknown>>({
   const headerLabel = (column: Column<T>) => {
     if (!sortable || column.sortable === false) return column.header
     const indicator =
-      sort?.key === column.key ? ` ${sortGlyph(sort.direction)}` : ""
+      sort?.key === column.key ? ` ${ascii ? (sort.direction === "asc" ? theme.glyphs.up : theme.glyphs.down) : sortGlyph(sort.direction)}` : ""
     return column.header + indicator
   }
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" aria-role="table">
       <Box>
         {hasCursor ? gutter("cursor", <Text> </Text>) : null}
         {selection ? gutter("selection", <Text> </Text>) : null}
@@ -278,16 +292,16 @@ export const Table = <T extends Record<string, unknown>>({
             {hasCursor
               ? gutter(
                   "cursor",
-                  <Text color={colors.info}>{active ? "❯" : " "}</Text>,
+                  <Text color={colors.info}>{active ? theme.glyphs.pointer : " "}</Text>,
                 )
               : null}
             {selection
               ? gutter(
                   "selection",
                   <Text color={isSelected ? colors.info : colors.muted}>
-                    {isSelected
-                      ? selectionGlyphs[selection].on
-                      : selectionGlyphs[selection].off}
+                    {(ascii ? asciiSelectionGlyphs : selectionGlyphs)[selection][
+                      isSelected ? "on" : "off"
+                    ]}
                   </Text>,
                 )
               : null}

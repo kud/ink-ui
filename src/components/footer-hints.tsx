@@ -1,5 +1,6 @@
 import React from "react"
 import { Box, Text } from "ink"
+import { useTheme } from "../theme/theme-provider.js"
 
 export type Hint = [key: string, label: string]
 
@@ -26,6 +27,28 @@ export const tailHints = (
   ["q", "quit"],
 ]
 
+// The key symbols every footer uses, spelled out for a terminal that cannot
+// draw them. A hint the reader cannot decode is a key they cannot find.
+const ASCII_KEYS: Record<string, string> = {
+  "⌫": "bksp",
+  "⏎": "enter",
+  "↵": "enter",
+  "⇥": "tab",
+  "↑↓": "up/down",
+  "←→": "left/right",
+  "↑": "up",
+  "↓": "down",
+  "←": "left",
+  "→": "right",
+}
+
+// Its own component so `FooterHints` stays a hook-free function of its props:
+// only the key's spelling depends on the theme.
+const KeyName = ({ name }: { name: string }) => {
+  const ascii = useTheme().icons === "ascii"
+  return <>{ascii ? (ASCII_KEYS[name] ?? name) : name}</>
+}
+
 // columnGap, not gap: `gap` sets both axes, so once the hints wrap — which they
 // do in any narrow terminal, or inside a border — the 2 meant as spacing between
 // hints also became 2 blank rows between hint lines, shoving the footer around.
@@ -35,7 +58,9 @@ export const FooterHints = ({ hints, page, help = true }: FooterHintsProps) => {
     <Box columnGap={2} rowGap={0} flexWrap="wrap">
       {all.map(([key, label]) => (
         <Box key={key}>
-          <Text>{key}</Text>
+          <Text>
+            <KeyName name={key} />
+          </Text>
           <Text dimColor>{" " + label}</Text>
         </Box>
       ))}

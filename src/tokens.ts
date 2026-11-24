@@ -1,26 +1,41 @@
+import { colors as glyphColors } from "@kud/glyphs"
+
 /**
  * The raw hexes behind every token, tuned to the dark ground `#1a1b27`.
- * Dark-only and truecolour assumed; on a 256-colour terminal chalk downsamples
- * them (`tokens.test.ts` checks the pairs that must stay apart). Hex rather
- * than ANSI names, because the terminal theme repaints a named colour.
+ *
+ * Every hue `@kud/glyphs` carries is READ from its `colors.json` — the
+ * cross-language source of truth shui and every `@kud` CLI share — never
+ * re-typed here, so a token that moves upstream moves here on the next
+ * install. What stays literal is what glyphs has no role for: the identifier
+ * yellow, the neutrals ink-ui measured on its own ground, the selection and
+ * shimmer grounds. `tokens.test.ts` checks both halves.
+ *
+ * This is the dark truecolour layer, kept as plain constants for code that
+ * predates themes. A component reads `useTheme()` instead, which resolves the
+ * same roles at the terminal's real depth (`ansi16`, `ansi256`, truecolour),
+ * in light or dark, or not at all under `NO_COLOR`. Hex rather than ANSI
+ * names, because the terminal theme repaints a named colour.
  */
 export const palette = {
-  orange: "#FF8C00",
-  amber: "#FFB400",
+  orange: glyphColors.accent.hex,
+  amber: glyphColors.warning.hex,
   yellow: "#FFCB6B",
-  red: "#FF5364",
-  mint: "#5FD7A7",
-  green: "#4ADE80",
-  coral: "#FF6B6B",
-  blue: "#82AAFF",
-  cyan: "#89DDFF",
-  purple: "#C792EA",
+  red: glyphColors.error.hex,
+  mint: glyphColors.success.hex,
+  green: glyphColors.added.hex,
+  coral: glyphColors.removed.hex,
+  blue: glyphColors.link.hex,
+  cyan: glyphColors.info.hex,
+  purple: glyphColors.group.hex,
   ink: "#E4E4EC",
-  grey: "#999999",
+  grey: glyphColors.secondary.hex,
+  // glyphs leaves `muted` on the terminal palette (hex null); this is what
+  // `dimColor` measures on the dark ground, and what `colors.muted` has
+  // always been.
   slate: "#75767E",
-  dusk: "#5C5E73",
+  dusk: glyphColors.dim.hex,
   selection: "#30364A",
-  track: "#2B323D",
+  track: glyphColors.track.hex,
   trackHigh: "#6B7480",
   ground: "#1A1B27",
 } as const

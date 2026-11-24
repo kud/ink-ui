@@ -3,6 +3,7 @@
 import React from "react"
 import { Box, Text } from "ink"
 import { statusVariant, type StatusVariant } from "./status-variants.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 type AlertProps = {
   variant?: StatusVariant
@@ -11,16 +12,19 @@ type AlertProps = {
 }
 
 export const Alert = ({ variant = "info", title, children }: AlertProps) => {
-  const { icon, color } = statusVariant(variant)
+  const theme = useTheme()
+  const { icon, color } = statusVariant(theme, variant)
   return (
     <Box
-      borderStyle="round"
+      borderStyle={theme.glyphs.border}
       borderColor={color}
       paddingX={1}
       flexDirection="column"
     >
       <Box gap={1}>
-        <Text color={color}>{icon}</Text>
+        <Text color={color} aria-label={`${variant}:`}>
+          {icon}
+        </Text>
         {title ? (
           <Text bold color={color}>
             {title}

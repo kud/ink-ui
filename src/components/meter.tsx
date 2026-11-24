@@ -1,6 +1,7 @@
 import React from "react"
 import { Text } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
 import { Bar } from "./progress-bar.js"
 
 export type MeterLevel = "normal" | "warning" | "critical"
@@ -67,9 +68,13 @@ export const Meter = ({
   warning,
   critical,
   format,
-  color = colors.secondary,
-  trackColor = colors.track,
+  color: colorProp,
+  trackColor: trackColorProp,
 }: MeterProps) => {
+  const theme = useTheme()
+  const colors = theme.colors
+  const color = paint(theme, colorProp) ?? colors.secondary
+  const trackColor = paint(theme, trackColorProp) ?? colors.track
   const span = max - min
   const fraction = span > 0 ? (value - min) / span : 0
   const level = meterLevel(value, { warning, critical })
@@ -85,7 +90,13 @@ export const Meter = ({
       : format
         ? format(value, min, max)
         : `${Math.round(Math.max(0, Math.min(1, fraction)) * 100)}%`.padStart(4)
-  const glyph = LEVEL_GLYPH[level]
+  // The threshold marks are the theme's status glyphs (`!` and `x` in ASCII).
+  const glyph =
+    level === "warning"
+      ? theme.glyphs.warning
+      : level === "critical"
+        ? theme.glyphs.error
+        : LEVEL_GLYPH[level]
   return (
     <Text>
       {label ? <Text color={colors.secondary}>{label} </Text> : null}

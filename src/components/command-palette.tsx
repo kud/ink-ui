@@ -4,7 +4,7 @@ import stringWidth from "string-width"
 import { TextInput } from "./text-input.js"
 import { type Hint } from "./footer-hints.js"
 import { useListCursor } from "./use-list-cursor.js"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 import { statusVariant } from "./status-variants.js"
 
 export type PaletteItem = {
@@ -153,6 +153,9 @@ export const CommandPalette = ({
   isActive = true,
   frame = "overlay",
 }: CommandPaletteProps) => {
+  const theme = useTheme()
+  const colors = theme.colors
+  const rule = theme.glyphs.rule
   const { cursor, setCursor } = useListCursor(items.length, {
     vimKeys: false,
     isActive,
@@ -183,7 +186,7 @@ export const CommandPalette = ({
   const emptyLine =
     note ?? (query.trim() === "" && emptyHint ? { text: emptyHint } : undefined)
   const errorMark =
-    emptyLine?.tone === "error" ? statusVariant("error") : undefined
+    emptyLine?.tone === "error" ? statusVariant(theme, "error") : undefined
   const counter = `${at + 1} of ${items.length}`
   const hintsWidth =
     hints.reduce(
@@ -196,13 +199,13 @@ export const CommandPalette = ({
   return (
     <Box
       flexDirection="column"
-      borderStyle={framed ? "round" : undefined}
+      borderStyle={framed ? theme.glyphs.border : undefined}
       borderColor={framed ? colors.info : undefined}
       backgroundColor={framed ? colors.track : undefined}
       width={width}
     >
       <Box width={inner}>
-        <Text color={colors.info}>{" › "}</Text>
+        <Text color={colors.info}>{theme.icons === "ascii" ? " > " : " › "}</Text>
         <TextInput
           defaultValue={query}
           placeholder={placeholder}
@@ -222,7 +225,7 @@ export const CommandPalette = ({
           <Text> </Text>
         </Box>
       </Box>
-      <Text dimColor>{" " + "─".repeat(inner - 2) + " "}</Text>
+      <Text dimColor>{" " + rule.repeat(inner - 2) + " "}</Text>
       {items.length === 0 && emptyLine?.text ? (
         errorMark ? (
           <Text color={errorMark.color}>
@@ -242,11 +245,11 @@ export const CommandPalette = ({
           return (
             <Text key={`header:${row.header}`}>
               {" "}
-              <Text dimColor>{"── "}</Text>
+              <Text dimColor>{rule + rule + " "}</Text>
               <Text bold color={colors.group}>
                 {title}
               </Text>
-              <Text dimColor>{" " + "─".repeat(headerTrail(title))}</Text>
+              <Text dimColor>{" " + rule.repeat(headerTrail(title))}</Text>
             </Text>
           )
         }
@@ -255,7 +258,9 @@ export const CommandPalette = ({
         return (
           <Box key={item.id} width={inner}>
             <Box flexShrink={0}>
-              <Text color={colors.info}>{active ? " ❯ " : "   "}</Text>
+              <Text color={colors.info} aria-hidden>
+                {active ? ` ${theme.glyphs.pointer} ` : "   "}
+              </Text>
             </Box>
             {hasMarkers ? (
               <Box flexShrink={0}>
@@ -282,7 +287,7 @@ export const CommandPalette = ({
           {" " + spaces(inner - 2 - stringWidth(counter)) + counter + " "}
         </Text>
       ) : null}
-      <Text dimColor>{" " + "─".repeat(inner - 2) + " "}</Text>
+      <Text dimColor>{" " + rule.repeat(inner - 2) + " "}</Text>
       {/* Drawn inline rather than with FooterHints: its column gaps are
           unwritten cells, which is where the host showed through the footer. */}
       <Text>

@@ -1,9 +1,8 @@
 import React from "react"
 import { Text, useStdout } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { supportsHyperlinks } from "../theme/terminal.js"
 import { streamIsTTY } from "./motion.js"
-
-type Env = Record<string, string | undefined>
 
 const OSC = "\u001b]"
 const BEL = "\u0007"
@@ -11,57 +10,9 @@ const BEL = "\u0007"
 // the label could close the OSC 8 early and smuggle a sequence of its own.
 const CONTROL = /[\u0000-\u001f\u007f-\u009f]/g
 
-const parseVersion = (version: string | undefined): number[] =>
-  (version ?? "").split(".").map((part) => Number.parseInt(part, 10) || 0)
-
-const atLeast = (version: string | undefined, ...min: number[]): boolean => {
-  const have = parseVersion(version)
-  for (let i = 0; i < min.length; i++) {
-    const a = have[i] ?? 0
-    const b = min[i]!
-    if (a !== b) return a > b
-  }
-  return true
-}
-
-/**
- * Whether the terminal behind `isTTY` draws OSC 8 hyperlinks. Piped output and
- * CI never do; `FORCE_HYPERLINK=1` / `=0` override everything, which is the
- * same switch `supports-hyperlinks` reads, so a user who has set it once for
- * another tool is not asked again.
- */
-export const supportsHyperlinks = (
-  isTTY: boolean,
-  env: Env = process.env,
-): boolean => {
-  const force = env["FORCE_HYPERLINK"]
-  if (force !== undefined) return force !== "0" && force !== "false"
-  if (!isTTY) return false
-  if (env["CI"] || env["TEAMCITY_VERSION"]) return false
-  if (env["WT_SESSION"] || env["DOMTERM"] || env["KONSOLE_VERSION"])
-    return true
-  if (env["KITTY_WINDOW_ID"] || env["GHOSTTY_RESOURCES_DIR"]) return true
-  const vte = Number.parseInt(env["VTE_VERSION"] ?? "", 10)
-  if (vte >= 5000) return true
-  const term = env["TERM"] ?? ""
-  if (/^(xterm-kitty|xterm-ghostty|alacritty|foot|wezterm)/.test(term))
-    return true
-  const version = env["TERM_PROGRAM_VERSION"]
-  switch (env["TERM_PROGRAM"]) {
-    case "iTerm.app":
-      return atLeast(version, 3, 1)
-    case "WezTerm":
-      return atLeast(version, 20200620)
-    case "vscode":
-      return atLeast(version, 1, 72)
-    case "ghostty":
-    case "Hyper":
-    case "rio":
-      return true
-    default:
-      return false
-  }
-}
+// Detection lives with the rest of the terminal capabilities, so the probe
+// and `Link` can never disagree about what this terminal draws.
+export { supportsHyperlinks } from "../theme/terminal.js"
 
 /**
  * The OSC 8 sequence around `text`, with control characters stripped from
@@ -91,8 +42,14 @@ type LinkProps = {
  */
 export const Link = ({ url, children, hyperlink: force }: LinkProps) => {
   const { stdout } = useStdout()
+  const theme = useTheme()
+  const colors = theme.colors
   const text = children ?? url
-  const live = force ?? supportsHyperlinks(streamIsTTY(stdout))
+  // Inside a ThemeProvider the probe's answer decides; without one, the same
+  // detection runs against the stream Ink is drawing to.
+  const live = force ?? (theme.provided
+    ? theme.policy.hyperlinks
+    : supportsHyperlinks(streamIsTTY(stdout)))
   if (live)
     return (
       <Text color={colors.link} underline>

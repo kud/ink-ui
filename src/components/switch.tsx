@@ -1,6 +1,7 @@
 import React from "react"
 import { Text } from "ink"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
+import { paint } from "../theme/theme.js"
 
 export type SwitchValue = "left" | "right"
 
@@ -18,29 +19,33 @@ export const Switch = ({
   left,
   right,
   value,
-  color = colors.accent,
+  color,
 }: SwitchProps) => {
+  const theme = useTheme()
+  const colors = theme.colors
+  const tint = paint(theme, color) ?? colors.accent
+  const { dot, dotEmpty, rule } = theme.glyphs
   const leftActive = value === "left"
   return (
-    <Text>
+    <Text aria-label={`${left} / ${right}: ${leftActive ? left : right}`}>
       <Text
-        color={leftActive ? color : undefined}
+        color={leftActive ? tint : undefined}
         bold={leftActive}
         dimColor={!leftActive}
       >
         {left}
       </Text>
       <Text> </Text>
-      <Text color={leftActive ? color : colors.muted}>
-        {leftActive ? "●" : "○"}
+      <Text color={leftActive ? tint : colors.muted}>
+        {leftActive ? dot : dotEmpty}
       </Text>
-      <Text color={colors.muted}>─</Text>
-      <Text color={!leftActive ? color : colors.muted}>
-        {!leftActive ? "●" : "○"}
+      <Text color={colors.muted}>{rule}</Text>
+      <Text color={!leftActive ? tint : colors.muted}>
+        {!leftActive ? dot : dotEmpty}
       </Text>
       <Text> </Text>
       <Text
-        color={!leftActive ? color : undefined}
+        color={!leftActive ? tint : undefined}
         bold={!leftActive}
         dimColor={leftActive}
       >

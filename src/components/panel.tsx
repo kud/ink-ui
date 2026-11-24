@@ -1,7 +1,7 @@
 import React from "react"
 import { Box, Text } from "ink"
 import type { ReactNode } from "react"
-import { colors } from "../tokens.js"
+import { useTheme } from "../theme/theme-provider.js"
 
 type PanelProps = {
   /** Optional title shown in the panel's header row. */
@@ -21,27 +21,35 @@ type PanelProps = {
 // original, with color/focused made optional so any surface can use it.
 export const Panel = ({
   title,
-  color = colors.info,
+  color,
   focused = false,
   width,
   height,
   flexGrow,
   children,
-}: PanelProps) => (
-  <Box
-    flexDirection="column"
-    width={width}
-    height={height}
-    flexGrow={flexGrow}
-    borderStyle="round"
-    borderColor={focused ? color : colors.muted}
-    overflow="hidden"
-  >
-    {title && (
-      <Text color={focused ? color : colors.muted} bold>
-        {focused ? `${title} ●` : title}
-      </Text>
-    )}
-    {children}
-  </Box>
-)
+}: PanelProps) => {
+  const theme = useTheme()
+  const tint = theme.policy.color ? (color ?? theme.colors.info) : undefined
+  return (
+    <Box
+      flexDirection="column"
+      width={width}
+      height={height}
+      flexGrow={flexGrow}
+      borderStyle={theme.glyphs.border}
+      borderColor={focused ? tint : theme.colors.muted}
+      overflow="hidden"
+    >
+      {title && (
+        <Text
+          color={focused ? tint : theme.colors.muted}
+          bold
+          aria-label={focused ? `${title} (focused)` : undefined}
+        >
+          {focused ? `${title} ${theme.glyphs.dot}` : title}
+        </Text>
+      )}
+      {children}
+    </Box>
+  )
+}

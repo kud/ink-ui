@@ -194,7 +194,7 @@ count's width. `SkeletonBar` is the single bar they are made of, for a
 value in a detail row. A soft highlight band sweeps each bar left to right on
 one shared clock, staggered per row so the wave travels diagonally, then loops
 after a short pause — a first load with nothing on screen reads as frozen
-without motion. `animate={false}` stills them; piped output and `NO_MOTION` /
+without motion. `animate={false}` stills them; the theme's motion policy — piped output, `NO_MOTION` /
 `REDUCE_MOTION` are still automatically.
 **Once anything is known, never go back to skeletons:**
 a refresh keeps the stale rows and counts on screen and says busy in `Page`'s
@@ -247,6 +247,7 @@ between apps. `⌫` is shown, `esc` implied.
 | A URL the reader can open | `Link` — OSC 8 where the terminal draws it, `text (url)` where it cannot; never print a raw escape yourself |
 | A rule between sections | `Divider`, optionally labelled, `light` / `heavy` / `double` / `dashed`; `Spacer size` for a fixed gap, bare `Spacer` to push siblings apart |
 | App chrome | `Page` as the frame of every screen, with `useAppKeys` once at the root; `Banner` at the top of a non-paged CLI, `Header` per section, `LoadingScreen` while booting |
+| Colour, motion and glyphs that fit the terminal | `probeTerminal()` before `render()`, one `ThemeProvider` at the root, `useTheme()` in anything you draw — never `process.env` |
 
 Composing a domain component on top of these is right and expected — wrapping
 `Table` to render your own row shape is the system working. Reimplementing
@@ -342,13 +343,23 @@ picks a foreground.
 
 ## Colour system
 
-Tuned to #1a1b27; dark-only; truecolour assumed, chalk downsamples. `palette`
-holds the raw hexes (`Palette` is their union), `colors` maps roles onto them,
-`priorityColors` (`PriorityColor`) is the priority tier. There is no light
-theme and no provider.
+Every hue comes from `@kud/glyphs`' `colors.json` — `ansi16`, `ansi256` and
+a dark `hex` per token, plus its state map — and is never re-typed here.
+`palette` holds the dark truecolour hexes (`Palette` is their union), `colors`
+maps roles onto them, `priorityColors` (`PriorityColor`) is the priority tier:
+plain constants, tuned to #1a1b27, for code that predates themes.
 
-1. **Hex only, never ANSI names.** The terminal theme repaints `cyan`,
-   `magenta` and `gray`; every token is a hex.
+A component reads `useTheme()` instead, which resolves the same roles for the
+terminal in front of it. Three levels, named and contracted like shui's:
+`default` (the full palette at the terminal's depth — truecolour, the 256
+layer or the 16-colour floor — dark, or light with `background: "light"`),
+`minimal` (the 16 ANSI colours by name) and `plain` (no colour; forced
+whenever the terminal has none). `validateTheme` names any missing token.
+
+1. **Hex or a glyphs layer, never an ad-hoc ANSI name.** The terminal theme
+   repaints `cyan`, `magenta` and `gray`; a token is a hex, a glyphs 256
+   index, or — only at the `minimal` level, where the user's palette is the
+   point — the glyphs `ansi16` slot.
 2. **Red is for errors and failures only.** Not priority, not brand.
 3. **Status always carries a glyph or a word** (`✓` `⚠` `✗` `ℹ` `◌`); the hue
    only reinforces it. `pending` has no hue: waiting is not news.
@@ -443,8 +454,30 @@ row it counts.
 swaps in Nerd Font glyphs; the default `"text"` is safe everywhere. Components
 read it at render time, so calling it after mounting does nothing.
 
-**There is no theme provider and no context.** Components take only the props
-they need. Do not build a provider to pass tokens around — import them.
+**One `ThemeProvider`, at the root, fed by `probeTerminal()`.** Probe before
+Ink's `render()` — Ink takes stdin the moment it mounts, and a late reply is
+read as keystrokes — then wrap the app once:
+
+```tsx
+const capabilities = await probeTerminal()
+render(
+  <ThemeProvider capabilities={capabilities}>
+    <App />
+  </ThemeProvider>,
+)
+```
+
+The theme carries the policy every component reads — `color`, `motion`,
+`static`, `screenReader`, `unicode` — so no component, and no component you
+write, asks `process.env` for `NO_COLOR`, `NO_MOTION` or `isTTY` itself.
+Without a provider, `useTheme()` returns the ambient theme: today's dark
+palette and unicode glyphs, still honouring `NO_COLOR`, `NO_MOTION` /
+`REDUCE_MOTION`, a pipe and `INK_SCREEN_READER`. A colour that arrives as a
+prop goes through `paint(theme, color)` so `NO_COLOR` reaches it too. In a
+component of your own, take colours and glyphs from `useTheme()` rather than
+importing `colors`: `theme.glyphs` is the `ascii` set on a locale that is not
+UTF-8, mirroring shui's, and a `✓` on such a terminal is a box nobody can
+read.
 
 **ESM only.** `import`, never `require`. Node ≥ 20, with `ink` ≥ 7 and
 `react` ≥ 19 as peer dependencies the consuming project installs itself.
