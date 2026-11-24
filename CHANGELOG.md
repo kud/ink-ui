@@ -4,7 +4,7 @@ All notable changes to this project are documented here.
 
 ---
 
-## 0.46.0 — 2026-11-24
+## 0.47.0 — 2026-11-24
 
 ### Changed
 
