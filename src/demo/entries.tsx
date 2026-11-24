@@ -11,11 +11,14 @@ import {
   Banner,
   Columns,
   ConfirmInput,
+  Divider,
   EmailInput,
   FooterHints,
   Header,
   KeyValue,
+  Link,
   LoadingScreen,
+  Meter,
   MultiSelect,
   OrderedList,
   Panel,
@@ -24,6 +27,7 @@ import {
   ScrollView,
   Select,
   SelectableRow,
+  Spacer,
   Spinner,
   StatusMessage,
   Switch,
@@ -35,6 +39,7 @@ import {
   ToggleSwitch,
   UnorderedList,
   colors,
+  useTerminalProgress,
   type SwitchValue,
 } from "../index.js"
 
@@ -304,6 +309,23 @@ const ToggleSwitchDemo = ({ focused }: { focused: boolean }) => {
 
 // ── registry ──────────────────────────────────────────────────────────
 
+// Climbs to 100 and starts over, mirroring itself into the terminal's tab or
+// taskbar where the terminal draws OSC 9;4 — and doing nothing where not.
+const TerminalProgressDemo = () => {
+  const [value, setValue] = useState(0)
+  useEffect(() => {
+    const timer = setInterval(() => setValue((v) => (v >= 100 ? 0 : v + 1)), 120)
+    return () => clearInterval(timer)
+  }, [])
+  useTerminalProgress({ value })
+  return (
+    <Box flexDirection="column">
+      <ProgressBar value={value} width={30} label="Syncing" showValue />
+      <Text dimColor>also shown in the tab / taskbar (iTerm2 ≥ 3.6, Ghostty, Windows Terminal, kitty ≥ 0.47)</Text>
+    </Box>
+  )
+}
+
 export const entries: DemoEntry[] = [
   // Inputs
   {
@@ -462,7 +484,15 @@ export const entries: DemoEntry[] = [
     name: "Spinner",
     category: "Status",
     interactive: false,
-    render: () => <Spinner label="Working…" />,
+    render: () => (
+      <Box flexDirection="column">
+        <Spinner type="dots" label="dots" />
+        <Spinner type="line" label="line" />
+        <Spinner type="arc" label="arc" />
+        <Spinner type="pulse" label="pulse" />
+        <Spinner type="bounce" label="bounce" />
+      </Box>
+    ),
   },
   {
     name: "ProgressBar",
@@ -471,10 +501,31 @@ export const entries: DemoEntry[] = [
     render: () => (
       <Box flexDirection="column">
         <ProgressBar value={38} />
-        <ProgressBar value={72} />
-        <ProgressBar value={100} />
+        <ProgressBar value={72.3} showValue />
+        <ProgressBar value={100} showValue />
+        <ProgressBar value={41.7} label="Uploading" showValue eta={185} />
+        <ProgressBar indeterminate label="Resolving" />
       </Box>
     ),
+  },
+  {
+    name: "Meter",
+    category: "Status",
+    interactive: false,
+    render: () => (
+      <Box flexDirection="column">
+        <Meter label="CPU " value={23} warning={70} critical={90} />
+        <Meter label="Disk" value={78} warning={70} critical={90} />
+        <Meter label="Swap" value={96} warning={70} critical={90} />
+        <Meter label="Heap" value={612} max={1024} format={(v, _, m) => `${v} / ${m} MB`} />
+      </Box>
+    ),
+  },
+  {
+    name: "useTerminalProgress",
+    category: "Status",
+    interactive: false,
+    render: () => <TerminalProgressDemo />,
   },
   {
     name: "StatusMessage",
@@ -608,6 +659,40 @@ export const entries: DemoEntry[] = [
         <KeyValue label="Branch" value="main" />
         <KeyValue label="Commit" value="4eb77fd" />
         <KeyValue label="Author" value="Erwann Mest" />
+      </Box>
+    ),
+  },
+  {
+    name: "Divider",
+    category: "Layout",
+    interactive: false,
+    render: () => (
+      <Box flexDirection="column" width={44}>
+        <Divider />
+        <Divider label="Today" />
+        <Divider label="heavy" variant="heavy" align="left" />
+        <Divider label="double" variant="double" align="right" />
+        <Divider label="dashed" variant="dashed" />
+        <Spacer size="xs" />
+        <Box>
+          <Text>left</Text>
+          <Spacer />
+          <Text>right</Text>
+        </Box>
+      </Box>
+    ),
+  },
+  {
+    name: "Link",
+    category: "Layout",
+    interactive: false,
+    render: () => (
+      <Box flexDirection="column">
+        <Link url="https://github.com/kud/ink-ui">kud/ink-ui</Link>
+        <Link url="https://kud.io" />
+        <Link url="https://kud.io/projects/ink-ui" hyperlink={false}>
+          forced fallback
+        </Link>
       </Box>
     ),
   },

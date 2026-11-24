@@ -237,6 +237,12 @@ between apps. `⌫` is shown, `esc` implied.
 | Label/value detail rows | `KeyValue` with a shared `labelWidth` so values align |
 | A category label — `epic`, `draft` — that should read as one object | `Pill`, filled and rounded; `Badge` for the bracket form. Never for a reference the reader follows |
 | Transient feedback | `StatusMessage` (inline) · `Alert` (boxed, with title) · `Toast` (self-dismissing) |
+| Work heading for done | `ProgressBar` — the edge moves in eighths of a cell; `indeterminate` when there is no known end, `label`, `showValue` and `eta` around it |
+| A bounded measurement — disk, quota, a score | `Meter`, quiet `secondary` until `warning` / `critical` is crossed, then the hue *and* `⚠` / `✗` |
+| The same progress in the terminal's tab or taskbar | `useTerminalProgress({ value, state })` beside the bar — OSC 9;4 on Ink's side channel, a no-op where unsupported, cleared on unmount and exit |
+| Busy with nothing to measure | `Spinner` with `type` (`dots` · `line` · `arc` · `pulse` · `bounce`) — one shared Ink clock, a still frame when piped or under `NO_MOTION` / `REDUCE_MOTION` |
+| A URL the reader can open | `Link` — OSC 8 where the terminal draws it, `text (url)` where it cannot; never print a raw escape yourself |
+| A rule between sections | `Divider`, optionally labelled, `light` / `heavy` / `double` / `dashed`; `Spacer size` for a fixed gap, bare `Spacer` to push siblings apart |
 | App chrome | `Page` as the frame of every screen, with `useAppKeys` once at the root; `Banner` at the top of a non-paged CLI, `Header` per section, `LoadingScreen` while booting |
 
 Composing a domain component on top of these is right and expected — wrapping
