@@ -200,4 +200,28 @@ describe("useTable", () => {
     await press(stdin, `${ESC}[6~`)
     expect(lastFrame()).toContain("❯ row-4")
   })
+
+  it("never re-formats cells when only the cursor moves", async () => {
+    let calls = 0
+    const many = Array.from({ length: 2000 }, (_, i) => ({ name: `row-${i}`, size: i }))
+    const counted: Column<Row>[] = [
+      {
+        key: "name",
+        header: "Name",
+        format: (value) => {
+          calls += 1
+          return String(value)
+        },
+      },
+    ]
+    const Big = () => {
+      const table = useTable({ data: many, columns: counted, height: 5 })
+      return <Table maxWidth={30} {...table.tableProps} />
+    }
+    const { stdin } = render(<Big />)
+    await tick()
+    const afterMount = calls
+    await press(stdin, "j", "j", "G", "g")
+    expect(calls).toBe(afterMount)
+  })
 })
