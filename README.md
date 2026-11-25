@@ -245,6 +245,19 @@ import { colors, spacing } from "@kud/ink-ui"
 // spacing.md      → 3
 ```
 
+### One-shot output
+
+For a command that prints a result and exits, `@kud/ink-ui/output` renders a
+semantic document styled on a terminal, plain when piped, and as JSON on
+request — without loading React or Ink.
+
+```ts
+import { result, section, keyValue, success, help, writeOutput } from "@kud/ink-ui/output"
+
+writeOutput(result({ title: "acme", blocks: [success("Done"), section("Build", [keyValue({ Version: "1.4.2" })])] }))
+writeOutput(help({ name: "acme", usage: ["acme <command>"], options: [{ name: "--json", summary: "Print JSON" }] }))
+```
+
 ## Development
 
 ```sh

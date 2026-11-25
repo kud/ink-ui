@@ -505,6 +505,43 @@ that is mostly furniture keeps its one load-bearing word bright, a facts
 segment stays dim beside a bold app name, and a counter never outshines the
 row it counts.
 
+## One-shot output: a command that prints and exits
+
+Not every command is a TUI. A command that prints a result and exits imports
+from `@kud/ink-ui/output` instead — a separate entry that never loads React or
+Ink — and never formats with `console.log` by hand. It builds a document from
+semantic blocks and lets the renderer decide how it looks:
+
+```ts
+import { result, section, keyValue, success, empty, note, writeOutput } from "@kud/ink-ui/output"
+
+writeOutput(
+  result({
+    title: "acme deploy",
+    blocks: [
+      success("Deployed api-gateway to staging"),
+      section("Release", [keyValue({ Version: "1.4.2", Region: "eu-west-1" })]),
+      empty("No pending migrations", "Run acme migrate --plan to preview one."),
+      note("Logs: https://example.com/acme/logs/12345"),
+    ],
+  }),
+  { json: flags.json },
+)
+```
+
+The target follows the stream: `--json` (the caller's own flag — no parser is
+imposed) prints the document as data, never ANSI; a pipe or file gets plain
+text at a fixed 80 columns, so output is the same on every machine and fit for
+a snapshot; a terminal gets styled output at its own width, and `NO_COLOR`
+keeps bold and faint while dropping every hue. `renderOutput` takes the target
+and width explicitly, which is what a test calls.
+
+The rules above still hold. Colours come from the same tokens, a status is
+always led by its glyph, a key/value label is muted and the value bright, and a
+narrow width stacks a label above its value rather than squeezing it. `help`
+builds a `--help` page from the same blocks — usage, commands, arguments,
+options, examples, notes — so help renders three ways like everything else.
+
 ## House rules
 
 **Set the icon mode once, before the first render.** `setIconMode("nerd")`
